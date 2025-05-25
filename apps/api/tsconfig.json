@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "node",
+		"strict": true,
+		"skipLibCheck": true,
+		"composite": false,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"inlineSources": false,
+		"isolatedModules": true,
+		"strictNullChecks": true,
+		"preserveWatchOutput": true,
+		"types": ["node"],
+		"outDir": "dist",
+		"baseUrl": "src",
+		"paths": {
+			"@/*": ["./*"]
+		}
+	},
+	"exclude": ["node_modules"]
+}
