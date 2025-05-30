@@ -5,13 +5,13 @@ import { Header } from "#/features/navigation";
 import { shouldBeOnboarded } from "#/helpers/user";
 
 const TabsLayout = () => {
-	const { data } = useSessionSuspeneQuery();
+	const { data: session } = useSessionSuspeneQuery();
 
-	if (!data) {
+	if (!session) {
 		return <Redirect href="/sign-in" />;
 	}
 
-	if (shouldBeOnboarded(data.user)) {
+	if (shouldBeOnboarded(session.user)) {
 		return <Redirect href="/onboarding" />;
 	}
 

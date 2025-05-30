@@ -4,7 +4,7 @@ import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";
 
 export default createAuthClient({
-	baseURL: "http://localhost:8000",
+	baseURL: process.env.EXPO_PUBLIC_API_URL,
 	basePath: "/api/v1/auth",
 	plugins: [
 		expoClient({

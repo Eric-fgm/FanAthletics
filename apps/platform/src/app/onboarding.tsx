@@ -6,14 +6,14 @@ import { Header, IterestsForm, PersonalInfoForm } from "#/features/onboarding";
 import { shouldBeOnboarded } from "#/helpers/user";
 
 export default function Onboarding() {
-	const { data } = useSessionSuspeneQuery();
+	const { data: session } = useSessionSuspeneQuery();
 	const [currentStep, setCurrentStep] = useState(1);
 
-	if (!data) {
+	if (!session) {
 		return <Redirect href="/sign-in" />;
 	}
 
-	if (!shouldBeOnboarded(data.user)) {
+	if (!shouldBeOnboarded(session.user)) {
 		return <Redirect href="/" />;
 	}
 
@@ -22,7 +22,7 @@ export default function Onboarding() {
 			<Header steps={(currentStep - 1) / 2} />
 			{currentStep === 1 && (
 				<PersonalInfoForm
-					name={data.user.name}
+					name={session.user.name}
 					onPressNext={() => setCurrentStep(2)}
 				/>
 			)}

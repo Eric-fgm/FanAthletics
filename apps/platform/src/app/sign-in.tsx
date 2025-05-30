@@ -11,7 +11,7 @@ import {
 } from "#/features/auth";
 
 export default function SignIn() {
-	const { data } = useSessionSuspeneQuery();
+	const { data: session } = useSessionSuspeneQuery();
 	const { mutate: socialSignIn, isPending: isSocialSigningIn } =
 		useSocialSignInMutation();
 	const { mutate: magicLickSignIn, isPending: isMagicLinkSigningIn } =
@@ -19,7 +19,7 @@ export default function SignIn() {
 
 	const isSigningIn = isSocialSigningIn || isMagicLinkSigningIn;
 
-	if (data) {
+	if (session) {
 		return <Redirect href="/" />;
 	}
 
