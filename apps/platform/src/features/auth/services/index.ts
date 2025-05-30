@@ -1,3 +1,4 @@
+import type { User } from "@fan-athletics/shared/types";
 import {
 	useMutation,
 	useQueryClient,
@@ -13,7 +14,7 @@ export const useSessionSuspeneQuery = () => {
 	});
 
 	return {
-		data: data?.data ?? null,
+		data: (data?.data ?? null) as { user: User } | null,
 		...restQuery,
 	};
 };

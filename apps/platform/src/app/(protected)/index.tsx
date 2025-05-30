@@ -9,7 +9,7 @@ import {
 import { isAdmin } from "#/helpers/user";
 
 export default function Events() {
-	const { data: profile } = useSessionSuspeneQuery();
+	const { data: session } = useSessionSuspeneQuery();
 	const { data: events } = useEventsQuery();
 
 	return (
@@ -27,7 +27,7 @@ export default function Events() {
 						]}
 						value="all"
 					/>
-					{isAdmin(profile?.user) && (
+					{session && isAdmin(session.user) && (
 						<>
 							<Divider orientation="vertical" className="h-8" />
 							<EventCreateDialog
