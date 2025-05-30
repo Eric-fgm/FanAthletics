@@ -1,53 +1,54 @@
+import { sql } from "drizzle-orm";
 import {
 	boolean,
 	integer,
 	json,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
-	uuid,
 	varchar,
 } from "drizzle-orm/pg-core";
 
 /** */
 
 export const user = pgTable("user", {
-	id: uuid().primaryKey().defaultRandom(),
-	name: varchar({ length: 255 }).notNull(),
-	firstName: varchar({ length: 255 }).notNull(),
-	lastName: varchar({ length: 255 }).notNull(),
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	name: varchar({ length: 255 }),
+	note: varchar({ length: 255 }),
+	role: varchar({ length: 255 }).default("user").notNull(),
 	email: varchar({ length: 255 }).notNull().unique(),
 	emailVerified: boolean().notNull(),
-	image: varchar({ length: 255 }),
+	image: text(),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
 
 export const session = pgTable("session", {
-	id: uuid().primaryKey().defaultRandom(),
-	userId: uuid()
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	userId: text()
 		.references(() => user.id)
 		.notNull(),
-	token: varchar({ length: 255 }).notNull(),
-	ipAddress: varchar({ length: 255 }),
-	userAgent: varchar({ length: 255 }),
+	token: text().notNull(),
+	ipAddress: text(),
+	userAgent: text(),
 	expiresAt: timestamp({ withTimezone: true }).notNull(),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
 
 export const account = pgTable("account", {
-	id: uuid().primaryKey().defaultRandom(),
-	userId: uuid()
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	userId: text()
 		.references(() => user.id)
 		.notNull(),
-	accountId: varchar({ length: 255 }).notNull(),
-	providerId: varchar({ length: 255 }).notNull(),
-	accessToken: varchar({ length: 255 }),
-	refreshToken: varchar({ length: 255 }),
-	scope: varchar({ length: 255 }),
-	idToken: varchar({ length: 255 }),
-	password: varchar({ length: 255 }),
+	accountId: text().notNull(),
+	providerId: text().notNull(),
+	accessToken: text(),
+	refreshToken: text(),
+	scope: text(),
+	idToken: text(),
+	password: text(),
 	accessTokenExpiresAt: timestamp({ withTimezone: true }),
 	refreshTokenExpiresAt: timestamp({ withTimezone: true }),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
@@ -55,16 +56,16 @@ export const account = pgTable("account", {
 });
 
 export const verification = pgTable("verification", {
-	id: uuid().primaryKey().defaultRandom(),
-	identifier: varchar({ length: 255 }).notNull(),
-	value: varchar({ length: 255 }).notNull(),
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	identifier: text().notNull(),
+	value: text().notNull(),
 	expiresAt: timestamp({ withTimezone: true }).notNull(),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
 
 export const event = pgTable("event", {
-	id: uuid().primaryKey().defaultRandom(),
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
 	name: varchar({ length: 255 }).notNull(),
 	organization: varchar({ length: 255 }).notNull(),
 	image: varchar({ length: 255 }).notNull(),
@@ -76,11 +77,11 @@ export const event = pgTable("event", {
 });
 
 export const participant = pgTable("participant", {
-	id: uuid().primaryKey().defaultRandom(),
-	userId: uuid()
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	userId: text()
 		.references(() => user.id)
 		.notNull(),
-	referenceId: uuid().notNull(),
+	referenceId: text().notNull(),
 	type: varchar({ length: 255 }).notNull(),
 	budget: integer().notNull(),
 	lastPoints: integer().default(0).notNull(),
@@ -89,8 +90,8 @@ export const participant = pgTable("participant", {
 });
 
 export const discipline = pgTable("discipline", {
-	id: uuid().primaryKey().defaultRandom(),
-	eventId: uuid()
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	eventId: text()
 		.references(() => event.id)
 		.notNull(),
 	name: varchar({ length: 255 }).notNull(),
@@ -101,8 +102,8 @@ export const discipline = pgTable("discipline", {
 });
 
 export const athlete = pgTable("athlete", {
-	id: uuid().primaryKey().defaultRandom(),
-	eventId: uuid()
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	eventId: text()
 		.references(() => event.id)
 		.notNull(),
 	number: integer().notNull(),
@@ -117,10 +118,10 @@ export const athlete = pgTable("athlete", {
 export const athleteDiscipline = pgTable(
 	"athlete_discipline",
 	{
-		athleteId: uuid()
+		athleteId: text()
 			.references(() => athlete.id)
 			.notNull(),
-		disciplineId: uuid()
+		disciplineId: text()
 			.references(() => discipline.id)
 			.notNull(),
 	},
@@ -132,7 +133,7 @@ export const athleteDiscipline = pgTable(
 );
 
 export const athleteMeta = pgTable("athlete_meta", {
-	athleteId: uuid()
+	athleteId: text()
 		.references(() => athlete.id)
 		.notNull(),
 	key: varchar({ length: 255 }).notNull(),
@@ -142,10 +143,10 @@ export const athleteMeta = pgTable("athlete_meta", {
 export const teamMember = pgTable(
 	"team_member",
 	{
-		athleteId: uuid()
+		athleteId: text()
 			.references(() => athlete.id)
 			.notNull(),
-		participantId: uuid()
+		participantId: text()
 			.references(() => participant.id)
 			.notNull(),
 		isCaptain: boolean().default(false).notNull(),
@@ -158,8 +159,8 @@ export const teamMember = pgTable(
 );
 
 export const competition = pgTable("competition", {
-	id: uuid().primaryKey().defaultRandom(),
-	disciplineId: uuid()
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	disciplineId: text()
 		.references(() => discipline.id)
 		.notNull(),
 	seriesCount: integer().default(1).notNull(),
@@ -172,10 +173,10 @@ export const competition = pgTable("competition", {
 export const competitor = pgTable(
 	"competitor",
 	{
-		competitionId: uuid()
+		competitionId: text()
 			.references(() => competition.id)
 			.notNull(),
-		athleteId: uuid()
+		athleteId: text()
 			.references(() => athlete.id)
 			.notNull(),
 		series: integer().default(1).notNull(),
@@ -190,8 +191,8 @@ export const competitor = pgTable(
 );
 
 export const league = pgTable("league", {
-	id: uuid().primaryKey().defaultRandom(),
-	ownerId: uuid()
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	ownerId: text()
 		.references(() => user.id)
 		.notNull(),
 	name: varchar({ length: 255 }).notNull(),

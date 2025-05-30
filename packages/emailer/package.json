@@ -1,0 +1,25 @@
+{
+	"name": "@fan-athletics/emailer",
+	"version": "1.0.0",
+	"files": ["dist"],
+	"main": "./dist/index.js",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"type-check": "tsc --noEmit"
+	},
+	"dependencies": {
+		"nodemailer": "^7.0.3"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.21",
+		"@types/nodemailer": "^6.4.17",
+		"typescript": "5.8.3"
+	}
+}
