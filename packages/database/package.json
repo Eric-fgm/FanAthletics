@@ -15,6 +15,7 @@
 		"type-check": "tsc --noEmit"
 	},
 	"dependencies": {
+		"dotenv": "^16.5.0",
 		"drizzle-orm": "^0.43.1",
 		"pg": "^8.16.0"
 	},

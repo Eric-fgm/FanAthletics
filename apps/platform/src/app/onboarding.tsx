@@ -1,0 +1,34 @@
+import { Redirect, router } from "expo-router";
+import { useState } from "react";
+import { View } from "react-native";
+import { useSessionSuspeneQuery } from "#/features/auth";
+import { Header, IterestsForm, PersonalInfoForm } from "#/features/onboarding";
+import { shouldBeOnboarded } from "#/helpers/user";
+
+export default function Onboarding() {
+	const { data } = useSessionSuspeneQuery();
+	const [currentStep, setCurrentStep] = useState(1);
+
+	if (!data) {
+		return <Redirect href="/sign-in" />;
+	}
+
+	if (!shouldBeOnboarded(data.user)) {
+		return <Redirect href="/" />;
+	}
+
+	return (
+		<View className="px-4 md:px-8 xl:px-24">
+			<Header steps={(currentStep - 1) / 2} />
+			{currentStep === 1 && (
+				<PersonalInfoForm
+					name={data.user.name}
+					onPressNext={() => setCurrentStep(2)}
+				/>
+			)}
+			{currentStep === 2 && (
+				<IterestsForm onPressNext={() => router.replace("/")} />
+			)}
+		</View>
+	);
+}

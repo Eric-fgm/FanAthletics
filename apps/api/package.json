@@ -10,16 +10,16 @@
 		"type-check": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@better-auth/expo": "^1.2.8",
 		"@fan-athletics/database": "workspace:*",
+		"@fan-athletics/emailer": "workspace:*",
 		"@hono/node-server": "^1.14.2",
 		"better-auth": "^1.2.8",
 		"dotenv": "^16.5.0",
-		"hono": "^4.7.10",
-		"nodemailer": "^7.0.3"
+		"hono": "^4.7.10"
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.21",
-		"@types/nodemailer": "^6.4.17",
 		"tsup": "^8.5.0",
 		"typescript": "5.8.3"
 	}

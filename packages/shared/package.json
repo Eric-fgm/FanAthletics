@@ -1,0 +1,9 @@
+{
+	"name": "@fan-athletics/shared",
+	"version": "1.0.0",
+	"exports": {
+		"./types": {
+			"types": "./src/types/index.ts"
+		}
+	}
+}
