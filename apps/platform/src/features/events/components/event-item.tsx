@@ -1,6 +1,7 @@
 import type { Event } from "@fan-athletics/shared/types";
 import { Image, View } from "react-native";
 import { Button, Typography } from "#/components";
+import { useEventDeletedMutation } from "../services";
 
 interface EventItemProps extends Event {}
 
@@ -11,6 +12,7 @@ const EventItem: React.FC<EventItemProps> = ({
 	image,
 	icon,
 }) => {
+	const { mutateAsync: deleteEvent, isPending } = useEventDeletedMutation();
 	return (
 		<View className="aspect-[4/3] grid place-items-center grid-rows-1 rounded-3xl overflow-hidden bg-gray-100">
 			<Image
@@ -43,6 +45,14 @@ const EventItem: React.FC<EventItemProps> = ({
 					variant="white"
 					className="mt-8"
 					rounded
+				/>
+				<Button
+					text="Usuń"
+					size="small"
+					variant="primary"
+					className="mt-8"
+					rounded
+					onPress={() => deleteEvent(id)}
 				/>
 			</View>
 		</View>
