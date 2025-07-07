@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { CALLBACK_URL } from "#/helpers/constants";
 import authClient from "#/lib/auth-client";
+import { showToast } from "#/lib/toast";
 
 export const useSessionSuspeneQuery = () => {
 	const { data, ...restQuery } = useSuspenseQuery({
@@ -31,6 +32,7 @@ export const useCurrentUserMutation = () => {
 		) => authClient.updateUser(values),
 		async onSuccess() {
 			await queryClient.invalidateQueries({ queryKey: ["auth::session"] });
+			showToast({text1: 'Profile Updated', text2: 'Your profile changes were saved'})
 		},
 	});
 };
@@ -59,10 +61,19 @@ export const useSocialSignInMutation = () => {
 
 export const useMagicLinkSignInMutation = () => {
 	return useMutation({
-		mutationFn: (email: string) =>
-			authClient.signIn.magicLink({
+		mutationFn: async (email: string) => {
+				const {data, error}=await authClient.signIn.magicLink({
 				email,
 				callbackURL: CALLBACK_URL,
-			}),
+			})
+
+			if (error) {
+				throw new Error(error.message)
+			}
+			return data
+		},
+		onSuccess() {
+			showToast({text1: 'Email has been sent', text2: 'Check your email box'})
+		},
 	});
 };

@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { showToast } from "./toast";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -8,6 +9,14 @@ const queryClient = new QueryClient({
 			structuralSharing: false,
 			retry: false,
 		},
+		mutations: {
+			onError(error) {
+				showToast({
+					text1: 'Wystąpił błąd',
+					text2: error.message ?? 'Spróbuj ponownie później',
+				})
+			},
+		}
 	},
 });
 

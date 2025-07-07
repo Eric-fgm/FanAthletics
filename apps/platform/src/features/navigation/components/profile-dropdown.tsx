@@ -23,7 +23,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 					},
 				]}
 				renderNativeHeader={
-					<View className="py-4 px-6">
+					<View className="px-6 py-4">
 						<Typography>{session.user.name}</Typography>
 						<Typography type="washed" size="small" className="mt-1">
 							{session.user.email}
@@ -31,7 +31,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 					</View>
 				}
 				renderNativeFooter={
-					<View className="py-4 px-5 flex-row gap-2">
+					<View className="flex-row gap-2 px-5 py-4">
 						<Typography type="washed" size="small">
 							Privacy
 						</Typography>
@@ -41,7 +41,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 					</View>
 				}
 				renderWebHeader={
-					<View className="py-4 px-5">
+					({ close }) => <View className="px-5 py-4">
 						<Typography type="bright">{session.user.name}</Typography>
 						<Typography
 							type="washed-bright"
@@ -52,6 +52,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 						</Typography>
 						<Button
 							href={`/users/${session.user.id}`}
+							onPress={close}
 							variant="bright"
 							text="Zobacz profil"
 							rounded
@@ -60,7 +61,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 					</View>
 				}
 				renderWebFooter={
-					<View className="py-4 px-5 flex-row gap-2">
+					<View className="flex-row gap-2 px-5 py-4">
 						<Typography type="washed-bright" size="small">
 							Privacy
 						</Typography>

@@ -8,4 +8,5 @@ export { default as Divider } from "#/components/divider";
 export { default as Typography } from "#/components/typography";
 export { default as Input } from "#/components/input";
 export { default as Switch } from "#/components/switch";
+export { default as Table } from "#/components/table";
 export { default as FormField } from "#/components/form-field";

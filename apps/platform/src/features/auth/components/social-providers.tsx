@@ -14,7 +14,7 @@ const SocialProviders: React.FC<SocialProvidersProps> = ({
 		{
 			id: "google",
 			name: "Google",
-			source: require("../../../../assets/socials/google-icon.svg"),
+			source: require("../../../../assets/socials/google-icon.png"),
 		},
 		{
 			id: "facebook",

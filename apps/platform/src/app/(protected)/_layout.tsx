@@ -1,11 +1,13 @@
-import { Redirect, Slot } from "expo-router";
-import { ScrollView } from "react-native";
+import { Redirect, Stack } from "expo-router";
 import { useSessionSuspeneQuery } from "#/features/auth/services";
-import { Header } from "#/features/navigation";
+import { GlobalHeader } from "#/features/navigation";
 import { shouldBeOnboarded } from "#/helpers/user";
+import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const TabsLayout = () => {
+const ProtectedLayout = () => {
 	const { data: session } = useSessionSuspeneQuery();
+	const insets = useSafeAreaInsets()
 
 	if (!session) {
 		return <Redirect href="/sign-in" />;
@@ -16,13 +18,17 @@ const TabsLayout = () => {
 	}
 
 	return (
-		<>
-			<Header />
-			<ScrollView className="px-4 md:px-8 xl:px-24">
-				<Slot />
-			</ScrollView>
-		</>
+		<View style={{ paddingTop: insets.top, flex: 1 }}>
+			<Stack screenOptions={{
+				header: () => <GlobalHeader />,
+				contentStyle: {
+					backgroundColor: '#ffffff'
+				},
+			}} >
+				<Stack.Screen name="index" />
+			</Stack>
+		</View>
 	);
 };
 
-export default TabsLayout;
+export default ProtectedLayout;

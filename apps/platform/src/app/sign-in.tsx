@@ -19,6 +19,9 @@ export default function SignIn() {
 
 	const isSigningIn = isSocialSigningIn || isMagicLinkSigningIn;
 
+	console.log(session);
+
+
 	if (session) {
 		return <Redirect href="/" />;
 	}
@@ -26,19 +29,19 @@ export default function SignIn() {
 	return (
 		<ScrollView contentContainerClassName="h-full">
 			{Platform.OS === "web" && (
-				<Pressable className="fixed top-6 left-6 z-10">
+				<Pressable className="top-6 left-6 z-10 fixed">
 					<ArrowLeft strokeWidth={1.5} />
 				</Pressable>
 			)}
 			<View className="flex-row h-full">
 				<View className="flex-1">
 					<View className="flex-1" />
-					<View className="px-4 py-8 items-center">
+					<View className="items-center px-4 py-8">
 						<Logo namePosition="bottom" nameSize="large" />
 						<Typography type="washed" className="mt-1.5">
 							Zaloguj się
 						</Typography>
-						<View className="mt-8 gap-y-6 max-w-sm">
+						<View className="gap-y-6 mt-8 max-w-sm">
 							<SocialProviders
 								isLoading={isSigningIn}
 								onSelect={(providerId) => socialSignIn(providerId)}
@@ -52,7 +55,7 @@ export default function SignIn() {
 					</View>
 					<View className="flex-1" />
 				</View>
-				<View className="p-4 flex-1 hidden lg:flex">
+				<View className="hidden lg:flex flex-1 p-4">
 					<Image
 						style={{ width: "100%", height: "100%" }}
 						source={require("../../assets/banners/sign-in-banner.png")}

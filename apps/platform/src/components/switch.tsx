@@ -21,7 +21,7 @@ const Switch: React.FC<SwitchProps> = ({
 					key={item.value}
 					className={`rounded-full px-4 py-2 ${item.value === value && "bg-white"}`}
 				>
-					<Typography type={item.value === value ? "dark" : "washed"}>
+					<Typography type={item.value === value ? "dark" : "washed"} className="leading-5">
 						{item.name}
 					</Typography>
 				</Pressable>
