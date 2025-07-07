@@ -12,11 +12,11 @@ const queryClient = new QueryClient({
 		mutations: {
 			onError(error) {
 				showToast({
-					text1: 'Wystąpił błąd',
-					text2: error.message ?? 'Spróbuj ponownie później',
-				})
+					text1: "Wystąpił błąd",
+					text2: error.message ?? "Spróbuj ponownie później",
+				});
 			},
-		}
+		},
 	},
 });
 

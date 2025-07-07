@@ -5,6 +5,6 @@ export default defineConfig({
 	schema: "./src/schema.ts",
 	dialect: "postgresql",
 	dbCredentials: {
-		url: "postgres://root:admin@localhost:5432/fan-athletics"
+		url: "postgres://root:admin@localhost:5432/fan-athletics",
 	},
 });

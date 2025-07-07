@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 /* [data-testid="toastTouchableContainer"] {
 	border: 0;
 	border-radius: 16px;

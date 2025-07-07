@@ -5,10 +5,10 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Slot } from "expo-router";
 import { Suspense } from "react";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 import { Typography } from "#/components";
 import { QueryProvider } from "#/lib/react-query";
 import "#/styles/global.css";

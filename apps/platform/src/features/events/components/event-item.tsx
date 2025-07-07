@@ -3,7 +3,7 @@ import { Image, View } from "react-native";
 import { Button, Typography } from "#/components";
 import { useEventDeletedMutation } from "../services";
 
-interface EventItemProps extends Event { }
+interface EventItemProps extends Event {}
 
 const EventItem: React.FC<EventItemProps> = ({
 	id,
@@ -53,7 +53,6 @@ const EventItem: React.FC<EventItemProps> = ({
 						onPress={() => deleteEvent(id)}
 					/>
 				</View>
-
 			</View>
 		</View>
 	);

@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ProtectedLayout = () => {
 	const { data: session } = useSessionSuspeneQuery();
-	const insets = useSafeAreaInsets()
+	const insets = useSafeAreaInsets();
 
 	if (!session) {
 		return <Redirect href="/sign-in" />;
@@ -19,12 +19,14 @@ const ProtectedLayout = () => {
 
 	return (
 		<View style={{ paddingTop: insets.top, flex: 1 }}>
-			<Stack screenOptions={{
-				header: () => <GlobalHeader />,
-				contentStyle: {
-					backgroundColor: '#ffffff'
-				},
-			}} >
+			<Stack
+				screenOptions={{
+					header: () => <GlobalHeader />,
+					contentStyle: {
+						backgroundColor: "#ffffff",
+					},
+				}}
+			>
 				<Stack.Screen name="index" />
 			</Stack>
 		</View>

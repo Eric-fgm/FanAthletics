@@ -22,11 +22,11 @@ const variantClassNamesMap = {
 };
 
 const typeClassNameMap = {
-	primary: 'bright',
-	outlined: 'dark',
-	bright: 'bright',
-	white: 'dark',
-} as const
+	primary: "bright",
+	outlined: "dark",
+	bright: "bright",
+	white: "dark",
+} as const;
 
 const sizeClassNamesMap = {
 	small: "px-4 py-2.5",
@@ -45,7 +45,7 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
 	const variantClassNames = variantClassNamesMap[variant];
 	const sizeClassNames = sizeClassNamesMap[size];
-	const typeClassNames = typeClassNameMap[variant]
+	const typeClassNames = typeClassNameMap[variant];
 
 	const Comp = "href" in props ? Link : Pressable;
 
@@ -56,10 +56,7 @@ const Button: React.FC<ButtonProps> = ({
 			{...(props as { href: string })}
 		>
 			{IconComp && <IconComp />}
-			<Typography
-				type={typeClassNames}
-				size={size}
-			>
+			<Typography type={typeClassNames} size={size}>
 				{text}
 			</Typography>
 			{isLoading && (

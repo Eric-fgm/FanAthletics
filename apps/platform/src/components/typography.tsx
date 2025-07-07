@@ -28,7 +28,7 @@ const weightClassNamesMap = {
 	large2: "inter-semibold",
 	large3: "inter-semibold",
 	large4: "inter-semibold",
-	'large4.5': "inter-semibold",
+	"large4.5": "inter-semibold",
 	large5: "inter-bold",
 };
 

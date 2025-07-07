@@ -73,7 +73,7 @@ export const useEventDiscpilinesQuery = (eventId?: string) => {
 	return useQuery({
 		queryFn: () => fetchEventDisciplines(currentEventId),
 		queryKey: ["events-disciplines::retrieve", currentEventId],
-		enabled: !!currentEventId
+		enabled: !!currentEventId,
 	});
 };
 
@@ -84,7 +84,7 @@ export const useEventAthletesQuery = (eventId?: string) => {
 	return useQuery({
 		queryFn: () => fetchEventAthletes(currentEventId),
 		queryKey: ["events-athletes::retrieve", currentEventId],
-		enabled: !!currentEventId
+		enabled: !!currentEventId,
 	});
 };
 

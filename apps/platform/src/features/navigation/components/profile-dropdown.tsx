@@ -40,8 +40,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 						</Typography>
 					</View>
 				}
-				renderWebHeader={
-					({ close }) => <View className="px-5 py-4">
+				renderWebHeader={({ close }) => (
+					<View className="px-5 py-4">
 						<Typography type="bright">{session.user.name}</Typography>
 						<Typography
 							type="washed-bright"
@@ -59,7 +59,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 							size="small"
 						/>
 					</View>
-				}
+				)}
 				renderWebFooter={
 					<View className="flex-row gap-2 px-5 py-4">
 						<Typography type="washed-bright" size="small">

@@ -40,7 +40,7 @@ const auth = betterAuth({
 		user: {
 			update: {
 				before: async (userData) => ({
-					data: { ...userData, role: 'admin' },
+					data: { ...userData, role: "admin" },
 				}),
 			},
 		},

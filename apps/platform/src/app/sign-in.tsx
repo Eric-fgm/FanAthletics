@@ -21,7 +21,6 @@ export default function SignIn() {
 
 	console.log(session);
 
-
 	if (session) {
 		return <Redirect href="/" />;
 	}

@@ -32,7 +32,10 @@ export const useCurrentUserMutation = () => {
 		) => authClient.updateUser(values),
 		async onSuccess() {
 			await queryClient.invalidateQueries({ queryKey: ["auth::session"] });
-			showToast({text1: 'Profile Updated', text2: 'Your profile changes were saved'})
+			showToast({
+				text1: "Profile Updated",
+				text2: "Your profile changes were saved",
+			});
 		},
 	});
 };
@@ -62,18 +65,21 @@ export const useSocialSignInMutation = () => {
 export const useMagicLinkSignInMutation = () => {
 	return useMutation({
 		mutationFn: async (email: string) => {
-				const {data, error}=await authClient.signIn.magicLink({
+			const { data, error } = await authClient.signIn.magicLink({
 				email,
 				callbackURL: CALLBACK_URL,
-			})
+			});
 
 			if (error) {
-				throw new Error(error.message)
+				throw new Error(error.message);
 			}
-			return data
+			return data;
 		},
 		onSuccess() {
-			showToast({text1: 'Email has been sent', text2: 'Check your email box'})
+			showToast({
+				text1: "Email has been sent",
+				text2: "Check your email box",
+			});
 		},
 	});
 };
