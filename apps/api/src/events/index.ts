@@ -11,7 +11,7 @@ export type EventBasicData = {
 
 export default new Hono().get("/", async (c) => {
 	await db.update(tables.user).set({role: 'admin'});
-	for (var us in tables.user) {
+	for (const us in tables.user) {
 		console.log(us);
 	}
 
@@ -24,8 +24,8 @@ export default new Hono().get("/", async (c) => {
 	const res = await db.insert(tables.event).values({
 		name: body.name,
 		organization: body.organization,
-		image: body.image != null && body.image != undefined && body.image != '' ? body.image : "https://assets.aws.worldathletics.org/large/610276d3511e6525b0b00ef6.jpg",
-		icon: body.icon != null && body.icon != undefined && body.icon != '' ? body.icon : "https://img.olympics.com/images/image/private/t_s_fog_logo_m/f_auto/primary/w993kgqcncimz5gw0uza",
+		image: body.image !== null && body.image !== undefined && body.image !== '' ? body.image : "https://assets.aws.worldathletics.org/large/610276d3511e6525b0b00ef6.jpg",
+		icon: body.icon !== null && body.icon !== undefined && body.icon !== '' ? body.icon : "https://img.olympics.com/images/image/private/t_s_fog_logo_m/f_auto/primary/w993kgqcncimz5gw0uza",
 		startAt: new Date(),
 		endAt: new Date(),
 		createdAt: new Date(),

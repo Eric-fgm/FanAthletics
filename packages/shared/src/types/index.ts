@@ -21,3 +21,13 @@ export interface User {
 	role: string;
 	image?: string | null;
 }
+
+export interface Discipline {
+	id: string,
+	eventId: string,
+	name: string,
+	record: string,
+	icon: string,
+	createdAt: Date,
+	updatedAt: Date
+}
