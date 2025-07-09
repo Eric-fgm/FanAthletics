@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { db, tables } from "@fan-athletics/database";
 import { domtelDisciplineRecords } from "../../constants";
-import type { Discipline } from "../../../../packages/shared/src/types";
+import type { Competition, Discipline } from "../../../../packages/shared/src/types";
 import { eq, and } from "drizzle-orm";
 
 export type DomtelNeededData = {
@@ -66,7 +66,7 @@ export default new Hono()
                         disciplineId: disciplineId,
                         seriesCount: comp.seriaMax,
                         note: comp.seria,
-                        trials: {},
+                        trials: {} as JSON,
                         startAt: new Date(fullDateTime)
                     })
                 } catch (err) {
@@ -98,7 +98,7 @@ export default new Hono()
         const eventId: string = c.req.param("eventId");
 
         const eventDisciplines: Discipline[] = await db.select().from(tables.discipline).where(eq(tables.discipline.eventId, eventId));
-        let eventCompetitions: any[] = [];
+        let eventCompetitions: Competition[] = [];
         for (const discipline of eventDisciplines) {
             const disciplineCompetitions = await db.select().from(tables.competition).where(eq(tables.competition.disciplineId, discipline.id));
             // console.log(disciplineCompetitions);
@@ -107,10 +107,17 @@ export default new Hono()
         console.log(eventCompetitions.length);
         return c.json(eventCompetitions);
     })
+    .get(":eventId/:disciplineId/competitions", async (c) => {
+        const disciplineId = c.req.param("disciplineId");
+
+        const competitions: Competition[] = await db.select().from(tables.competition).where(eq(tables.competition.disciplineId, disciplineId));
+        console.log(competitions, competitions.length);
+        return c.json(competitions);
+    })
     .delete("/:eventId/disciplines", async (c) => {
         const eventId = c.req.param("eventId");
 
-        const disciplinesIds = await db.select({id: tables.discipline.id}).from(tables.discipline).where(eq(tables.discipline.eventId, eventId));
+        const disciplinesIds: {id: string}[] = await db.select({id: tables.discipline.id}).from(tables.discipline).where(eq(tables.discipline.eventId, eventId));
         for (const discipline of disciplinesIds) {
             await db.delete(tables.competition).where(eq(tables.competition.disciplineId, discipline.id));
         }

@@ -37,6 +37,13 @@ export default new Hono().get("/", async (c) => {
 	return c.json({message: "Event successfully created!"}, 200);
 }).delete("/:id", async (c) => {
 	const id = c.req.param("id");
+	const event = await db.query.event.findFirst({
+		where: (event, {eq}) => eq(event.id, id)
+	});
+	if (event.startAt <= new Date()) {
+		console.error("The event has already started, so it cannot be deleted.");
+		return c.json({message: "Event has already started, so it cannot be deleted!"}, 400);
+	}
 
 	console.log("Deleting event with id: ", id);
 	const res = await db.delete(tables.event).where(eq(tables.event.id, id)).returning();

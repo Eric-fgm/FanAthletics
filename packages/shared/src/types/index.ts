@@ -31,3 +31,15 @@ export interface Discipline {
 	createdAt: Date,
 	updatedAt: Date
 }
+
+// Tu i w bazie będzie trzeba dodać pola: runda, awans z miejsca, awans z czasem.
+// Jeszcze typy trzeba dokładniej określić.
+export interface Competition {
+	id: string,
+	disciplineId: string,
+	seriesCount: number,
+	note?: string | null,
+	trials: JSON | unknown,
+	startAt: Date,
+	endedAt?: Date | null
+}
