@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	integer,
@@ -10,7 +10,9 @@ import {
 	varchar,
 } from "drizzle-orm/pg-core";
 
-/** */
+// ###########
+// #  AUTH   #
+// ###########
 
 export const user = pgTable("user", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),
@@ -64,6 +66,10 @@ export const verification = pgTable("verification", {
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
 
+// #############
+// #   EVENT   #
+// #############
+
 export const event = pgTable("event", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),
 	name: varchar({ length: 255 }).notNull(),
@@ -95,6 +101,7 @@ export const discipline = pgTable("discipline", {
 		.references(() => event.id)
 		.notNull(),
 	name: varchar({ length: 255 }).notNull(),
+	organization: varchar({ length: 255 }),
 	record: varchar({ length: 255 }).notNull(),
 	icon: varchar({ length: 255 }).notNull(),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
@@ -106,6 +113,7 @@ export const athlete = pgTable("athlete", {
 	eventId: text()
 		.references(() => event.id)
 		.notNull(),
+	imageUrl: varchar({ length: 255 }),
 	number: integer().notNull(),
 	firstName: varchar({ length: 255 }).notNull(),
 	lastName: varchar({ length: 255 }).notNull(),
@@ -201,3 +209,27 @@ export const league = pgTable("league", {
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
+
+export const disciplineRelations = relations(discipline, ({ one, many }) => ({
+	event: one(event),
+	athleteDisciplines: many(athleteDiscipline),
+}));
+
+export const athleteRelations = relations(athlete, ({ one, many }) => ({
+	event: one(event),
+	athleteDisciplines: many(athleteDiscipline),
+}));
+
+export const athleteDisciplineRelations = relations(
+	athleteDiscipline,
+	({ one }) => ({
+		athlete: one(athlete, {
+			fields: [athleteDiscipline.athleteId],
+			references: [athlete.id],
+		}),
+		discipline: one(discipline, {
+			fields: [athleteDiscipline.disciplineId],
+			references: [discipline.id],
+		}),
+	}),
+);

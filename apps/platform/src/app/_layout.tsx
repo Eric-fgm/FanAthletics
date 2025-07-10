@@ -5,11 +5,14 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Slot } from "expo-router";
 import { Suspense } from "react";
+import Toast from "react-native-toast-message";
 import { Typography } from "#/components";
 import { QueryProvider } from "#/lib/react-query";
 import "#/styles/global.css";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const AppLayout = () => {
 	useFonts({
@@ -20,11 +23,16 @@ const AppLayout = () => {
 	});
 
 	return (
-		<QueryProvider>
-			<Suspense fallback={<Typography>Loading...</Typography>}>
-				<Slot />
-			</Suspense>
-		</QueryProvider>
+		<GestureHandlerRootView>
+			<SafeAreaProvider>
+				<QueryProvider>
+					<Suspense fallback={<Typography>Loading...</Typography>}>
+						<Slot />
+					</Suspense>
+					<Toast position="bottom" />
+				</QueryProvider>
+			</SafeAreaProvider>
+		</GestureHandlerRootView>
 	);
 };
 

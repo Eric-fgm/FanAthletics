@@ -7,9 +7,15 @@ Run the following command:
 ```sh
 pnpm install
 ```
+
 ```sh
 pnpm prepare
 ```
+
+```sh
+pnpm build
+```
+
 ```sh
 docker compose up
 ```
@@ -32,8 +38,10 @@ This repository includes the following packages/apps:
 
 ### Apps and Packages
 
-- `api`: a [node.js](https://nodejs.org/) app built with [Hono](https://hono.dev/)
-- `platform`: a [react-native](https://reactnative.dev/) app built with [expo](https://docs.expo.dev/)
+- `api`: a [node.js](https://nodejs.org/) app built with
+  [Hono](https://hono.dev/)
+- `platform`: a [react-native](https://reactnative.dev/) app built with
+  [expo](https://docs.expo.dev/)
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 

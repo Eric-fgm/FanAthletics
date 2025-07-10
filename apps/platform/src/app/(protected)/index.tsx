@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { Button, Divider, Switch, Typography } from "#/components";
 import { useSessionSuspeneQuery } from "#/features/auth";
 import {
@@ -13,7 +13,7 @@ export default function Events() {
 	const { data: events } = useEventsQuery();
 
 	return (
-		<View className="pt-16 pb-8 items-center">
+		<ScrollView className="pt-16 pb-8 px-4 md:px-8 xl:px-24">
 			<View className="items-center">
 				<Typography size="large5">Wydarzenia</Typography>
 				<Typography type="washed" className="mt-4 text-center">
@@ -42,6 +42,6 @@ export default function Events() {
 					<EventItem key={event.id} {...event} />
 				))}
 			</View>
-		</View>
+		</ScrollView>
 	);
 }

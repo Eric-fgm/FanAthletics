@@ -15,14 +15,21 @@ type ButtonProps = {
 } & ({ onPress?: (event: GestureResponderEvent) => void } | { href: string });
 
 const variantClassNamesMap = {
-	primary: "bg-gray-900 text-white",
+	primary: "bg-gray-900",
 	outlined: "border border-gray-200",
-	white: "bg-white text-black",
-	bright: "bg-[#ededed14] text-white",
+	white: "bg-white",
+	bright: "bg-[#ededed14]",
 };
 
+const typeClassNameMap = {
+	primary: "bright",
+	outlined: "dark",
+	bright: "bright",
+	white: "dark",
+} as const;
+
 const sizeClassNamesMap = {
-	small: "px-4 h-9",
+	small: "px-4 py-2.5",
 	normal: "px-5 h-12",
 };
 
@@ -38,6 +45,7 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
 	const variantClassNames = variantClassNamesMap[variant];
 	const sizeClassNames = sizeClassNamesMap[size];
+	const typeClassNames = typeClassNameMap[variant];
 
 	const Comp = "href" in props ? Link : Pressable;
 
@@ -48,10 +56,7 @@ const Button: React.FC<ButtonProps> = ({
 			{...(props as { href: string })}
 		>
 			{IconComp && <IconComp />}
-			<Typography
-				type="inherit"
-				className={size === "small" ? "text-sm" : undefined}
-			>
+			<Typography type={typeClassNames} size={size}>
 				{text}
 			</Typography>
 			{isLoading && (

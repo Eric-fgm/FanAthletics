@@ -26,7 +26,7 @@ const Logo: React.FC<LogoProps> = ({
 		>
 			<Image
 				style={{ width: size, height: size }}
-				source={require("../../assets/fan-athletics-logo.svg")}
+				source={require("../../assets/fan-athletics-logo.png")}
 			/>
 			{namePosition && <Typography size={nameSize}>Olympics</Typography>}
 		</Comp>
