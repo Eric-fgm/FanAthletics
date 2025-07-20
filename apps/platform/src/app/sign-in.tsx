@@ -1,6 +1,14 @@
-import { Redirect } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { Image, Platform, Pressable, ScrollView, View } from "react-native";
+import { useEffect } from "react";
+import {
+	AppState,
+	Image,
+	Platform,
+	Pressable,
+	ScrollView,
+	View,
+} from "react-native";
 import { Divider, Logo, Typography } from "#/components";
 import {
 	MagicLinkForm,
@@ -9,17 +17,35 @@ import {
 	useSessionSuspeneQuery,
 	useSocialSignInMutation,
 } from "#/features/auth";
+import { showToast } from "#/lib/toast";
 
 export default function SignIn() {
-	const { data: session } = useSessionSuspeneQuery();
+	const { data: session, refetch: refetchSession } = useSessionSuspeneQuery();
 	const { mutate: socialSignIn, isPending: isSocialSigningIn } =
 		useSocialSignInMutation();
 	const { mutate: magicLickSignIn, isPending: isMagicLinkSigningIn } =
 		useMagicLinkSignInMutation();
+	const searchParams = useLocalSearchParams<{ "#"?: string }>();
+
+	if (searchParams["#"]) {
+		router.setParams({ "#": "" });
+		showToast({
+			text1: "Wystąpił Błąd",
+			text2: "Nie udało się zalogować",
+		});
+	}
+
+	useEffect(() => {
+		const subscription = AppState.addEventListener("change", (appState) => {
+			if (appState === "active") {
+				setTimeout(refetchSession, 1000);
+			}
+		});
+
+		return subscription.remove;
+	}, [refetchSession]);
 
 	const isSigningIn = isSocialSigningIn || isMagicLinkSigningIn;
-
-	console.log(session);
 
 	if (session) {
 		return <Redirect href="/" />;

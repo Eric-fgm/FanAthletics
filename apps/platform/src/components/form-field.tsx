@@ -40,6 +40,7 @@ const FormField = <T extends FieldValues>({
 				cloneElement(child as React.ReactElement<any>, {
 					ref: field.ref,
 					value: field.value,
+					onChangeValue: field.onChange,
 					onChangeText: field.onChange,
 					onBlur: field.onBlur,
 				}),

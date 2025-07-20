@@ -1,19 +1,41 @@
+import { db, operators, tables } from "@fan-athletics/database";
+import type { DisciplinePayload } from "@fan-athletics/shared/types";
 import { Hono } from "hono";
-import { db, tables } from "@fan-athletics/database";
+import { clamp } from "#/utils/math";
 
 export default new Hono()
-	.basePath("/:eventId/disciplines")
 	.get("/", async (c) => {
-		const eventId = c.req.param("eventId");
+		const { page, perPage, name, eventId, athleteId } = c.req.query();
 
-		const disciplines = await db.query.discipline.findMany({
-			where: (discipline, { eq }) => eq(discipline.eventId, eventId),
-		});
+		const limit = clamp(perPage ? Number.parseInt(perPage, 10) : 50, 5, 100);
+		const offset =
+			clamp(page ? Number.parseInt(page, 10) - 1 : 0, 0, 999) * limit;
 
-		return c.json(disciplines);
+		const filters = [];
+
+		if (name) filters.push(operators.ilike(tables.discipline.name, name));
+		if (eventId) filters.push(operators.eq(tables.discipline.eventId, eventId));
+		if (athleteId)
+			filters.push(operators.eq(tables.athleteDiscipline.athleteId, athleteId));
+
+		const result = await db
+			.selectDistinct()
+			.from(tables.discipline)
+			.innerJoin(
+				tables.athleteDiscipline,
+				operators.eq(
+					tables.athleteDiscipline.disciplineId,
+					tables.discipline.id,
+				),
+			)
+			.where(operators.or(...filters))
+			.limit(limit)
+			.offset(offset);
+
+		return c.json(result.map(({ discipline }) => discipline));
 	})
-	.get("/:id", async (c) => {
-		const id = c.req.param("id");
+	.get("/:disciplineId", async (c) => {
+		const id = c.req.param("disciplineId");
 
 		const discipline = await db.query.discipline.findFirst({
 			where: (discipline, { eq }) => eq(discipline.id, id),
@@ -22,4 +44,78 @@ export default new Hono()
 		if (!discipline) return c.notFound();
 
 		return c.json(discipline);
+	})
+	.post("/", async (c) => {
+		const payload = await c.req.json<DisciplinePayload>();
+		const nowDate = new Date();
+
+		await db.insert(tables.discipline).values({
+			...payload,
+			updatedAt: nowDate,
+			createdAt: nowDate,
+		});
+
+		return c.json({ message: "Discipline successfully created!" }, 200);
+	})
+	// .get("/competitions", async (c) => {
+	// 	const eventId: string = c.req.param("eventId");
+
+	// 	const eventDisciplines = await db
+	// 		.select()
+	// 		.from(tables.discipline)
+	// 		.where(operators.eq(tables.discipline.eventId, eventId));
+	// 	let eventCompetitions: Competition[] = [];
+	// 	for (const discipline of eventDisciplines) {
+	// 		const disciplineCompetitions = await db.query.competition.findMany({
+	// 			where: (competition, { eq }) =>
+	// 				eq(competition.disciplineId, discipline.id),
+	// 		});
+	// 		// console.log(disciplineCompetitions);
+	// 		eventCompetitions = eventCompetitions.concat(disciplineCompetitions);
+	// 	}
+	// 	console.log(eventCompetitions.length);
+	// 	return c.json(eventCompetitions);
+	// })
+	.get("/:disciplineId/competitions", async (c) => {
+		const disciplineId = c.req.param("disciplineId");
+
+		const competitions = await db
+			.select()
+			.from(tables.competition)
+			.where(operators.eq(tables.competition.disciplineId, disciplineId));
+
+		return c.json(competitions);
+	})
+	// .delete("/", async (c) => {
+	// 	const eventId = c.req.param("eventId");
+
+	// 	const disciplinesIds: { id: string }[] = await db
+	// 		.select({ id: tables.discipline.id })
+	// 		.from(tables.discipline)
+	// 		.where(operators.eq(tables.discipline.eventId, eventId));
+	// 	for (const discipline of disciplinesIds) {
+	// 		await db
+	// 			.delete(tables.competition)
+	// 			.where(operators.eq(tables.competition.disciplineId, discipline.id));
+	// 	}
+	// 	await db
+	// 		.delete(tables.discipline)
+	// 		.where(operators.eq(tables.discipline.eventId, eventId));
+	// 	console.log(
+	// 		`Disciplines successfully deleted from event witch id is ${eventId}.`,
+	// 	);
+	// 	return c.json({ message: "All events successfully deleted" }, 200);
+	// })
+	.delete("/:disciplineId", async (c) => {
+		const disciplineId = c.req.param("disciplineId");
+
+		await db
+			.delete(tables.competition)
+			.where(operators.eq(tables.competition.disciplineId, disciplineId));
+
+		await db
+			.delete(tables.discipline)
+			.where(operators.eq(tables.discipline.id, disciplineId));
+
+		return c.json({ message: "Discipline successfully deleted" }, 200);
 	});

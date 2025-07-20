@@ -1,12 +1,12 @@
 import type {
-	Event,
-	Discipline,
 	AthleteWithDisciplines,
+	Discipline,
+	Event,
+	EventPayload,
 } from "@fan-athletics/shared/types";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import type { EventBasicData } from "#/../../api/src/events/index";
-import { showToast } from "#/lib/toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
+import { showToast } from "#/lib/toast";
 
 const fetchEvents = async (): Promise<Event[]> => {
 	const response = await fetch(
@@ -18,7 +18,7 @@ const fetchEvents = async (): Promise<Event[]> => {
 	return await response.json();
 };
 
-const postEvent = async (data: EventBasicData) => {
+const createEvent = async (data: EventPayload) => {
 	const response = await fetch(
 		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events`,
 		{
@@ -48,15 +48,6 @@ const deleteEvent = async (id: string) => {
 	return await response.json();
 };
 
-const fetchEventDisciplines = async (
-	eventId: string,
-): Promise<Discipline[]> => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${eventId}/disciplines`,
-	);
-	return await response.json();
-};
-
 const fetchEventAthletes = async (
 	eventId: string,
 ): Promise<AthleteWithDisciplines[]> => {
@@ -66,14 +57,49 @@ const fetchEventAthletes = async (
 	return await response.json();
 };
 
-export const useEventDiscpilinesQuery = (eventId?: string) => {
-	const { eventId: defaultEventId } = useLocalSearchParams();
-	const currentEventId = eventId ?? defaultEventId?.toString();
+const fetchEventDisciplines = async (
+	eventId: string,
+): Promise<Discipline[]> => {
+	const response = await fetch(
+		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${eventId}/disciplines`,
+	);
+	return await response.json();
+};
 
+export const useEventsQuery = () => {
 	return useQuery({
-		queryFn: () => fetchEventDisciplines(currentEventId),
-		queryKey: ["events-disciplines::retrieve", currentEventId],
-		enabled: !!currentEventId,
+		queryFn: fetchEvents,
+		queryKey: ["events::retrieve"],
+	});
+};
+
+export const useEventCreateMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: createEvent,
+		async onSuccess() {
+			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
+			showToast({
+				text1: "Stworzono Wydarzenie",
+				text2: "Twoje dane zostały pomyślnie zapisane",
+			});
+		},
+	});
+};
+
+export const useEventDeletedMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: deleteEvent,
+		async onSuccess() {
+			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
+			showToast({
+				text1: "Usunięto Wydarzenie",
+				text2: "Dane zostały pomyślnie usunięte",
+			});
+		},
 	});
 };
 
@@ -88,39 +114,13 @@ export const useEventAthletesQuery = (eventId?: string) => {
 	});
 };
 
-export const useEventsQuery = () => {
+export const useEventDiscpilinesQuery = (eventId?: string) => {
+	const { eventId: defaultEventId } = useLocalSearchParams();
+	const currentEventId = eventId ?? defaultEventId?.toString();
+
 	return useQuery({
-		queryFn: fetchEvents,
-		queryKey: ["events::retrieve"],
-	});
-};
-
-export const useEventCreatedMutation = () => {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: (values: EventBasicData) => postEvent(values),
-		async onSuccess() {
-			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
-			showToast({
-				text1: "Event Created",
-				text2: "Your data has been saved successfully",
-			});
-		},
-	});
-};
-
-export const useEventDeletedMutation = () => {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: (id: string) => deleteEvent(id),
-		async onSuccess() {
-			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
-			showToast({
-				text1: "Event Deleted",
-				text2: "Data has been deleted successfully",
-			});
-		},
+		queryFn: () => fetchEventDisciplines(currentEventId),
+		queryKey: ["events-disciplines::retrieve", currentEventId],
+		enabled: !!currentEventId,
 	});
 };

@@ -1,5 +1,5 @@
 {
-  "id": "6aa342c9-7bbf-4043-8d58-ac220ec047f6",
+  "id": "4d125303-dae9-4cf9-ab3c-da0358923f07",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -128,6 +128,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         },
         "number": {
           "name": "number",
@@ -473,6 +479,12 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "organization": {
+          "name": "organization",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         },
         "record": {
           "name": "record",

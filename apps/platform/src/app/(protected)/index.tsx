@@ -13,13 +13,13 @@ export default function Events() {
 	const { data: events } = useEventsQuery();
 
 	return (
-		<ScrollView className="pt-16 pb-8 px-4 md:px-8 xl:px-24">
+		<ScrollView className="px-4 md:px-8 xl:px-24 pt-16 pb-8">
 			<View className="items-center">
 				<Typography size="large5">Wydarzenia</Typography>
 				<Typography type="washed" className="mt-4 text-center">
 					Bądź na bieżąco z najważniejszymi momentami.
 				</Typography>
-				<View className="mt-8 flex-row items-center gap-4">
+				<View className="flex-row items-center gap-4 mt-8">
 					<Switch
 						items={[
 							{ name: "Wszystkie", value: "all" },
@@ -37,7 +37,7 @@ export default function Events() {
 					)}
 				</View>
 			</View>
-			<View className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 w-full gap-4">
+			<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 mt-16 w-full">
 				{events?.map((event) => (
 					<EventItem key={event.id} {...event} />
 				))}

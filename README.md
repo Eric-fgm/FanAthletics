@@ -13,10 +13,6 @@ pnpm prepare
 ```
 
 ```sh
-pnpm build
-```
-
-```sh
 docker compose up
 ```
 

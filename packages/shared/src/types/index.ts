@@ -10,6 +10,14 @@ export interface Event {
 	updatedAt: string;
 }
 
+export type EventPayload = {
+	name: string;
+	organization: string;
+	image: string;
+	icon: string;
+	domtelApp?: string;
+};
+
 export interface User {
 	id: string;
 	name: string;
@@ -33,6 +41,14 @@ export interface Discipline {
 	updatedAt: string;
 }
 
+export interface DisciplinePayload {
+	eventId: string;
+	name: string;
+	organization?: string;
+	record: string;
+	icon: string;
+}
+
 export interface Athlete {
 	id: string;
 	eventId: string;
@@ -48,4 +64,14 @@ export interface Athlete {
 
 export interface AthleteWithDisciplines extends Athlete {
 	disciplines: Discipline[];
+}
+
+export interface Competition {
+	id: string;
+	disciplineId: string;
+	seriesCount: number;
+	note: string | null;
+	trials: unknown;
+	startAt: Date;
+	endedAt: Date | null;
 }

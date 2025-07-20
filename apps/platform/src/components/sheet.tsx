@@ -1,5 +1,5 @@
 import { cloneElement } from "react";
-import { View, type PressableProps } from "react-native";
+import { type PressableProps, View } from "react-native";
 import {
 	Modalize,
 	type ModalizeProps,

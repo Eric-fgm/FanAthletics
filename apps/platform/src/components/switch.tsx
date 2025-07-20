@@ -1,4 +1,4 @@
-import { View, Pressable } from "react-native";
+import { Pressable, View } from "react-native";
 import { Typography } from "#/components";
 
 interface SwitchProps {

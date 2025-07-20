@@ -1,5 +1,5 @@
-import { Link } from "expo-router";
-import { Image, View } from "react-native";
+import { Link, useRouter } from "expo-router";
+import { Image, Pressable, View } from "react-native";
 import { Typography } from "#/components";
 
 interface LogoProps {
@@ -17,12 +17,14 @@ const Logo: React.FC<LogoProps> = ({
 	namePosition,
 	nameSize = "medium",
 }) => {
-	const Comp = href ? Link : View;
+	const router = useRouter();
+
+	const Comp = href ? Pressable : View;
 
 	return (
 		<Comp
-			href={href as string}
 			className={`flex items-center gap-y-4 gap-x-2 ${namePosition === "right" && "flex-row"} ${className}`}
+			onPress={href ? () => router.dismissTo(href) : undefined}
 		>
 			<Image
 				style={{ width: size, height: size }}

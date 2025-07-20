@@ -38,7 +38,10 @@ const Dropdown: React.FC<DropdownProps> = ({
 									<button
 										type="button"
 										className={`py-1.5 px-3 text-left rounded-lg data-[focus]:bg-[#ededed14] ${className}`}
-										onClick={onPress}
+										onClick={() => {
+											onPress?.();
+											close();
+										}}
 									>
 										<Typography
 											type="bright"

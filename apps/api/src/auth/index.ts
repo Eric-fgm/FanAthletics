@@ -1,6 +1,6 @@
 import { expo } from "@better-auth/expo";
 import { db, tables } from "@fan-athletics/database";
-import emailer from "@fan-athletics/emailer";
+import * as emailer from "@fan-athletics/emailer";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
@@ -36,15 +36,6 @@ const auth = betterAuth({
 			},
 		},
 	},
-	databaseHooks: {
-		user: {
-			update: {
-				before: async (userData) => ({
-					data: { ...userData, role: "admin" },
-				}),
-			},
-		},
-	},
 	plugins: [
 		expo(),
 		magicLink({
@@ -58,6 +49,8 @@ const auth = betterAuth({
 		}),
 	],
 });
+
+export const authApi = auth.api;
 
 export default new Hono().on(["POST", "GET"], "/*", (c) =>
 	auth.handler(c.req.raw),

@@ -1,6 +1,8 @@
 import type { Event } from "@fan-athletics/shared/types";
 import { Image, View } from "react-native";
 import { Button, Typography } from "#/components";
+import { useSessionSuspeneQuery } from "#/features/auth";
+import { isAdmin } from "#/helpers/user";
 import { useEventDeletedMutation } from "../services";
 
 interface EventItemProps extends Event {}
@@ -12,6 +14,7 @@ const EventItem: React.FC<EventItemProps> = ({
 	image,
 	icon,
 }) => {
+	const { data: session } = useSessionSuspeneQuery();
 	const { mutate: deleteEvent } = useEventDeletedMutation();
 	return (
 		<View className="place-items-center grid grid-rows-1 bg-gray-100 rounded-3xl aspect-[4/3] overflow-hidden">
@@ -46,12 +49,14 @@ const EventItem: React.FC<EventItemProps> = ({
 						variant="white"
 						rounded
 					/>
-					<Button
-						text="Usuń"
-						size="small"
-						rounded
-						onPress={() => deleteEvent(id)}
-					/>
+					{isAdmin(session?.user) && (
+						<Button
+							text="Usuń"
+							size="small"
+							rounded
+							onPress={() => deleteEvent(id)}
+						/>
+					)}
 				</View>
 			</View>
 		</View>

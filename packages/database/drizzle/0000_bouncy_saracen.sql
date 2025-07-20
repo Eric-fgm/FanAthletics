@@ -17,6 +17,7 @@ CREATE TABLE "account" (
 CREATE TABLE "athlete" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"eventId" text NOT NULL,
+	"imageUrl" varchar(255),
 	"number" integer NOT NULL,
 	"firstName" varchar(255) NOT NULL,
 	"lastName" varchar(255) NOT NULL,
@@ -61,6 +62,7 @@ CREATE TABLE "discipline" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"eventId" text NOT NULL,
 	"name" varchar(255) NOT NULL,
+	"organization" varchar(255),
 	"record" varchar(255) NOT NULL,
 	"icon" varchar(255) NOT NULL,
 	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,

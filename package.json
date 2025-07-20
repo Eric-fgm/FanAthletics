@@ -10,7 +10,8 @@
 		"dev:web": "turbo run web --filter=platform",
 		"type-check": "turbo run type-check",
 		"lint": "biome lint .",
-		"format": "biome format --write ."
+		"format": "biome check --write .",
+		"clean": "turbo run clean & rm -rf node_modules"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",

@@ -1,13 +1,23 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { View } from "react-native";
-import { Button, Dialog, FormField, Input, Typography } from "#/components";
-import { useEventCreatedMutation } from "#/features/events";
+import { Text, View } from "react-native";
+import {
+	Button,
+	Checkbox,
+	Dialog,
+	FormField,
+	Input,
+	Toggle,
+	Typography,
+} from "#/components";
+import { useEventCreateMutation } from "#/features/events";
 
 interface FormValues {
 	name: string;
 	organization: string;
 	image: string;
 	icon: string;
+	domtelApp: string;
 }
 
 interface EventCreateDialogProps {
@@ -15,19 +25,29 @@ interface EventCreateDialogProps {
 }
 
 const EventCreateDialog: React.FC<EventCreateDialogProps> = ({ trigger }) => {
-	const { mutateAsync: postEvent, isPending } = useEventCreatedMutation();
-	const { control, handleSubmit } = useForm<FormValues>({
-		values: { name: "", organization: "", image: "", icon: "" },
+	const [withDomtel, setWithDomtel] = useState(false);
+
+	const { mutateAsync: createEvent } = useEventCreateMutation();
+
+	const {
+		formState: { isSubmitting },
+		control,
+		reset,
+		handleSubmit,
+	} = useForm<FormValues>({
+		values: { name: "", organization: "", image: "", icon: "", domtelApp: "" },
+		shouldUnregister: true,
 	});
 
 	return (
 		<Dialog trigger={trigger}>
 			{({ close }) => (
 				<View>
+					{/* <Checkbox value={withDomtel} className="top-[22px] left-6 z-10 absolute" onChangeValue={setWithDomtel} /> */}
 					<Typography size="large" className="py-4 text-center">
 						Stwórz wydarzenie
 					</Typography>
-					<View className="px-6 py-4">
+					<View className="gap-4 px-6 py-4">
 						<View className="gap-4 grid sm:grid-cols-2">
 							<FormField
 								name="name"
@@ -45,21 +65,46 @@ const EventCreateDialog: React.FC<EventCreateDialogProps> = ({ trigger }) => {
 							>
 								<Input placeholder="Np. European Athletics" />
 							</FormField>
-							<FormField name="image" label="Zdjecie" control={control}>
+							<FormField name="image" label="Zdjęcie" control={control}>
 								<Input placeholder="Url zdjęcia" />
 							</FormField>
 							<FormField name="icon" label="Ikonka" control={control}>
 								<Input placeholder="Url ikonki" />
 							</FormField>
 						</View>
+						<View>
+							<View className="flex-row justify-between items-center">
+								<Typography>Uzyj serwisu Domtel</Typography>
+								<Toggle value={withDomtel} onChangeValue={setWithDomtel} />
+							</View>
+							<Text className="mt-1 pr-8 text-[13px]">
+								Tylko zaproszeni członkowie oraz osoby mające określone role
+								będą mogły wyświetlać ten kanał.
+							</Text>
+						</View>
+						{withDomtel && (
+							<FormField
+								name="domtelApp"
+								label="Domtel"
+								control={control}
+								rules={{ required: "To pole jest wymagane" }}
+							>
+								<Input placeholder="Domena Domtel" />
+							</FormField>
+						)}
 					</View>
 					<View className="gap-4 grid grid-cols-2 px-5 py-6">
 						<Button text="Anuluj" variant="outlined" rounded onPress={close} />
 						<Button
 							text="Stwórz"
 							rounded
-							onPress={handleSubmit((values) => {
-								postEvent(values).then(close).catch();
+							isLoading={isSubmitting}
+							onPress={handleSubmit(async (values) => {
+								try {
+									await createEvent(values);
+									reset();
+									close();
+								} catch (error) {}
 							})}
 						/>
 					</View>

@@ -28,6 +28,7 @@ export const useCurrentUserMutation = () => {
 			values: Partial<{
 				name: string;
 				note: string;
+				role: "admin" | "user";
 			}>,
 		) => authClient.updateUser(values),
 		async onSuccess() {

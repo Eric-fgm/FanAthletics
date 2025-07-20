@@ -12,27 +12,34 @@ const Dropdown: React.FC<DropdownProps> = ({
 }) => {
 	return (
 		<Sheet trigger={trigger} adjustToContentHeight {...nativeOptions}>
-			{renderNativeHeader && (
+			{({ close }) => (
 				<>
-					{renderNativeHeader}
-					<Divider />
-				</>
-			)}
-			<View className="py-2">
-				{items.map(({ name, className = "", onPress }) => (
-					<Pressable
-						key={name}
-						className={`px-6 py-3 ${className}`}
-						onPress={onPress}
-					>
-						<Typography type="inherit">{name}</Typography>
-					</Pressable>
-				))}
-			</View>
-			{renderNativeFooter && (
-				<>
-					<Divider />
-					{renderNativeFooter}
+					{renderNativeHeader && (
+						<>
+							{renderNativeHeader}
+							<Divider />
+						</>
+					)}
+					<View className="py-2">
+						{items.map(({ name, className = "", onPress }) => (
+							<Pressable
+								key={name}
+								className={`px-6 py-3 ${className}`}
+								onPress={() => {
+									onPress?.();
+									close();
+								}}
+							>
+								<Typography type="inherit">{name}</Typography>
+							</Pressable>
+						))}
+					</View>
+					{renderNativeFooter && (
+						<>
+							<Divider />
+							{renderNativeFooter}
+						</>
+					)}
 				</>
 			)}
 		</Sheet>

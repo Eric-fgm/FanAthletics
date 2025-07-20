@@ -1,12 +1,13 @@
 import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import admin from "#/admin";
+import athletes from "#/athletes";
 import auth from "#/auth";
+import disciplines from "#/disciplines";
 import events from "#/events";
 import { cors } from "#/middlewares";
 import users from "#/users";
-import disciplines from "#/disciplines";
-import athletes from "#/athletes";
 
 const app = new Hono();
 
@@ -15,8 +16,9 @@ app
 	.use(cors)
 	.route("/v1/auth", auth)
 	.route("/v1/events", events)
-	.route("/v1/events", disciplines)
-	.route("/v1/events", athletes)
-	.route("/v1/users", users);
+	.route("v1/disciplines", disciplines)
+	.route("v1/athletes", athletes)
+	.route("/v1/users", users)
+	.route("/v1/admin", admin);
 
 serve({ fetch: app.fetch, port: Number.parseInt(process.env.PORT ?? "8000") });
