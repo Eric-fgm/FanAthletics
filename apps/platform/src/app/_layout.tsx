@@ -8,11 +8,11 @@ import {
 import { Slot } from "expo-router";
 import { Suspense } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Typography } from "#/components";
 import { QueryProvider } from "#/lib/react-query";
 import "#/styles/global.css";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const AppLayout = () => {
 	useFonts({

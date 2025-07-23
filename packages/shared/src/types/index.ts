@@ -2,6 +2,7 @@ export interface Event {
 	id: string;
 	name: string;
 	organization: string;
+	domtelApp: string | null;
 	image: string;
 	icon: string;
 	startAt: string;

@@ -3,7 +3,12 @@ import type { ModalizeProps } from "react-native-modalize";
 
 export interface DropdownProps {
 	trigger?: React.ReactNode;
-	items: { name: string; className?: string; onPress?: () => void }[];
+	items: {
+		name: string;
+		disabled?: boolean;
+		className?: string;
+		onPress?: () => void;
+	}[];
 	className?: string;
 	renderWebHeader?:
 		| React.ReactNode

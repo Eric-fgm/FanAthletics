@@ -1,16 +1,11 @@
+import { router, useLocalSearchParams } from "expo-router";
 import { ScrollView, View } from "react-native";
-import { Button, Divider, Switch, Typography } from "#/components";
-import { useSessionSuspeneQuery } from "#/features/auth";
-import {
-	EventCreateDialog,
-	EventItem,
-	useEventsQuery,
-} from "#/features/events";
-import { isAdmin } from "#/helpers/user";
+import { Switch, Typography } from "#/components";
+import { EventItem, useEventsQuery } from "#/features/events";
 
 export default function Events() {
-	const { data: session } = useSessionSuspeneQuery();
-	const { data: events } = useEventsQuery();
+	const { available = "" } = useLocalSearchParams();
+	const { data: events } = useEventsQuery({ available: available.toString() });
 
 	return (
 		<ScrollView className="px-4 md:px-8 xl:px-24 pt-16 pb-8">
@@ -22,19 +17,14 @@ export default function Events() {
 				<View className="flex-row items-center gap-4 mt-8">
 					<Switch
 						items={[
-							{ name: "Wszystkie", value: "all" },
-							{ name: "Dostępne", value: "available" },
+							{ name: "Wszystkie", value: "" },
+							{ name: "Dostępne", value: "date" },
 						]}
-						value="all"
+						value={available.toString()}
+						onChange={(value) =>
+							router.setParams({ available: value ? value : undefined })
+						}
 					/>
-					{session && isAdmin(session.user) && (
-						<>
-							<Divider orientation="vertical" className="h-8" />
-							<EventCreateDialog
-								trigger={<Button text="Dodaj" className="!h-11" rounded />}
-							/>
-						</>
-					)}
 				</View>
 			</View>
 			<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 mt-16 w-full">

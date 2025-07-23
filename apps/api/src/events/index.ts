@@ -1,21 +1,23 @@
 import { db, operators, tables } from "@fan-athletics/database";
-import type { EventPayload } from "@fan-athletics/shared/types";
 import { Hono } from "hono";
-import {
-	getAthletes,
-	getCompetitions,
-	saveAthletes,
-	saveDiscplineWithCompetition,
-} from "#/domtel";
-
-const EVENT_IMAGE_PLACEHOLDER =
-	"https://assets.aws.worldathletics.org/large/610276d3511e6525b0b00ef6.jpg";
-const EVENT_ICON_PLACEHOLDER =
-	"https://img.olympics.com/images/image/private/t_s_fog_logo_m/f_auto/primary/w993kgqcncimz5gw0uza";
 
 export default new Hono()
 	.get("/", async (c) => {
-		const events = await db.select().from(tables.event);
+		const { available } = c.req.query();
+
+		const filters = [];
+		const nowDate = new Date();
+
+		if (available === "date")
+			filters.push(
+				operators.gt(tables.event.startAt, nowDate),
+				operators.lt(tables.event.endAt, nowDate),
+			);
+
+		const events = await db
+			.select()
+			.from(tables.event)
+			.where(operators.or(...filters));
 
 		return c.json(events);
 	})
@@ -64,64 +66,4 @@ export default new Hono()
 				disciplines: athleteDisciplines.map(({ discipline }) => discipline),
 			})),
 		);
-	})
-	.post("/", async (c) => {
-		const body = await c.req.json<EventPayload>();
-
-		const [event] = await db
-			.insert(tables.event)
-			.values({
-				name: body.name,
-				organization: body.organization,
-				image: body.image ?? EVENT_IMAGE_PLACEHOLDER,
-				icon: body.icon ?? EVENT_ICON_PLACEHOLDER,
-				startAt: new Date(),
-				endAt: new Date(),
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			})
-			.returning();
-
-		if (!event) {
-			return c.json({ message: "Database error!" }, 500);
-		}
-
-		if (body.domtelApp) {
-			const competitions = await getCompetitions(body.domtelApp);
-
-			for (const competition of competitions) {
-				await saveDiscplineWithCompetition(event.id, competition);
-			}
-
-			const athletes = await getAthletes(body.domtelApp);
-			await saveAthletes(event.id, athletes);
-		}
-
-		return c.json({ message: "Event successfully created!" }, 201);
-	})
-	.delete("/:eventId", async (c) => {
-		const eventId = c.req.param("eventId");
-
-		const foundEvent = await db.query.event.findFirst({
-			where: (event, { eq }) => eq(event.id, eventId),
-		});
-
-		if (!foundEvent) {
-			return c.notFound();
-		}
-		if (foundEvent.startAt <= new Date()) {
-			return c.json(
-				{ message: "Event has already started, so it cannot be deleted!" },
-				400,
-			);
-		}
-
-		return c.json({ message: "Event successfully created!" }, 200);
-	})
-	.delete("/:eventId", async (c) => {
-		const eventId = c.req.param("eventId");
-
-		await db.delete(tables.event).where(operators.eq(tables.event.id, eventId));
-
-		return c.json({ message: "Event successfully deleted" }, 200);
 	});

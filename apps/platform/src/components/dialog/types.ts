@@ -6,6 +6,7 @@ export interface DialogProps {
 		| ((actions: { open: () => void; close: () => void }) => React.ReactNode)
 		| React.ReactNode;
 	trigger?: React.ReactNode;
+	isOpen?: boolean;
 	onOpen?: () => void;
 	onClose?: () => void;
 	webOptions?: HeadlessDialogProps;

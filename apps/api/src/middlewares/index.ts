@@ -9,11 +9,10 @@ export const cors = honoCors({
 });
 
 export const requireUser =
-	(role = "user") =>
-	async (c: Context, next: Next) => {
+	(role?: "user" | "admin") => async (c: Context, next: Next) => {
 		const session = await authApi.getSession({ headers: c.req.raw.headers });
 
-		if (!session || session.user.role !== role) {
+		if (!session || (role && session.user.role !== role)) {
 			return c.json({ message: "Unauthorized" }, 401);
 		}
 
@@ -21,11 +20,3 @@ export const requireUser =
 		c.set("session", session.session);
 		return next();
 	};
-
-export const requireDev = async (c: Context, next: Next) => {
-	if (process.env.NODE_ENV !== "production") {
-		return c.json({ message: "Forbidden" }, 403);
-	}
-
-	return next();
-};

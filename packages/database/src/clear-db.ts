@@ -1,18 +1,30 @@
 import { db, tables } from "./index.js";
 
 const clearDatabase = async () => {
-	await Promise.all(
-		[
-			...Object.keys(tables),
-			"athlete_meta",
-			"team_member",
-			"athlete_discipline",
-		].map(async (table) =>
-			db.execute(
-				`DROP TABLE IF EXISTS "public.${table}" CASCADE; DROP TABLE IF EXISTS "${table}" CASCADE`,
-			),
-		),
-	);
+	console.log("[INFO] Starting...");
+
+	for (const table of [
+		...Object.keys(tables),
+		"athlete_meta",
+		"team_member",
+		"athlete_discipline",
+	]) {
+		const dropQueries = [
+			`DROP TABLE IF EXISTS "public.${table}" CASCADE`,
+			`DROP TABLE IF EXISTS "${table}" CASCADE`,
+		];
+
+		for (const query of dropQueries) {
+			try {
+				await db.execute(query);
+			} catch (err) {
+				console.error(`Failed to drop table "${table}":`, err);
+			}
+		}
+		console.log(`[INFO] Drop ${table}`);
+	}
+
+	console.log("[INFO] Finished");
 };
 
 clearDatabase();

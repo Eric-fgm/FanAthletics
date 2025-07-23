@@ -1,12 +1,7 @@
 import { useRouter } from "expo-router";
 import { Platform, View } from "react-native";
 import { Button, Dropdown, Typography } from "#/components";
-import {
-	useCurrentUserMutation,
-	useSessionSuspeneQuery,
-	useSignOutMutation,
-} from "#/features/auth";
-import { isAdmin } from "#/helpers/user";
+import { useSessionSuspeneQuery, useSignOutMutation } from "#/features/auth";
 
 interface ProfileDropdownProps {
 	trigger: React.ReactNode;
@@ -15,14 +10,8 @@ interface ProfileDropdownProps {
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 	const { data: session } = useSessionSuspeneQuery();
 	const { mutate: signOut } = useSignOutMutation();
-	const { mutate: updateUser } = useCurrentUserMutation();
 	const router = useRouter();
 
-	const developmentItems = [
-		isAdmin(session?.user)
-			? { name: "Ustaw Usera", onPress: () => updateUser({ role: "user" }) }
-			: { name: "Ustaw Admina", onPress: () => updateUser({ role: "admin" }) },
-	];
 	const mobileItems =
 		Platform.OS !== "web"
 			? [
@@ -38,7 +27,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 			<Dropdown
 				trigger={trigger}
 				items={[
-					...developmentItems,
 					...mobileItems,
 					{ name: "Ustawienia" },
 					{

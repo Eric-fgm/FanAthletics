@@ -74,6 +74,7 @@ export const event = pgTable("event", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),
 	name: varchar({ length: 255 }).notNull(),
 	organization: varchar({ length: 255 }).notNull(),
+	domtelApp: varchar({ length: 255 }),
 	image: varchar({ length: 255 }).notNull(),
 	icon: varchar({ length: 255 }).notNull(),
 	startAt: timestamp({ withTimezone: true }).notNull(),
@@ -171,7 +172,8 @@ export const competition = pgTable("competition", {
 	disciplineId: text()
 		.references(() => discipline.id)
 		.notNull(),
-	seriesCount: integer().default(1).notNull(),
+	series: integer().default(1).notNull(),
+	round: integer().default(1).notNull(),
 	note: varchar({ length: 255 }),
 	trials: json().notNull(),
 	startAt: timestamp({ withTimezone: true }).notNull(),
@@ -187,7 +189,6 @@ export const competitor = pgTable(
 		athleteId: text()
 			.references(() => athlete.id)
 			.notNull(),
-		series: integer().default(1).notNull(),
 		place: integer().notNull(),
 		results: json().notNull(),
 	},

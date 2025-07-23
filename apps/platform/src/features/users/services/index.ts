@@ -4,6 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 const fetchUser = async (id: string): Promise<User> => {
 	const response = await fetch(
 		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/users/${id}`,
+		{
+			method: "GET",
+			credentials: "include",
+		},
 	);
 	return await response.json();
 };

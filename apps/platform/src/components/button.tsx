@@ -9,7 +9,7 @@ type ButtonProps = {
 	size?: keyof typeof sizeClassNamesMap;
 	rounded?: boolean;
 	isLoading?: boolean;
-	text: string;
+	text?: string;
 	icon?: LucideIcon;
 	className?: string;
 } & ({ onPress?: (event: GestureResponderEvent) => void } | { href: string });
@@ -55,10 +55,12 @@ const Button: React.FC<ButtonProps> = ({
 			disabled={isLoading}
 			{...(props as { href: string })}
 		>
-			{IconComp && <IconComp />}
-			<Typography type={typeClassNames} size={size}>
-				{text}
-			</Typography>
+			{IconComp && <IconComp className="text-white" />}
+			{text && (
+				<Typography type={typeClassNames} size={size}>
+					{text}
+				</Typography>
+			)}
 			{isLoading && (
 				<View
 					className={`absolute top-0 left-0 w-full h-full flex items-center justify-center ${variantClassNames}`}
