@@ -1,28 +1,17 @@
-import { useForm } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { View } from "react-native";
 import { Button, FormField, Input, Typography } from "#/components";
-import { useCurrentUserMutation } from "#/features/auth";
+import type { OnboardingValuesForm } from "./forms-provider";
 
 interface PersonalInfoFormProps {
-	name?: string;
 	onPressNext: () => void;
 }
 
-const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
-	name = "",
-	onPressNext,
-}) => {
-	const { control, handleSubmit } = useForm<{
-		name: string;
-		note: string;
-	}>({
-		values: { name, note: "" },
-	});
-	const { mutateAsync: updateCurrentUser, isPending } =
-		useCurrentUserMutation();
+const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ onPressNext }) => {
+	const { control } = useFormContext<OnboardingValuesForm>();
 
 	return (
-		<View className="pt-24 mx-auto w-full max-w-sm">
+		<View className="mx-auto pt-24 w-full max-w-sm">
 			<Typography size="large2" className="text-center">
 				Witaj na Olympics!
 			</Typography>
@@ -44,15 +33,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
 				>
 					<Input placeholder="Skąd się o nas dowiedziałeś?" />
 				</FormField>
-				<Button
-					text="Kontynuuj"
-					isLoading={isPending}
-					onPress={handleSubmit((values) =>
-						updateCurrentUser(values)
-							.then(() => onPressNext())
-							.catch(),
-					)}
-				/>
+				<Button text="Kontynuuj" onPress={onPressNext} />
 				<Typography size="small" type="washed" className="text-center">
 					Warunki świadczenia usług i Politykę prywatności.
 				</Typography>

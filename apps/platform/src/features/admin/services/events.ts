@@ -1,61 +1,17 @@
 import type { EventPayload } from "@fan-athletics/shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import fetcher from "#/helpers/fetcher";
 import { showToast } from "#/lib/toast";
-
-const createEvent = async (data: EventPayload) => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/admin/events`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(data),
-			credentials: "include",
-		},
-	);
-	if (!response.ok) {
-		throw new Error("Błąd podczas tworzenia wydarzenia");
-	}
-	return await response.json();
-};
-
-const pullEvent = async (eventId: string) => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/admin/events/${eventId}/pull`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include",
-		},
-	);
-	if (!response.ok) {
-		throw new Error("Błąd podczas zaciągania wydarzenia");
-	}
-	return await response.json();
-};
-
-const deleteEvent = async (id: string) => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/admin/events/${id}`,
-		{
-			method: "DELETE",
-			credentials: "include",
-		},
-	);
-	if (!response.ok) {
-		throw new Error("Błąd podczas usuwania wydarzenia");
-	}
-	return await response.json();
-};
 
 export const useEventCreateMutation = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: createEvent,
+		mutationFn: (data: EventPayload) =>
+			fetcher(`${process.env.EXPO_PUBLIC_API_URL}/api/v1/admin/events`, {
+				method: "POST",
+				body: data,
+			}),
 		async onSuccess() {
 			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
 			showToast({
@@ -67,9 +23,28 @@ export const useEventCreateMutation = () => {
 };
 
 export const useEventPullMutation = () => {
+	const queryClient = useQueryClient();
+
 	return useMutation({
-		mutationFn: pullEvent,
-		async onSuccess() {
+		mutationFn: (eventId: string) =>
+			fetcher(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/admin/events/${eventId}/pull`,
+				{
+					method: "POST",
+				},
+			),
+		async onSuccess(_, eventId) {
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: ["events-disciplines::retrieve", eventId],
+				}),
+				queryClient.invalidateQueries({
+					queryKey: ["events-athletes::retrieve", eventId],
+				}),
+				queryClient.invalidateQueries({
+					queryKey: ["events-competitions::retrieve", eventId],
+				}),
+			]);
 			showToast({
 				text1: "Zaciągnięto Zmiany",
 				text2: "Dane zostały pomyślnie pobrane",
@@ -82,7 +57,10 @@ export const useEventDeletedMutation = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: deleteEvent,
+		mutationFn: (id: string) =>
+			fetcher(`${process.env.EXPO_PUBLIC_API_URL}/api/v1/admin/events/${id}`, {
+				method: "DELETE",
+			}),
 		async onSuccess() {
 			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
 			showToast({

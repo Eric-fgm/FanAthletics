@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import admin from "#/admin";
 import athletes from "#/athletes";
 import auth from "#/auth";
+import competitions from "#/competitions";
 import disciplines from "#/disciplines";
 import events from "#/events";
 import { cors, requireUser } from "#/middlewares";
@@ -18,6 +19,7 @@ app
 	.route("/v1/admin", admin)
 	.use(requireUser())
 	.route("/v1/events", events)
+	.route("v1/competitions", competitions)
 	.route("v1/disciplines", disciplines)
 	.route("v1/athletes", athletes)
 	.route("/v1/users", users);

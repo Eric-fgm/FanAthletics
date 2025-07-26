@@ -70,9 +70,20 @@ export interface AthleteWithDisciplines extends Athlete {
 export interface Competition {
 	id: string;
 	disciplineId: string;
+	discipline: Discipline;
 	seriesCount: number;
 	note: string | null;
 	trials: unknown;
 	startAt: Date;
 	endedAt: Date | null;
+}
+
+export interface Competitor extends Athlete {
+	place: number;
+	results: unknown;
+	number: number;
+}
+
+export interface CompetitionWithCompetitors extends Competition {
+	competitors: Competitor[];
 }

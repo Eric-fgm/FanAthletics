@@ -9,6 +9,8 @@
 		"dev:api": "turbo run dev --filter=api",
 		"dev:web": "turbo run web --filter=platform",
 		"dev:ios": "turbo run ios --filter=platform",
+		"start": "turbo run start",
+		"start:api": "turbo run start --filter=api",
 		"type-check": "turbo run type-check",
 		"lint": "biome lint .",
 		"format": "biome check --write .",

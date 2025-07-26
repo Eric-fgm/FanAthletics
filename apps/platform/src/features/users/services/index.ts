@@ -1,17 +1,11 @@
 import type { User } from "@fan-athletics/shared/types";
 import { useQuery } from "@tanstack/react-query";
-
-const fetchUser = async (id: string): Promise<User> => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/users/${id}`,
-		{
-			method: "GET",
-			credentials: "include",
-		},
-	);
-	return await response.json();
-};
+import fetcher from "#/helpers/fetcher";
 
 export const useUserQuery = (id: string) => {
-	return useQuery({ queryFn: () => fetchUser(id), queryKey: [`users::${id}`] });
+	return useQuery({
+		queryFn: () =>
+			fetcher<User>(`${process.env.EXPO_PUBLIC_API_URL}/api/v1/users/${id}`),
+		queryKey: [`users::${id}`],
+	});
 };

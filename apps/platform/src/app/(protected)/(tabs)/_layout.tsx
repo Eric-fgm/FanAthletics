@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
-import { EventHeader } from "#/features/navigation";
+import { EventNavigation } from "#/features/layout";
 
 const TabsLayout = () => {
 	const isWeb = Platform.OS === "web";
@@ -8,7 +8,7 @@ const TabsLayout = () => {
 	return (
 		<Tabs
 			screenOptions={{
-				header: () => <EventHeader />,
+				header: () => <EventNavigation />,
 				headerShown: isWeb,
 				tabBarStyle: { display: isWeb ? "none" : "flex" },
 				sceneStyle: { backgroundColor: "#ffffff" },
@@ -21,19 +21,19 @@ const TabsLayout = () => {
 				}}
 			/>
 			<Tabs.Screen
-				name="events/[eventId]/leaderboard/index.tsx"
+				name="events/[eventId]/leaderboard/index"
 				options={{
 					title: "Tabela wyników",
 				}}
 			/>
 			<Tabs.Screen
-				name="events/[eventId]/disciplines/index.tsx"
+				name="events/[eventId]/disciplines/index"
 				options={{
 					title: "Dyscypliny",
 				}}
 			/>
 			<Tabs.Screen
-				name="events/[eventId]/athletes/index.tsx"
+				name="events/[eventId]/athletes/index"
 				options={{
 					title: "Zawodnicy",
 				}}

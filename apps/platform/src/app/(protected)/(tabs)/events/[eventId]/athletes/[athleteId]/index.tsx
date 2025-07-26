@@ -1,7 +1,8 @@
 import { CircleUser } from "lucide-react-native";
-import { Image, ScrollView, View } from "react-native";
-import { Tabs, Typography } from "#/components";
+import { Image, View } from "react-native";
+import { Tabs } from "#/components";
 import { DisciplineList, useAthleteQuery } from "#/features/events";
+import { Header, ScrollArea } from "#/features/layout";
 
 export default function EventSingleAthlete() {
 	const { data: athlete } = useAthleteQuery();
@@ -9,41 +10,25 @@ export default function EventSingleAthlete() {
 	if (!athlete) return null;
 
 	return (
-		<ScrollView className="px-4 md:px-8 xl:px-24 py-8">
-			<View className="gap-y-6">
-				<View className="justify-center items-center bg-gray-100 rounded-full w-16 h-16">
-					{athlete.imageUrl ? (
+		<ScrollArea>
+			<Header
+				icon={
+					athlete.imageUrl ? (
 						<Image source={{ uri: athlete.imageUrl }} />
 					) : (
-						<CircleUser size={24} className="text-gray-500" />
-					)}
-				</View>
-				<Typography size="large4.5">
-					{athlete.firstName} {athlete.lastName}
-				</Typography>
-				<View className="flex-row gap-8">
-					{(
-						[
-							{ key: "coach", name: "Stowarzyszenie" },
-							{ key: "disciplines", name: "Dyscypliny" },
-							{ key: "cost", name: "Koszt" },
-						] as const
-					).map(({ key, name }) => (
-						<View key={key} className="gap-y-1">
-							<Typography size="small" type="washed">
-								{name}
-							</Typography>
-							<Typography>
-								{athlete[key]
-									? Array.isArray(athlete[key])
-										? athlete[key].map(({ name }) => name).join(", ")
-										: `${athlete[key]} XP`
-									: "Brak informacji"}
-							</Typography>
-						</View>
-					))}
-				</View>
-			</View>
+						CircleUser
+					)
+				}
+				title={`${athlete.firstName} ${athlete.lastName}`}
+				info={[
+					{ name: "Klub", value: athlete.coach },
+					{
+						name: "Dyscypliny",
+						value: athlete.disciplines.map(({ name }) => name).join(", "),
+					},
+					{ name: "Koszt", value: `${athlete.cost} XP` },
+				]}
+			/>
 			<View className="gap-y-4">
 				<Tabs
 					items={[
@@ -55,6 +40,6 @@ export default function EventSingleAthlete() {
 				/>
 				<DisciplineList disciplines={athlete.disciplines} />
 			</View>
-		</ScrollView>
+		</ScrollArea>
 	);
 }

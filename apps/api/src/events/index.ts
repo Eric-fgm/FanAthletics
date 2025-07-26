@@ -17,7 +17,7 @@ export default new Hono()
 		const events = await db
 			.select()
 			.from(tables.event)
-			.where(operators.or(...filters));
+			.where(operators.and(...filters));
 
 		return c.json(events);
 	})
@@ -34,6 +34,41 @@ export default new Hono()
 		}
 
 		return c.json(foundEvent);
+	})
+	.get("/:eventId/competitions", async (c) => {
+		const eventId = c.req.param("eventId");
+
+		const competitions = await db
+			.select()
+			.from(tables.competition)
+			.innerJoin(
+				tables.discipline,
+				operators.eq(tables.discipline.id, tables.competition.disciplineId),
+			)
+			.where(operators.eq(tables.discipline.eventId, eventId))
+			.limit(10);
+
+		const competitionsWithCompetitors = await Promise.all(
+			competitions.map(async ({ competition, discipline }) => ({
+				...competition,
+				discipline,
+				competitors: (
+					await db.query.competitor.findMany({
+						with: {
+							athlete: true,
+						},
+						where: (competitor, { eq }) =>
+							eq(competitor.competitionId, competition.id),
+					})
+				).map(({ athlete, place, results }) => ({
+					...athlete,
+					place,
+					results,
+				})),
+			})),
+		);
+
+		return c.json(competitionsWithCompetitors);
 	})
 	.get("/:eventId/disciplines", async (c) => {
 		const eventId = c.req.param("eventId");

@@ -1,4 +1,5 @@
-import { cloneElement } from "react";
+import type React from "react";
+import { cloneElement, forwardRef, useImperativeHandle, useRef } from "react";
 import { type PressableProps, View } from "react-native";
 import {
 	Modalize,
@@ -14,31 +15,42 @@ interface SheetProps extends Omit<ModalizeProps, "children"> {
 		| React.ReactNode;
 }
 
-const Sheet: React.FC<SheetProps> = ({ children, trigger, ...props }) => {
-	const { ref, open, close } = useModalize();
-	const insets = useSafeAreaInsets();
+const Sheet = forwardRef<Modalize, SheetProps>(
+	({ children, trigger, ...props }, ref) => {
+		const { ref: modalizeRef, open, close } = useModalize();
+		const insets = useSafeAreaInsets();
 
-	return (
-		<>
-			{trigger &&
-				cloneElement(trigger as React.ReactElement<PressableProps>, {
-					onPress: () => open(),
-				})}
-			<Modalize
-				ref={ref}
-				withReactModal
-				modalTopOffset={insets.top}
-				handlePosition="inside"
-				{...props}
-			>
-				<View style={{ paddingBottom: insets.bottom }}>
-					{typeof children === "function"
-						? children({ open, close })
-						: children}
-				</View>
-			</Modalize>
-		</>
-	);
-};
+		useImperativeHandle(
+			ref,
+			() => ({
+				open: () => open(),
+				close: () => close(),
+			}),
+			[open, close],
+		);
+
+		return (
+			<>
+				{trigger &&
+					cloneElement(trigger as React.ReactElement<PressableProps>, {
+						onPress: () => open(),
+					})}
+				<Modalize
+					ref={modalizeRef}
+					withReactModal
+					modalTopOffset={insets.top}
+					handlePosition="inside"
+					{...props}
+				>
+					<View style={{ paddingBottom: insets.bottom }}>
+						{typeof children === "function"
+							? children({ open, close })
+							: children}
+					</View>
+				</Modalize>
+			</>
+		);
+	},
+);
 
 export default Sheet;

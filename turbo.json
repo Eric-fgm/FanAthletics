@@ -13,6 +13,7 @@
 			"persistent": true,
 			"dependsOn": ["^build"]
 		},
+		"start": {},
 		"web": {
 			"dependsOn": ["^web"]
 		},

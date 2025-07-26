@@ -21,13 +21,15 @@ const Dropdown: React.FC<DropdownProps> = ({
 						</>
 					)}
 					<View className="py-2">
-						{items.map(({ name, className = "", onPress }) => (
+						{items.map(({ name, disabled, className = "", onPress }) => (
 							<Pressable
 								key={name}
-								className={`px-6 py-3 ${className}`}
+								className={`px-6 py-3 ${className} ${disabled ? "opacity-40 pointer-events-none" : ""}`}
 								onPress={() => {
-									onPress?.();
 									close();
+									setTimeout(() => {
+										onPress?.();
+									}, 280);
 								}}
 							>
 								<Typography type="inherit">{name}</Typography>
