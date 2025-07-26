@@ -65,7 +65,7 @@ const Button: React.FC<ButtonProps> = ({
 				<View
 					className={`absolute top-0 left-0 w-full h-full flex items-center justify-center ${variantClassNames}`}
 				>
-					<Typography type="inherit">...</Typography>
+					<Typography type={typeClassNames}>...</Typography>
 				</View>
 			)}
 		</Comp>

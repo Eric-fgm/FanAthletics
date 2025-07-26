@@ -27,7 +27,7 @@ export default new Hono()
 					tables.discipline.id,
 				),
 			)
-			.where(operators.or(...filters))
+			.where(operators.and(...filters))
 			.limit(limit)
 			.offset(offset);
 

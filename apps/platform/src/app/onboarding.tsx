@@ -1,8 +1,13 @@
-import { Redirect, router } from "expo-router";
+import { Redirect } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { useSessionSuspeneQuery } from "#/features/auth";
-import { Header, IterestsForm, PersonalInfoForm } from "#/features/onboarding";
+import {
+	FormsProvider,
+	Header,
+	IterestsForm,
+	PersonalInfoForm,
+} from "#/features/onboarding";
 import { shouldBeOnboarded } from "#/helpers/user";
 
 export default function Onboarding() {
@@ -20,15 +25,16 @@ export default function Onboarding() {
 	return (
 		<View className="px-4 md:px-8 xl:px-24">
 			<Header steps={(currentStep - 1) / 2} />
-			{currentStep === 1 && (
-				<PersonalInfoForm
-					name={session.user.name}
-					onPressNext={() => setCurrentStep(2)}
-				/>
-			)}
-			{currentStep === 2 && (
-				<IterestsForm onPressNext={() => router.replace("/")} />
-			)}
+			<FormsProvider defaultValues={{ name: session.user.name }}>
+				{({ submit }) => (
+					<>
+						{currentStep === 1 && (
+							<PersonalInfoForm onPressNext={() => setCurrentStep(2)} />
+						)}
+						{currentStep === 2 && <IterestsForm onPressNext={submit} />}
+					</>
+				)}
+			</FormsProvider>
 		</View>
 	);
 }

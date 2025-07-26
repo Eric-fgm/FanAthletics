@@ -1,15 +1,20 @@
 import { ScrollView, View } from "react-native";
 import { Tabs, Typography } from "#/components";
 import {
-	AthleteList,
+	CompetitionList,
 	getDisciplineIcon,
 	useAthletesQuery,
+	useCompetitionsQuery,
 	useDisciplineQuery,
 } from "#/features/events";
+import { Header, ScrollArea } from "#/features/layout";
 
 export default function EventSingleDiscipline() {
 	const { data: discipline } = useDisciplineQuery();
 	const { data: athletes = [] } = useAthletesQuery(
+		discipline ? { disciplineId: discipline.id } : undefined,
+	);
+	const { data: competitions = [] } = useCompetitionsQuery(
 		discipline ? { disciplineId: discipline.id } : undefined,
 	);
 
@@ -18,28 +23,15 @@ export default function EventSingleDiscipline() {
 	const Icon = getDisciplineIcon(discipline.icon);
 
 	return (
-		<ScrollView className="px-4 md:px-8 xl:px-24 py-8">
-			<View className="gap-y-6">
-				<View className="justify-center items-center bg-gray-100 rounded-full w-16 h-16">
-					<Icon size={24} className="text-gray-500" />
-				</View>
-				<Typography size="large4.5">{discipline.name}</Typography>
-				<View className="flex-row gap-8">
-					{(
-						[
-							{ key: "organization", name: "Stowarzyszenie" },
-							{ key: "record", name: "Rekord" },
-						] as const
-					).map(({ key, name }) => (
-						<View key={key} className="gap-y-1">
-							<Typography size="small" type="washed">
-								{name}
-							</Typography>
-							<Typography>{discipline[key] ?? "Brak informacji"}</Typography>
-						</View>
-					))}
-				</View>
-			</View>
+		<ScrollArea>
+			<Header
+				icon={Icon}
+				title={discipline.name}
+				info={[
+					{ name: "Stowarzyszenie", value: discipline.organization },
+					{ name: "Rekord", value: discipline.record },
+				]}
+			/>
 			<View className="gap-y-4">
 				<Tabs
 					items={[
@@ -48,8 +40,9 @@ export default function EventSingleDiscipline() {
 					]}
 					className="mt-10"
 				/>
-				<AthleteList athletes={athletes} />
+				{/* <AthleteList athletes={athletes} /> */}
+				<CompetitionList competitions={competitions} />
 			</View>
-		</ScrollView>
+		</ScrollArea>
 	);
 }

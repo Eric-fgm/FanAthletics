@@ -2,7 +2,7 @@ import { Redirect, Stack } from "expo-router";
 import { View } from "react-native";
 import { AdminTools, DevTools } from "#/features/admin";
 import { useSessionSuspeneQuery } from "#/features/auth/services";
-import { GlobalHeader } from "#/features/navigation";
+import { GlobalHeader } from "#/features/layout";
 import { isAdmin, shouldBeOnboarded } from "#/helpers/user";
 
 const ProtectedLayout = () => {
@@ -29,7 +29,7 @@ const ProtectedLayout = () => {
 			>
 				<Stack.Screen name="index" />
 			</Stack>
-			<View className="right-8 bottom-8 fixed flex-row gap-4">
+			<View className="right-8 bottom-8 absolute flex-row gap-4">
 				{__DEV__ && <DevTools />}
 				{isAdmin(session.user) && <AdminTools />}
 			</View>

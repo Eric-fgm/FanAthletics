@@ -1,79 +1,62 @@
-import type { Athlete, Discipline, Event } from "@fan-athletics/shared/types";
+import type {
+	Athlete,
+	CompetitionWithCompetitors,
+	Discipline,
+	Event,
+} from "@fan-athletics/shared/types";
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
-
-const fetchEvents = async (
-	query?: Record<string, string>,
-): Promise<Event[]> => {
-	const params = new URLSearchParams(query);
-
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events?${params.toString()}`,
-		{
-			method: "GET",
-			credentials: "include",
-		},
-	);
-	if (!response.ok) {
-		throw new Error("Error while fetching events");
-	}
-	return await response.json();
-};
-
-const fetchEventAthletes = async (eventId: string): Promise<Athlete[]> => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${eventId}/athletes`,
-		{
-			method: "GET",
-			credentials: "include",
-		},
-	);
-	if (!response.ok) {
-		throw new Error("Error while fetching event athletes");
-	}
-	return await response.json();
-};
-
-const fetchEventDisciplines = async (
-	eventId: string,
-): Promise<Discipline[]> => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${eventId}/disciplines`,
-		{
-			method: "GET",
-			credentials: "include",
-		},
-	);
-	if (!response.ok) {
-		throw new Error("Error while fetching event disciplines");
-	}
-	return await response.json();
-};
+import { useGlobalSearchParams } from "expo-router";
+import fetcher from "#/helpers/fetcher";
 
 export const useEventsQuery = (query?: Record<string, string>) => {
+	const params = new URLSearchParams(query).toString();
+
 	return useQuery({
-		queryFn: () => fetchEvents(query),
-		queryKey: ["events::retrieve", query],
+		queryFn: () =>
+			fetcher<Event[]>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events?${params}`,
+			),
+		queryKey: ["events::retrieve", params],
+	});
+};
+
+export const useEventCompetitionsQuery = (eventId?: string) => {
+	const { eventId: defaultEventId } = useGlobalSearchParams();
+	const currentEventId = eventId ?? defaultEventId?.toString();
+
+	return useQuery({
+		queryFn: () =>
+			fetcher<CompetitionWithCompetitors[]>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${currentEventId}/competitions`,
+			),
+		queryKey: ["events-competitions::retrieve", currentEventId],
+		enabled: !!currentEventId,
 	});
 };
 
 export const useEventAthletesQuery = (eventId?: string) => {
-	const { eventId: defaultEventId } = useLocalSearchParams();
+	const { eventId: defaultEventId } = useGlobalSearchParams();
 	const currentEventId = eventId ?? defaultEventId?.toString();
 
 	return useQuery({
-		queryFn: () => fetchEventAthletes(currentEventId),
+		queryFn: () =>
+			fetcher<Athlete[]>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${currentEventId}/athletes`,
+			),
 		queryKey: ["events-athletes::retrieve", currentEventId],
 		enabled: !!currentEventId,
 	});
 };
 
 export const useEventDiscpilinesQuery = (eventId?: string) => {
-	const { eventId: defaultEventId } = useLocalSearchParams();
+	const { eventId: defaultEventId } = useGlobalSearchParams();
 	const currentEventId = eventId ?? defaultEventId?.toString();
 
 	return useQuery({
-		queryFn: () => fetchEventDisciplines(currentEventId),
+		queryFn: () =>
+			fetcher<Discipline[]>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${currentEventId}/disciplines`,
+			),
 		queryKey: ["events-disciplines::retrieve", currentEventId],
 		enabled: !!currentEventId,
 	});

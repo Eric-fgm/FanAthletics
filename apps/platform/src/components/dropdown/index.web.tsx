@@ -22,7 +22,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 					<HeadlessMenuButton>{trigger}</HeadlessMenuButton>
 					<HeadlessMenuItems
 						anchor="bottom end"
-						className={`flex flex-col bg-[#414141] data-closed:opacity-0 data-[anchor="top_end"]:-mt-4 data-[anchor="bottom_end"]:mt-4 border border-white/5 rounded-2xl focus:outline-none w-56 data-closed:scale-95 origin-top-right transition duration-100 ease-out ${className}`}
+						className={`flex flex-col bg-[#414141] data-closed:opacity-0 border border-white/5 rounded-2xl focus:outline-none w-56 data-closed:scale-95 origin-top-right transition duration-100 ease-out ${className}`}
 					>
 						{renderWebHeader && (
 							<>

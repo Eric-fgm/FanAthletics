@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Avatar, Logo } from "#/components";
 import { useSessionSuspeneQuery } from "#/features/auth";
-import ProfileDropdown from "#/features/navigation/components/profile-dropdown";
+import ProfileDropdown from "#/features/layout/components/profile-dropdown";
 
 const GlobalHeader: React.FC = () => {
 	const insest = useSafeAreaInsets();

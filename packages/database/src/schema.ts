@@ -234,3 +234,14 @@ export const athleteDisciplineRelations = relations(
 		}),
 	}),
 );
+
+export const competitorRelations = relations(competitor, ({ one }) => ({
+	athlete: one(athlete, {
+		fields: [competitor.athleteId],
+		references: [athlete.id],
+	}),
+	competition: one(competition, {
+		fields: [competitor.competitionId],
+		references: [competition.id],
+	}),
+}));

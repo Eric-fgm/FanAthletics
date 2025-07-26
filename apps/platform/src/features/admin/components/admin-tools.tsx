@@ -1,13 +1,14 @@
-import { useLocalSearchParams } from "expo-router";
+import { useGlobalSearchParams } from "expo-router";
 import { Settings } from "lucide-react-native";
 import React, { useState } from "react";
 import { Button, Dropdown } from "#/components";
 import { EventCreateDialog, useEventPullMutation } from "#/features/admin";
 
 const AdminTools = () => {
-	const { eventId } = useLocalSearchParams();
+	const { eventId } = useGlobalSearchParams();
+
 	const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
-	const { mutate: pullEvent } = useEventPullMutation();
+	const { mutate: pullEvent, isPending } = useEventPullMutation();
 
 	return (
 		<>
@@ -21,8 +22,8 @@ const AdminTools = () => {
 						},
 					},
 					{
-						name: "Pobierz danę",
-						disabled: typeof eventId !== "string",
+						name: isPending ? "Trwa pobieranie..." : "Pobierz dane",
+						disabled: typeof eventId !== "string" || isPending,
 						onPress: () => {
 							pullEvent(eventId.toString());
 						},

@@ -22,10 +22,23 @@ To start API server:
 pnpm dev:api
 ```
 
-To strat Web App:
+To start Web App:
 
 ```sh
 pnpm dev:web
+```
+
+To start iOS App:
+
+```sh
+pnpm dev:ios
+```
+
+To reset Database:
+
+```sh
+cd packages/database
+pnpm db:reset
 ```
 
 ## What's inside?
