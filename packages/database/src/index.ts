@@ -8,7 +8,7 @@ export const operators = { eq, gt, lt, ilike, like, inArray, and, or };
 export const tables = schema;
 
 export const pool = new Pool({
-	connectionString: "postgres://root:admin@localhost:5432/fan-athletics",
+	connectionString: process.env.DATABASE_URL,
 });
 
 export const db = drizzle({ client: pool, schema });
