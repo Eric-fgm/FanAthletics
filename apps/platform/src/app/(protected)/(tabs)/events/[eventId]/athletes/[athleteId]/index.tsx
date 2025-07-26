@@ -1,7 +1,7 @@
 import { CircleUser } from "lucide-react-native";
 import { Image, ScrollView, View } from "react-native";
 import { Tabs, Typography } from "#/components";
-import { useAthleteQuery } from "#/features/events";
+import { DisciplineList, useAthleteQuery } from "#/features/events";
 
 export default function EventSingleAthlete() {
 	const { data: athlete } = useAthleteQuery();
@@ -24,7 +24,8 @@ export default function EventSingleAthlete() {
 				<View className="flex-row gap-8">
 					{(
 						[
-							{ key: "disciplines", name: "Stowarzyszenie" },
+							{ key: "coach", name: "Stowarzyszenie" },
+							{ key: "disciplines", name: "Dyscypliny" },
 							{ key: "cost", name: "Koszt" },
 						] as const
 					).map(({ key, name }) => (
@@ -35,7 +36,7 @@ export default function EventSingleAthlete() {
 							<Typography>
 								{athlete[key]
 									? Array.isArray(athlete[key])
-										? athlete[key].join(", ")
+										? athlete[key].map(({ name }) => name).join(", ")
 										: `${athlete[key]} XP`
 									: "Brak informacji"}
 							</Typography>
@@ -52,6 +53,7 @@ export default function EventSingleAthlete() {
 					]}
 					className="mt-10"
 				/>
+				<DisciplineList disciplines={athlete.disciplines} />
 			</View>
 		</ScrollView>
 	);

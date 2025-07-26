@@ -54,5 +54,10 @@ export default new Hono()
 			return c.notFound();
 		}
 
-		return c.json(foundAthlete);
+		const { athleteDisciplines, ...restAthlete } = foundAthlete;
+
+		return c.json({
+			...restAthlete,
+			disciplines: athleteDisciplines.map(({ discipline }) => discipline),
+		});
 	});

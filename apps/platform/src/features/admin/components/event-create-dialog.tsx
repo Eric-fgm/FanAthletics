@@ -3,14 +3,13 @@ import { useForm } from "react-hook-form";
 import { Text, View } from "react-native";
 import {
 	Button,
-	Checkbox,
 	Dialog,
 	FormField,
 	Input,
 	Toggle,
 	Typography,
 } from "#/components";
-import { useEventCreateMutation } from "#/features/events";
+import { useEventCreateMutation } from "#/features/admin";
 
 interface FormValues {
 	name: string;
@@ -21,10 +20,11 @@ interface FormValues {
 }
 
 interface EventCreateDialogProps {
-	trigger?: React.ReactNode;
+	isOpen: boolean;
+	onClose: () => void;
 }
 
-const EventCreateDialog: React.FC<EventCreateDialogProps> = ({ trigger }) => {
+const EventCreateDialog: React.FC<EventCreateDialogProps> = (props) => {
 	const [withDomtel, setWithDomtel] = useState(false);
 
 	const { mutateAsync: createEvent } = useEventCreateMutation();
@@ -40,10 +40,9 @@ const EventCreateDialog: React.FC<EventCreateDialogProps> = ({ trigger }) => {
 	});
 
 	return (
-		<Dialog trigger={trigger}>
+		<Dialog {...props}>
 			{({ close }) => (
 				<View>
-					{/* <Checkbox value={withDomtel} className="top-[22px] left-6 z-10 absolute" onChangeValue={setWithDomtel} /> */}
 					<Typography size="large" className="py-4 text-center">
 						Stwórz wydarzenie
 					</Typography>

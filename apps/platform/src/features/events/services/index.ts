@@ -1,59 +1,36 @@
-import type {
-	AthleteWithDisciplines,
-	Discipline,
-	Event,
-	EventPayload,
-} from "@fan-athletics/shared/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Athlete, Discipline, Event } from "@fan-athletics/shared/types";
+import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import { showToast } from "#/lib/toast";
 
-const fetchEvents = async (): Promise<Event[]> => {
+const fetchEvents = async (
+	query?: Record<string, string>,
+): Promise<Event[]> => {
+	const params = new URLSearchParams(query);
+
 	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events`,
+		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events?${params.toString()}`,
 		{
 			method: "GET",
-		},
-	);
-	return await response.json();
-};
-
-const createEvent = async (data: EventPayload) => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(data),
+			credentials: "include",
 		},
 	);
 	if (!response.ok) {
-		throw new Error("Błąd podczas tworzenia wydarzenia");
+		throw new Error("Error while fetching events");
 	}
 	return await response.json();
 };
 
-const deleteEvent = async (id: string) => {
-	const response = await fetch(
-		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${id}`,
-		{
-			method: "DELETE",
-		},
-	);
-	if (!response.ok) {
-		throw new Error("Błąd podczas usuwania wydarzenia");
-	}
-	return await response.json();
-};
-
-const fetchEventAthletes = async (
-	eventId: string,
-): Promise<AthleteWithDisciplines[]> => {
+const fetchEventAthletes = async (eventId: string): Promise<Athlete[]> => {
 	const response = await fetch(
 		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${eventId}/athletes`,
+		{
+			method: "GET",
+			credentials: "include",
+		},
 	);
+	if (!response.ok) {
+		throw new Error("Error while fetching event athletes");
+	}
 	return await response.json();
 };
 
@@ -62,44 +39,21 @@ const fetchEventDisciplines = async (
 ): Promise<Discipline[]> => {
 	const response = await fetch(
 		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${eventId}/disciplines`,
+		{
+			method: "GET",
+			credentials: "include",
+		},
 	);
+	if (!response.ok) {
+		throw new Error("Error while fetching event disciplines");
+	}
 	return await response.json();
 };
 
-export const useEventsQuery = () => {
+export const useEventsQuery = (query?: Record<string, string>) => {
 	return useQuery({
-		queryFn: fetchEvents,
-		queryKey: ["events::retrieve"],
-	});
-};
-
-export const useEventCreateMutation = () => {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: createEvent,
-		async onSuccess() {
-			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
-			showToast({
-				text1: "Stworzono Wydarzenie",
-				text2: "Twoje dane zostały pomyślnie zapisane",
-			});
-		},
-	});
-};
-
-export const useEventDeletedMutation = () => {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: deleteEvent,
-		async onSuccess() {
-			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
-			showToast({
-				text1: "Usunięto Wydarzenie",
-				text2: "Dane zostały pomyślnie usunięte",
-			});
-		},
+		queryFn: () => fetchEvents(query),
+		queryKey: ["events::retrieve", query],
 	});
 };
 

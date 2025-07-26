@@ -16,7 +16,8 @@
 		"dev": "tsc --watch",
 		"type-check": "tsc --noEmit",
 		"clean": "rm -rf node_modules & rm -rf dist",
-		"db:reset": "pnpm build && node ./dist/clear-db.js && drizzle-kit generate && drizzle-kit migrate && node ./dist/seed.js"
+		"db:studio": "drizzle-kit studio",
+		"db:reset": "pnpm build && rm -rf ./drizzle && node ./dist/clear-db.js && drizzle-kit generate && drizzle-kit migrate && node ./dist/seed.js"
 	},
 	"dependencies": {
 		"dotenv": "^16.5.0",

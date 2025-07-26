@@ -1,5 +1,4 @@
 import { db, operators, tables } from "@fan-athletics/database";
-import type { DisciplinePayload } from "@fan-athletics/shared/types";
 import { Hono } from "hono";
 import { clamp } from "#/utils/math";
 
@@ -44,78 +43,54 @@ export default new Hono()
 		if (!discipline) return c.notFound();
 
 		return c.json(discipline);
-	})
-	.post("/", async (c) => {
-		const payload = await c.req.json<DisciplinePayload>();
-		const nowDate = new Date();
-
-		await db.insert(tables.discipline).values({
-			...payload,
-			updatedAt: nowDate,
-			createdAt: nowDate,
-		});
-
-		return c.json({ message: "Discipline successfully created!" }, 200);
-	})
-	// .get("/competitions", async (c) => {
-	// 	const eventId: string = c.req.param("eventId");
-
-	// 	const eventDisciplines = await db
-	// 		.select()
-	// 		.from(tables.discipline)
-	// 		.where(operators.eq(tables.discipline.eventId, eventId));
-	// 	let eventCompetitions: Competition[] = [];
-	// 	for (const discipline of eventDisciplines) {
-	// 		const disciplineCompetitions = await db.query.competition.findMany({
-	// 			where: (competition, { eq }) =>
-	// 				eq(competition.disciplineId, discipline.id),
-	// 		});
-	// 		// console.log(disciplineCompetitions);
-	// 		eventCompetitions = eventCompetitions.concat(disciplineCompetitions);
-	// 	}
-	// 	console.log(eventCompetitions.length);
-	// 	return c.json(eventCompetitions);
-	// })
-	.get("/:disciplineId/competitions", async (c) => {
-		const disciplineId = c.req.param("disciplineId");
-
-		const competitions = await db
-			.select()
-			.from(tables.competition)
-			.where(operators.eq(tables.competition.disciplineId, disciplineId));
-
-		return c.json(competitions);
-	})
-	// .delete("/", async (c) => {
-	// 	const eventId = c.req.param("eventId");
-
-	// 	const disciplinesIds: { id: string }[] = await db
-	// 		.select({ id: tables.discipline.id })
-	// 		.from(tables.discipline)
-	// 		.where(operators.eq(tables.discipline.eventId, eventId));
-	// 	for (const discipline of disciplinesIds) {
-	// 		await db
-	// 			.delete(tables.competition)
-	// 			.where(operators.eq(tables.competition.disciplineId, discipline.id));
-	// 	}
-	// 	await db
-	// 		.delete(tables.discipline)
-	// 		.where(operators.eq(tables.discipline.eventId, eventId));
-	// 	console.log(
-	// 		`Disciplines successfully deleted from event witch id is ${eventId}.`,
-	// 	);
-	// 	return c.json({ message: "All events successfully deleted" }, 200);
-	// })
-	.delete("/:disciplineId", async (c) => {
-		const disciplineId = c.req.param("disciplineId");
-
-		await db
-			.delete(tables.competition)
-			.where(operators.eq(tables.competition.disciplineId, disciplineId));
-
-		await db
-			.delete(tables.discipline)
-			.where(operators.eq(tables.discipline.id, disciplineId));
-
-		return c.json({ message: "Discipline successfully deleted" }, 200);
 	});
+// .get("/:disciplineId/competitions", async (c) => {
+// 	const disciplineId = c.req.param("disciplineId");
+
+// 	const competitions = await db
+// 		.select()
+// 		.from(tables.competition)
+// 		.where(operators.eq(tables.competition.disciplineId, disciplineId));
+
+// 	return c.json(competitions);
+// });
+// .get("/competitions", async (c) => {
+// 	const eventId: string = c.req.param("eventId");
+
+// 	const eventDisciplines = await db
+// 		.select()
+// 		.from(tables.discipline)
+// 		.where(operators.eq(tables.discipline.eventId, eventId));
+// 	let eventCompetitions: Competition[] = [];
+// 	for (const discipline of eventDisciplines) {
+// 		const disciplineCompetitions = await db.query.competition.findMany({
+// 			where: (competition, { eq }) =>
+// 				eq(competition.disciplineId, discipline.id),
+// 		});
+// 		// console.log(disciplineCompetitions);
+// 		eventCompetitions = eventCompetitions.concat(disciplineCompetitions);
+// 	}
+// 	console.log(eventCompetitions.length);
+// 	return c.json(eventCompetitions);
+// })
+
+// .delete("/", async (c) => {
+// 	const eventId = c.req.param("eventId");
+
+// 	const disciplinesIds: { id: string }[] = await db
+// 		.select({ id: tables.discipline.id })
+// 		.from(tables.discipline)
+// 		.where(operators.eq(tables.discipline.eventId, eventId));
+// 	for (const discipline of disciplinesIds) {
+// 		await db
+// 			.delete(tables.competition)
+// 			.where(operators.eq(tables.competition.disciplineId, discipline.id));
+// 	}
+// 	await db
+// 		.delete(tables.discipline)
+// 		.where(operators.eq(tables.discipline.eventId, eventId));
+// 	console.log(
+// 		`Disciplines successfully deleted from event witch id is ${eventId}.`,
+// 	);
+// 	return c.json({ message: "All events successfully deleted" }, 200);
+// })

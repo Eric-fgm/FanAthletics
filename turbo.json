@@ -16,6 +16,9 @@
 		"web": {
 			"dependsOn": ["^web"]
 		},
+		"ios": {
+			"dependsOn": ["^ios"]
+		},
 		"type-check": {
 			"dependsOn": ["^type-check"]
 		},

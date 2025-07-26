@@ -5,6 +5,10 @@ import { useLocalSearchParams } from "expo-router";
 const fetchDiscipline = async (disciplineId: string): Promise<Discipline> => {
 	const response = await fetch(
 		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/disciplines/${disciplineId}`,
+		{
+			method: "GET",
+			credentials: "include",
+		},
 	);
 	return await response.json();
 };
@@ -16,16 +20,22 @@ const fetchDisciplines = async (
 
 	const response = await fetch(
 		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/disciplines?${params.toString()}`,
+		{
+			method: "GET",
+			credentials: "include",
+		},
 	);
 	return await response.json();
 };
 
-export const useDisciplinesQuery = (query: Record<string, string>) => {
+export const useDisciplinesQuery = (
+	query: Record<string, string | undefined>,
+) => {
 	const eventId = useLocalSearchParams().eventId?.toString();
 
 	return useQuery({
 		queryFn: () => fetchDisciplines({ eventId, ...query }),
-		queryKey: ["disciplines::retrieve", eventId],
+		queryKey: ["disciplines::retrieve", { eventId, ...query }],
 		enabled: !!eventId,
 	});
 };

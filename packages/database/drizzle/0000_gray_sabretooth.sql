@@ -42,7 +42,8 @@ CREATE TABLE "athlete_meta" (
 CREATE TABLE "competition" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"disciplineId" text NOT NULL,
-	"seriesCount" integer DEFAULT 1 NOT NULL,
+	"series" integer DEFAULT 1 NOT NULL,
+	"round" integer DEFAULT 1 NOT NULL,
 	"note" varchar(255),
 	"trials" json NOT NULL,
 	"startAt" timestamp with time zone NOT NULL,
@@ -52,7 +53,6 @@ CREATE TABLE "competition" (
 CREATE TABLE "competitor" (
 	"competitionId" text NOT NULL,
 	"athleteId" text NOT NULL,
-	"series" integer DEFAULT 1 NOT NULL,
 	"place" integer NOT NULL,
 	"results" json NOT NULL,
 	CONSTRAINT "competitor_competitionId_athleteId_pk" PRIMARY KEY("competitionId","athleteId")
@@ -73,6 +73,7 @@ CREATE TABLE "event" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"organization" varchar(255) NOT NULL,
+	"domtelApp" varchar(255),
 	"image" varchar(255) NOT NULL,
 	"icon" varchar(255) NOT NULL,
 	"startAt" timestamp with time zone NOT NULL,

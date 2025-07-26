@@ -10,6 +10,10 @@ const fetchAthlete = async (
 ): Promise<AthleteWithDisciplines> => {
 	const response = await fetch(
 		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/athletes/${athleteId}`,
+		{
+			method: "GET",
+			credentials: "include",
+		},
 	);
 	return await response.json();
 };
@@ -21,6 +25,10 @@ const fetchAthletes = async (
 
 	const response = await fetch(
 		`${process.env.EXPO_PUBLIC_API_URL}/api/v1/athletes?${params.toString()}`,
+		{
+			method: "GET",
+			credentials: "include",
+		},
 	);
 	return await response.json();
 };
@@ -30,7 +38,7 @@ export const useAthletesQuery = (query?: Record<string, string>) => {
 
 	return useQuery({
 		queryFn: () => fetchAthletes({ eventId, ...query }),
-		queryKey: ["athletes::retrieve", eventId],
+		queryKey: ["athletes::retrieve", { eventId, ...query }],
 		enabled: !!eventId && !!query,
 	});
 };

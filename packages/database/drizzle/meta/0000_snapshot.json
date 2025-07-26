@@ -1,5 +1,5 @@
 {
-  "id": "4d125303-dae9-4cf9-ab3c-da0358923f07",
+  "id": "122fd457-74d1-4a83-922a-c88c07ec4d85",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -324,8 +324,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "seriesCount": {
-          "name": "seriesCount",
+        "series": {
+          "name": "series",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "round": {
+          "name": "round",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -393,13 +400,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "series": {
-          "name": "series",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
         },
         "place": {
           "name": "place",
@@ -557,6 +557,12 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "domtelApp": {
+          "name": "domtelApp",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         },
         "image": {
           "name": "image",

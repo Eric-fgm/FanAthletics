@@ -1,9 +1,9 @@
 import type { Event } from "@fan-athletics/shared/types";
 import { Image, View } from "react-native";
 import { Button, Typography } from "#/components";
+import { useEventDeletedMutation } from "#/features/admin";
 import { useSessionSuspeneQuery } from "#/features/auth";
 import { isAdmin } from "#/helpers/user";
-import { useEventDeletedMutation } from "../services";
 
 interface EventItemProps extends Event {}
 
