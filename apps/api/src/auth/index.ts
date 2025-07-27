@@ -7,6 +7,7 @@ import { magicLink } from "better-auth/plugins";
 import { Hono } from "hono";
 
 const auth = betterAuth({
+	baseURL: process.env.API_URL as string,
 	basePath: "/api/v1/auth",
 	database: drizzleAdapter(db, { provider: "pg", schema: tables }),
 	trustedOrigins: [
