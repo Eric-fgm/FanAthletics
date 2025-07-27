@@ -7,12 +7,6 @@ import { magicLink } from "better-auth/plugins";
 import { Hono } from "hono";
 
 const auth = betterAuth({
-	advanced: {
-		crossSubDomainCookies: {
-			enabled: true,
-			domain: process.env.WEB_URL as string,
-		},
-	},
 	baseURL: process.env.API_URL as string,
 	basePath: "/api/v1/auth",
 	database: drizzleAdapter(db, { provider: "pg", schema: tables }),
@@ -25,6 +19,7 @@ const auth = betterAuth({
 	},
 	socialProviders: {
 		google: {
+			prompt: "select_account",
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
 		},
@@ -55,6 +50,13 @@ const auth = betterAuth({
 			},
 		}),
 	],
+	advanced: {
+		defaultCookieAttributes: {
+			sameSite: "none",
+			secure: true,
+			partitioned: true,
+		},
+	},
 });
 
 export const authApi = auth.api;
