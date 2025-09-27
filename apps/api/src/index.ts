@@ -7,6 +7,7 @@ import auth from "#/auth";
 import competitions from "#/competitions";
 import disciplines from "#/disciplines";
 import events from "#/events";
+import game from "#/game";
 import { cors, requireUser } from "#/middlewares";
 import users from "#/users";
 
@@ -22,6 +23,7 @@ app
 	.route("v1/competitions", competitions)
 	.route("v1/disciplines", disciplines)
 	.route("v1/athletes", athletes)
-	.route("/v1/users", users);
+	.route("/v1/users", users)
+	.route("/v1/game", game);
 
 serve({ fetch: app.fetch, port: Number.parseInt(process.env.PORT ?? "8000") });
