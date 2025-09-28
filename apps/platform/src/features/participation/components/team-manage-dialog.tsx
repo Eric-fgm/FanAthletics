@@ -1,6 +1,6 @@
 import type { AthleteWithDisciplines } from "@fan-athletics/shared/types";
 import { useGlobalSearchParams } from "expo-router";
-import { CircleUser, Info, Plus } from "lucide-react-native";
+import { CircleUser, Info, Plus, UserRoundPlus, UserRound } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
@@ -140,7 +140,7 @@ const PlayerSlot: React.FC<{ index: number; onPress: () => void }> = ({
 				className="justify-center items-center bg-gray-100 rounded-full w-12 h-12"
 				onPress={onPress}
 			>
-				<Plus size={20} className="text-gray-500" />
+				<UserRoundPlus size={20} className="text-gray-500" />
 			</Pressable>
 			<Typography className="mt-4">Miejsce {index}</Typography>
 		</View>
@@ -153,19 +153,19 @@ const PlayerPreview: React.FC<
 	return (
 		<View
 			className="relative items-center p-6 border border-gray-200 rounded-2xl h-[224px]"
-			// style={{
-			// 	backgroundColor: "white",
-			// 	shadowColor: "#000",
-			// 	shadowOpacity: 0.08,
-			// 	shadowOffset: { width: 0, height: 4 },
-			// 	shadowRadius: 16,
-			// }}
+			style={{
+				backgroundColor: "white",
+				shadowColor: "#000",
+				shadowOpacity: 0.08,
+				shadowOffset: { width: 0, height: 4 },
+				shadowRadius: 16,
+			}}
 		>
 			<View className="top-3 right-3 absolute text-gray-500">
 				<Info size={16} />
 			</View>
 			<View className="justify-center items-center bg-gray-100 rounded-full w-12 h-12">
-				<CircleUser size={20} className="text-gray-600" />
+				<UserRound size={20} className="text-gray-600" />
 			</View>
 			<Typography
 				size="base"
@@ -173,6 +173,9 @@ const PlayerPreview: React.FC<
 				numberOfLines={1}
 			>
 				{firstName} {lastName}
+			</Typography>
+			<Typography type="washed" className="text-center" numberOfLines={1}>
+				{coach}
 			</Typography>
 			<Typography type="washed" className="text-center" numberOfLines={1}>
 				{coach}

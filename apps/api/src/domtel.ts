@@ -374,6 +374,7 @@ export const saveAthletes = async (
 					lastName,
 					number: Number.parseInt(athlete.number, 10),
 					coach: athlete.club,
+					imageUrl: "https://starter.pzla.pl/foto/277503.jpg?m=20230118093122",
 					cost: 100,
 					updatedAt: nowDate,
 					createdAt: nowDate,

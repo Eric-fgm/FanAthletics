@@ -1,8 +1,8 @@
 import type { Athlete } from "@fan-athletics/shared/types";
-import { CircleUser, Plus } from "lucide-react-native";
+import { CircleUser, Plus, UserRoundPlus, UserRound } from "lucide-react-native";
 import React, { useState } from "react";
-import { Pressable, View } from "react-native";
-import { Button, Select, Typography } from "#/components";
+import { Pressable, View, Image, ImageBackground } from "react-native";
+import { Button, Dialog, Select, Typography } from "#/components";
 import { AthletesSearchDialog, useEventQuery } from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
 import {
@@ -18,6 +18,7 @@ const Participation = () => {
 	const [selectedMember, setSelectedMember] = useState<Athlete | "edit" | null>(
 		null,
 	);
+	const [memberToDelete, setMemberToDelete] = useState<Athlete | null>(null);
 	const { data: event } = useEventQuery();
 	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
 	const { mutateAsync: addTeamMember, isPending: isAddTeamMemberPending } =
@@ -114,7 +115,9 @@ const Participation = () => {
 							<AthletePreview
 								isLoading={isAddTeamMemberPending || isDeleteTeamMemberPending}
 								onEdit={() => setSelectedMember(member)}
-								{...member}
+								onDelete={() => setMemberToDelete(member)}
+								athlete={member}
+								isCaptain={member.isCaptain}
 							/>
 						) : (
 							<AthleteSlot
@@ -141,6 +144,39 @@ const Participation = () => {
 					}
 				}}
 			/>
+			<Dialog
+				isOpen={memberToDelete !== null}
+				onClose={() => setMemberToDelete(null)}
+			>
+				<View className="px-8 py-6">
+					<Typography size="large1" className="mb-3">Na pewno chcesz usunąć tego zawodnika?</Typography>
+					<View className="border border-black w-full mb-3"/>
+					<View className="flex-row items-end w-full">
+						<Button
+							text="Tak"
+							variant="danger"
+							size="small"
+							className="mt-auto me-3"
+							textClassName="!text-sm"
+							rounded
+							onPress={async () => {
+								if (memberToDelete && typeof memberToDelete === "object")
+									await deleteTeamMember(memberToDelete.id);
+								setMemberToDelete(null);
+							}}
+						/>
+						<Button
+							text="Nie"
+							variant="secondary"
+							size="small"
+							className="mt-auto"
+							textClassName="!text-sm"
+							rounded
+							onPress={() => setMemberToDelete(null)}
+						/>
+					</View>
+				</View>
+			</Dialog>
 		</ScrollArea>
 	);
 };
@@ -150,12 +186,12 @@ const AthleteSlot: React.FC<{ index: number; onPress: () => void }> = ({
 	onPress,
 }) => {
 	return (
-		<View className="relative justify-center items-center border border-gray-200 border-dashed rounded-2xl h-[324px]">
+		<View className="relative justify-center items-center border border-gray-200 border-dashed rounded-2xl h-[432px]" style={{backgroundColor: "lightgrey"}}>
 			<Pressable
-				className="justify-center items-center bg-gray-100 rounded-full w-16 h-16"
+				className="justify-center items-center rounded-full w-16 h-16"
 				onPress={onPress}
 			>
-				<Plus size={24} className="text-gray-500" />
+				<UserRoundPlus size={72} className="text-gray-500" />
 			</Pressable>
 			<Typography className="mt-4">Miejsce {index}</Typography>
 		</View>
@@ -163,35 +199,92 @@ const AthleteSlot: React.FC<{ index: number; onPress: () => void }> = ({
 };
 
 const AthletePreview: React.FC<{
-	firstName: string;
-	lastName: string;
-	coach: string;
+	athlete: Athlete;
+	isCaptain: boolean;
 	isLoading?: boolean;
 	onEdit?: () => void;
-}> = ({ firstName, lastName, coach, isLoading, onEdit }) => {
+	onDelete?: () => void;
+}> = ({ athlete, isCaptain, isLoading, onEdit, onDelete }) => {
 	return (
-		<View className="items-center px-8 pt-12 pb-8 border border-gray-200 rounded-2xl h-[324px]">
-			<View className="justify-center items-center bg-gray-100 rounded-full w-16 h-16">
-				<CircleUser size={24} className="text-gray-600" />
-			</View>
-			<Typography size="large" className="mt-4" numberOfLines={1}>
-				{firstName} {lastName}
-			</Typography>
-			<Typography type="washed" className="mt-1" numberOfLines={1}>
-				{coach}
-			</Typography>
-			<Button
-				text="Edytuj"
-				variant="secondary"
-				size="small"
-				className="mt-auto"
-				textClassName="!text-sm"
-				isLoading={isLoading}
-				rounded
-				onPress={onEdit}
-			/>
+		<View className="items-center border border-gray-200 rounded-2xl h-[432px]" style={{backgroundColor: "#ffffffff"}}>
+			{athlete.imageUrl ?
+				// <View className="items-center rounded-xl">
+				// 	{/* <Typography>{athlete.imageUrl}</Typography> */}
+				// 	<Image source={{ uri: athlete.imageUrl }} style={{ width: 200, height: 200 }} className="rounded-2xl"/> 
+				// </View>
+				<ImageBackground
+					source={{ uri: athlete.imageUrl }}
+					imageStyle={{ borderRadius: 16 }}
+					// className="rounded-2xl"
+					style={{ width: '100%', height: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
+					<View className="w-full items-end mt-3 me-5">
+						<View className="p-2 rounded-2xl" style={{backgroundColor: "yellow"}}>
+							<Typography>{athlete.cost} XP</Typography>
+						</View>
+					</View>
+					<AthleteBasicInfo
+						athlete={athlete}
+						isCaptain={isCaptain}
+						isLoading={isLoading}
+						onEdit={onEdit}
+						onDelete={onDelete}
+					/>
+				</ImageBackground> :
+				<View className="justify-center items-center rounded-full w-16 h-16">
+					<UserRound size={100} className="text-gray-600" />
+					<AthleteBasicInfo
+						athlete={athlete}
+						isCaptain={isCaptain}
+						isLoading={isLoading}
+						onEdit={onEdit}
+						onDelete={onDelete}
+					/>
+				</View>
+			}
 		</View>
 	);
 };
+
+const AthleteBasicInfo: React.FC<{
+	athlete: Athlete;
+	isCaptain: boolean;
+	isLoading?: boolean;
+	onEdit?: () => void;
+	onDelete?: () => void;
+}> = ({ athlete, isCaptain, isLoading, onEdit, onDelete }) => {
+	return (
+		<View className="items-center p-3 rounded-xl w-full" style={{backgroundColor: "#a8b1ffff"}}>
+			<Typography size="large" className="mt-1" numberOfLines={1}>
+				{athlete.firstName} {athlete.lastName}
+			</Typography>
+			<Typography type="washed" className="mt-1" numberOfLines={1}>
+				{athlete.coach}
+			</Typography>
+
+			<View className="flex-row items-center justify-center w-full mt-2">
+				<Button
+					text="Edytuj"
+					variant="secondary"
+					size="small"
+					className="mt-auto me-2"
+					textClassName="!text-sm"
+					isLoading={isLoading}
+					rounded
+					onPress={onEdit}
+				/>
+				<Button
+					text="Usuń"
+					variant="danger"
+					size="small"
+					className="mt-auto"
+					textClassName="!text-sm"
+					isLoading={isLoading}
+					rounded
+					onPress={onDelete}
+				/>
+			</View>
+		</View>
+	)
+}
 
 export default Participation;
