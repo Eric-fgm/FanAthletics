@@ -7,7 +7,7 @@ const ScrollArea: React.FC<ScrollViewProps> = ({
 }) => {
 	return (
 		<ScrollView
-			contentContainerClassName={`px-4 md:px-8 xl:px-24 py-8 ${className}`}
+			contentContainerClassName={`pt-12 lg:pt-16 pb-8 ${className}`}
 			{...props}
 		/>
 	);

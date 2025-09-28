@@ -5,9 +5,13 @@ import { useSessionSuspeneQuery, useSignOutMutation } from "#/features/auth";
 
 interface ProfileDropdownProps {
 	trigger: React.ReactNode;
+	className?: string;
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+	trigger,
+	...props
+}) => {
 	const { data: session } = useSessionSuspeneQuery();
 	const { mutate: signOut } = useSignOutMutation();
 	const router = useRouter();
@@ -64,8 +68,10 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 							{session.user.email}
 						</Typography>
 						<Button
-							href={`/users/${session.user.id}`}
-							onPress={close}
+							onPress={() => {
+								close();
+								router.push(`/users/${session.user.id}`);
+							}}
 							variant="bright"
 							text="Zobacz profil"
 							rounded
@@ -83,6 +89,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ trigger }) => {
 						</Typography>
 					</View>
 				}
+				{...props}
 			/>
 		)
 	);

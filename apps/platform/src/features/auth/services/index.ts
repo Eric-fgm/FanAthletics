@@ -10,12 +10,12 @@ import { showToast } from "#/lib/toast";
 
 export const useSessionSuspeneQuery = () => {
 	const { data, ...restQuery } = useSuspenseQuery({
-		queryFn: () => authClient.getSession(),
+		queryFn: () => authClient.getSession({}, { throw: true }),
 		queryKey: ["auth::session"],
 	});
 
 	return {
-		data: (data?.data ?? null) as { user: User } | null,
+		data: data as { user: User } | null,
 		...restQuery,
 	};
 };
@@ -30,7 +30,7 @@ export const useCurrentUserMutation = () => {
 				note: string;
 				role: "admin" | "user";
 			}>,
-		) => authClient.updateUser(values),
+		) => authClient.updateUser(values, { throw: true }),
 		async onSuccess() {
 			await queryClient.invalidateQueries({ queryKey: ["auth::session"] });
 			showToast({
@@ -45,7 +45,7 @@ export const useSignOutMutation = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: () => authClient.signOut(),
+		mutationFn: () => authClient.signOut({}, { throw: true }),
 		async onSuccess() {
 			await queryClient.invalidateQueries({ queryKey: ["auth::session"] });
 		},
@@ -55,27 +55,27 @@ export const useSignOutMutation = () => {
 export const useSocialSignInMutation = () => {
 	return useMutation({
 		mutationFn: (provider: "google" | "facebook") =>
-			authClient.signIn.social({
-				provider,
-				callbackURL: CALLBACK_URL,
-				errorCallbackURL: CALLBACK_URL,
-			}),
+			authClient.signIn.social(
+				{
+					provider,
+					callbackURL: CALLBACK_URL,
+					errorCallbackURL: CALLBACK_URL,
+				},
+				{ throw: true },
+			),
 	});
 };
 
 export const useMagicLinkSignInMutation = () => {
 	return useMutation({
-		mutationFn: async (email: string) => {
-			const { data, error } = await authClient.signIn.magicLink({
-				email,
-				callbackURL: CALLBACK_URL,
-			});
-
-			if (error) {
-				throw new Error(error.message);
-			}
-			return data;
-		},
+		mutationFn: async (email: string) =>
+			authClient.signIn.magicLink(
+				{
+					email,
+					callbackURL: CALLBACK_URL,
+				},
+				{ throw: true },
+			),
 		onSuccess() {
 			showToast({
 				text1: "Email has been sent",

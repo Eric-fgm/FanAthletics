@@ -17,6 +17,8 @@ const Dialog: React.FC<DialogProps> = ({
 		if (typeof isOpen !== "boolean") return;
 		if (isOpen) {
 			ref.current?.open();
+		} else {
+			ref.current?.close();
 		}
 	}, [isOpen]);
 

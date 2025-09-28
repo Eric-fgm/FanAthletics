@@ -17,7 +17,7 @@ const EventItem: React.FC<EventItemProps> = ({
 	const { data: session } = useSessionSuspeneQuery();
 	const { mutate: deleteEvent } = useEventDeletedMutation();
 	return (
-		<View className="place-items-center grid grid-rows-1 bg-gray-100 rounded-3xl aspect-[4/3] overflow-hidden">
+		<View className="justify-center items-center grid grid-rows-1 bg-gray-100 rounded-3xl aspect-[4/3] overflow-hidden">
 			<Image
 				style={{ width: "100%", height: "100%" }}
 				source={{ uri: image }}
@@ -38,7 +38,7 @@ const EventItem: React.FC<EventItemProps> = ({
 				<Typography type="bright" size="large" className="mt-4 mb-1">
 					{name}
 				</Typography>
-				<Typography size="normal" type="washed-bright">
+				<Typography size="medium" type="washed-bright">
 					{organization}
 				</Typography>
 				<View className="flex-row items-center gap-2 mt-8">

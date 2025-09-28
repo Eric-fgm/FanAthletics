@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import type { LucideIcon } from "lucide-react-native";
-import { View } from "react-native";
+import { type TextStyle, View } from "react-native";
 import { type GestureResponderEvent, Pressable } from "react-native";
 import { Typography } from "#/components";
 
@@ -10,54 +10,67 @@ type ButtonProps = {
 	rounded?: boolean;
 	isLoading?: boolean;
 	text?: string;
+	textClassName?: string;
+	textStyle?: TextStyle;
 	icon?: LucideIcon;
 	className?: string;
 } & ({ onPress?: (event: GestureResponderEvent) => void } | { href: string });
 
 const variantClassNamesMap = {
 	primary: "bg-gray-900",
+	secondary: "bg-gray-100",
 	outlined: "border border-gray-200",
 	white: "bg-white",
 	bright: "bg-[#ededed14]",
+	danger: "bg-red-500",
 };
 
 const typeClassNameMap = {
 	primary: "bright",
+	secondary: "dark",
 	outlined: "dark",
 	bright: "bright",
 	white: "dark",
+	danger: "bright",
 } as const;
 
 const sizeClassNamesMap = {
-	small: "px-4 py-2.5",
-	normal: "px-5 h-12",
+	small: "px-3 h-9",
+	base: "px-5 h-12",
 };
 
 const Button: React.FC<ButtonProps> = ({
 	text,
-	icon: IconComp,
+	textClassName,
+	icon: Icon,
 	variant = "primary",
-	size = "normal",
+	size = "base",
 	rounded = false,
 	isLoading = false,
 	className = "",
+	textStyle,
 	...props
 }) => {
 	const variantClassNames = variantClassNamesMap[variant];
 	const sizeClassNames = sizeClassNamesMap[size];
 	const typeClassNames = typeClassNameMap[variant];
 
-	const Comp = "href" in props ? Link : Pressable;
+	const Comp = "href" in props ? View : Pressable;
 
 	return (
 		<Comp
 			className={`relative flex items-center justify-center flex-shrink-0 gap-2 overflow-hidden ${rounded ? "rounded-full" : "rounded-xl"} ${className} ${variantClassNames} ${sizeClassNames}`}
 			disabled={isLoading}
-			{...(props as { href: string })}
+			{...props}
 		>
-			{IconComp && <IconComp className="text-white" />}
+			{Icon && <Icon color="white" />}
 			{text && (
-				<Typography type={typeClassNames} size={size}>
+				<Typography
+					style={textStyle}
+					type={typeClassNames}
+					size={size}
+					className={textClassName}
+				>
 					{text}
 				</Typography>
 			)}
@@ -67,6 +80,12 @@ const Button: React.FC<ButtonProps> = ({
 				>
 					<Typography type={typeClassNames}>...</Typography>
 				</View>
+			)}
+			{"href" in props && (
+				<Link
+					href={props.href}
+					className="top-0 left-0 absolute w-full h-full"
+				/>
 			)}
 		</Comp>
 	);

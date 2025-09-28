@@ -1,7 +1,4 @@
-import type {
-	CompetitionWithCompetitors,
-	Discipline,
-} from "@fan-athletics/shared/types";
+import type { CompetitionWithCompetitors } from "@fan-athletics/shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useGlobalSearchParams } from "expo-router";
 import fetcher from "#/helpers/fetcher";

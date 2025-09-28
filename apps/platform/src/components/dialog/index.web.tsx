@@ -11,6 +11,7 @@ const Dialog: React.FC<DialogProps> = ({
 	children,
 	trigger,
 	isOpen = null,
+	webOptions: { variant = "normal", ...webOptions } = {},
 	onOpen,
 	onClose,
 	...props
@@ -43,9 +44,16 @@ const Dialog: React.FC<DialogProps> = ({
 				cloneElement(trigger as React.ReactElement<PressableProps>, {
 					onPress: open,
 				})}
-			<HeadlessDialog open={isDialogOpen} onClose={close} {...props}>
-				<div className="fixed inset-0 flex justify-center items-center bg-[#00000095] p-4 w-screen">
-					<HeadlessDialogPanel className="relative bg-white rounded-3xl w-full max-w-xl">
+			<HeadlessDialog
+				open={isDialogOpen}
+				onClose={close}
+				{...props}
+				{...webOptions}
+			>
+				<div className="fixed inset-0 flex justify-center items-center bg-[#00000095] p-4 lg:p-12 w-screen">
+					<HeadlessDialogPanel
+						className={`relative bg-white rounded-3xl w-full ${variant === "wide" ? "max-w-5xl" : "max-w-xl"}`}
+					>
 						<>
 							{typeof children === "function"
 								? children({ open, close })

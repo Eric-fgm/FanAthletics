@@ -7,7 +7,7 @@ export default function SingleEvent() {
 	return (
 		<ScrollArea>
 			<Header
-				title="Dyscypliny"
+				title="Aktualności"
 				filters={[
 					{
 						key: "available",
@@ -21,7 +21,10 @@ export default function SingleEvent() {
 					{ key: "order", text: "Najnowsze", type: "selectList" },
 				]}
 			/>
-			<CompetitionList competitions={competitions} className="py-8" />
+			<CompetitionList
+				competitions={competitions}
+				className="px-4 lg:px-12 py-8"
+			/>
 		</ScrollArea>
 	);
 }

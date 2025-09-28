@@ -34,7 +34,17 @@ export default new Hono()
 			.limit(limit)
 			.offset(offset);
 
-		return c.json(result.map(({ athlete }) => athlete));
+		return c.json(
+			await Promise.all(
+				result.map(async ({ athlete, athlete_discipline }) => ({
+					...athlete,
+					disciplines: await db.query.discipline.findMany({
+						where: (table) =>
+							operators.eq(table.id, athlete_discipline.disciplineId),
+					}),
+				})),
+			),
+		);
 	})
 	.get("/:athleteId", async (c) => {
 		const athleteId = c.req.param("athleteId");

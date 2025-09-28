@@ -29,6 +29,7 @@ const AdminTools = () => {
 						},
 					},
 				]}
+				className="-mt-4"
 			/>
 			<EventCreateDialog
 				isOpen={isEventDialogOpen}

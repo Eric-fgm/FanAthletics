@@ -14,9 +14,10 @@ const Dropdown: React.FC<DropdownProps> = ({
 	className = "",
 	renderWebHeader,
 	renderWebFooter,
+	webOptions,
 }) => {
 	return (
-		<HeadlessMenu>
+		<HeadlessMenu {...webOptions}>
 			{({ close }) => (
 				<>
 					<HeadlessMenuButton>{trigger}</HeadlessMenuButton>

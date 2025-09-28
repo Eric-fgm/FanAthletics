@@ -15,19 +15,14 @@ const Switch: React.FC<SwitchProps> = ({
 	onChange,
 }) => {
 	return (
-		<View className={`p-1 flex-row bg-gray-100 rounded-full ${className}`}>
+		<View className={`flex-row gap-1 ${className}`}>
 			{items.map((item) => (
 				<Pressable
 					key={item.value}
-					className={`rounded-full px-4 py-2 ${item.value === value && "bg-white"}`}
+					className={`rounded-full px-4 py-2 ${item.value === value ? "bg-gray-100" : "hover:bg-gray-100"}`}
 					onPress={() => onChange?.(item.value)}
 				>
-					<Typography
-						type={item.value === value ? "dark" : "washed"}
-						className="leading-5"
-					>
-						{item.name}
-					</Typography>
+					<Typography>{item.name}</Typography>
 				</Pressable>
 			))}
 		</View>

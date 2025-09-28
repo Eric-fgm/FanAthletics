@@ -62,7 +62,7 @@ export default function SignIn() {
 				<View className="flex-1">
 					<View className="flex-1" />
 					<View className="items-center px-4 py-8">
-						<Logo namePosition="bottom" nameSize="large" />
+						<Logo namePosition="bottom" />
 						<Typography type="washed" className="mt-1.5">
 							Zaloguj się
 						</Typography>

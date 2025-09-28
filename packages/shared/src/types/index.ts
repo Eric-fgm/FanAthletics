@@ -31,6 +31,25 @@ export interface User {
 	image?: string | null;
 }
 
+export interface Participant {
+	id: string;
+	createdAt: Date;
+	updatedAt: Date;
+	userId: string;
+	referenceId: string;
+	type: string;
+	budget: number;
+	lastPoints: number;
+}
+
+export interface UserWithParticipation {
+	user: User;
+	participant: Participant;
+	place: number;
+	team: Athlete[];
+	score: number;
+}
+
 export interface Discipline {
 	id: string;
 	eventId: string;

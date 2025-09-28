@@ -1,17 +1,20 @@
 import type { Discipline } from "@fan-athletics/shared/types";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { Ellipsis } from "lucide-react-native";
 import type React from "react";
 import { useMemo } from "react";
 import { View } from "react-native";
-import { Dropdown, Table, Typography } from "#/components";
+import { Dropdown, Skeleton, Table, Typography } from "#/components";
 import { getDisciplineIcon } from "../helpers";
 
 interface DisciplineListProps {
 	disciplines: Discipline[];
+	placeholder?: React.ReactNode;
 }
 
-const DisciplineList: React.FC<DisciplineListProps> = ({ disciplines }) => {
+const DisciplineList: React.FC<DisciplineListProps> & {
+	Skeleton: typeof DisciplineListSkeleton;
+} = ({ disciplines, ...props }) => {
 	const { eventId } = useLocalSearchParams();
 	const router = useRouter();
 
@@ -19,12 +22,17 @@ const DisciplineList: React.FC<DisciplineListProps> = ({ disciplines }) => {
 		return [
 			{
 				key: "name",
-				name: "Nazwa",
 				render: ({
+					id,
 					icon,
 					name,
 					record,
-				}: { icon: string; name: string; record: string | null }) => {
+				}: {
+					id: string;
+					icon: string;
+					name: string;
+					record: string | null;
+				}) => {
 					const Icon = getDisciplineIcon(icon);
 					return (
 						<View className="flex-row gap-4">
@@ -32,8 +40,10 @@ const DisciplineList: React.FC<DisciplineListProps> = ({ disciplines }) => {
 								<Icon className="w-5 text-gray-500" />
 							</View>
 							<View className="justify-center gap-0.5">
-								<Typography>{name}</Typography>
-								<Typography size="small" type="washed">
+								<Link href={`/events/${eventId}/disciplines/${id}`}>
+									<Typography size="base">{name}</Typography>
+								</Link>
+								<Typography type="washed">
 									{record !== "-" ? `Rekord - ${record}` : "Brak informacji"}
 								</Typography>
 							</View>
@@ -67,7 +77,34 @@ const DisciplineList: React.FC<DisciplineListProps> = ({ disciplines }) => {
 		];
 	}, [eventId, router]);
 
-	return <Table columns={columns} data={disciplines} />;
+	return <Table columns={columns} data={disciplines} {...props} />;
 };
+
+const DisciplineListSkeleton: React.FC<{ rowsCount?: number }> = ({
+	rowsCount = 4,
+}) => {
+	return (
+		<View>
+			{Array.from({ length: rowsCount }).map((_, index) => (
+				<View
+					// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+					key={index}
+					className="flex-row items-center px-5 border-gray-200 last:border-0 border-b h-[86px]"
+				>
+					<View className="flex-row items-center gap-4 basis-[72%] xl:basis-1/3">
+						<Skeleton className="!rounded-full w-12 h-12" />
+						<View className="gap-2">
+							<Skeleton className="w-36 h-5" />
+							<Skeleton className="w-24 h-4" />
+						</View>
+					</View>
+					<Skeleton className="w-24 h-5" />
+				</View>
+			))}
+		</View>
+	);
+};
+
+DisciplineList.Skeleton = DisciplineListSkeleton;
 
 export default DisciplineList;

@@ -1,15 +1,29 @@
-import { Tabs } from "expo-router";
+import { Tabs, useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 import { Platform } from "react-native";
-import { EventNavigation } from "#/features/layout";
+import { EventNavigation, useLayoutStore } from "#/features/layout";
+
+const isWeb = Platform.OS === "web";
 
 const TabsLayout = () => {
-	const isWeb = Platform.OS === "web";
+	const { setInsets } = useLayoutStore();
+
+	useFocusEffect(
+		useCallback(() => {
+			if (isWeb) return;
+
+			setInsets({ bottom: 50 });
+
+			return () => {
+				setInsets({ bottom: 0 });
+			};
+		}, [setInsets]),
+	);
 
 	return (
 		<Tabs
 			screenOptions={{
-				header: () => <EventNavigation />,
-				headerShown: isWeb,
+				headerShown: false,
 				tabBarStyle: { display: isWeb ? "none" : "flex" },
 				sceneStyle: { backgroundColor: "#ffffff" },
 			}}
@@ -27,13 +41,13 @@ const TabsLayout = () => {
 				}}
 			/>
 			<Tabs.Screen
-				name="events/[eventId]/disciplines/index"
+				name="events/[eventId]/disciplines"
 				options={{
 					title: "Dyscypliny",
 				}}
 			/>
 			<Tabs.Screen
-				name="events/[eventId]/athletes/index"
+				name="events/[eventId]/athletes"
 				options={{
 					title: "Zawodnicy",
 				}}

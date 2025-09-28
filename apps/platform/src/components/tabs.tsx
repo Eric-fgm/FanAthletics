@@ -5,25 +5,37 @@ import { View } from "react-native";
 import { Typography } from "#/components";
 
 interface TabsProps {
-	items: { name: string; href: string }[];
+	items: { name: string; href: string; exact?: boolean }[];
+	exact?: boolean;
 	className?: string;
 }
 
-const Tabs: React.FC<TabsProps> = ({ items, className = "", ...props }) => {
+const Tabs: React.FC<TabsProps> = ({
+	items,
+	exact = true,
+	className = "",
+	...props
+}) => {
 	const pathname = usePathname();
 
-	const isActive = useCallback((path: string) => pathname === path, [pathname]);
+	const isActive = useCallback(
+		(path: string, localExact?: boolean) => {
+			const isExact = localExact !== undefined ? localExact : exact;
+			return isExact ? pathname === path : pathname.startsWith(path);
+		},
+		[pathname, exact],
+	);
 
 	return (
 		<View className={`flex-row gap-8 ${className}`} {...props}>
-			{items.map(({ name, href }) => {
-				const active = isActive(href);
+			{items.map(({ name, href, exact }) => {
+				const active = isActive(href, exact);
 
 				return (
 					<Link
 						key={href}
 						href={href}
-						className={`py-2 leading-5 ${active ? "border-b-2" : ""}`}
+						className={`py-3 leading-5 ${active ? "border-b-2" : ""}`}
 					>
 						<Typography type={active ? "dark" : "washed"}>{name}</Typography>
 					</Link>

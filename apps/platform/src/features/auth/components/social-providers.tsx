@@ -29,7 +29,7 @@ const SocialProviders: React.FC<SocialProvidersProps> = ({
 				<Pressable
 					key={id}
 					disabled={isLoading}
-					className="border border-gray-200 rounded-xl flex-row h-12 items-center justify-center gap-x-2 aria-disabled:opacity-65"
+					className="flex-row justify-center items-center gap-x-2 aria-disabled:opacity-65 border border-gray-200 rounded-xl h-12"
 					onPress={() => onSelect(id)}
 				>
 					<Image style={{ width: 20, height: 20 }} source={source} />

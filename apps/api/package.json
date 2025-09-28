@@ -5,7 +5,7 @@
 	"scripts": {
 		"start": "node dist/index.js",
 		"build": "esbuild src/index.ts --bundle --platform=node --outdir=dist",
-		"dev": "concurrently -k -n BUILD,SERVER -c yellow,cyan \"esbuild --watch src/index.ts --bundle --platform=node --outdir=dist\" \"node --watch dist/index.js\"",
+		"dev": "concurrently -k -n BUILD,SERVER -c yellow,cyan \"esbuild --watch --sourcemap src/index.ts --bundle --platform=node --outdir=dist\" \"node --watch dist/index.js\"",
 		"type-check": "tsc --noEmit",
 		"clean": "rm -rf node_modules & rm -rf dist"
 	},

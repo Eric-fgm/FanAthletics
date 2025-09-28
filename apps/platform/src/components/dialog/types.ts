@@ -9,6 +9,6 @@ export interface DialogProps {
 	isOpen?: boolean;
 	onOpen?: () => void;
 	onClose?: () => void;
-	webOptions?: HeadlessDialogProps;
+	webOptions?: Partial<HeadlessDialogProps & { variant: "normal" | "wide" }>;
 	nativeOptions?: ModalizeProps;
 }

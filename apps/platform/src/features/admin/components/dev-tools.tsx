@@ -14,6 +14,7 @@ const DevTools = () => {
 	return (
 		<Dropdown
 			trigger={<Button icon={HelpCircle} />}
+			className="-mt-4"
 			items={[
 				isAdmin(session?.user)
 					? {

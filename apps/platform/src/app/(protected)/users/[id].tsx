@@ -13,10 +13,13 @@ export default function UserProfile() {
 		return null;
 	}
 
-	const { name, email, image } = { ...user, ...session?.user };
+	const { name, email, image } = {
+		...user,
+		...(user.id === session?.user.id && session.user),
+	};
 
 	return (
-		<View className="pt-16 pb-8 items-center">
+		<View className="items-center pt-16 pb-8">
 			<Avatar name={name} image={image} size="large" />
 			<Typography size="large4" className="mt-6">
 				{name}

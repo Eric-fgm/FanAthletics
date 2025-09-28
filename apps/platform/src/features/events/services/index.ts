@@ -1,5 +1,5 @@
 import type {
-	Athlete,
+	AthleteWithDisciplines,
 	CompetitionWithCompetitors,
 	Discipline,
 	Event,
@@ -18,6 +18,18 @@ export const useEventsQuery = (query?: Record<string, string>) => {
 			),
 		queryKey: ["events::retrieve", params],
 	});
+};
+
+export const useEventQuery = (eventId?: string) => {
+	const { eventId: defaultEventId } = useGlobalSearchParams();
+	const currentEventId = eventId ?? defaultEventId?.toString();
+
+	const { data: events = [], ...restQuery } = useEventsQuery();
+
+	return {
+		data: events.find((event) => event.id === currentEventId),
+		...restQuery,
+	};
 };
 
 export const useEventCompetitionsQuery = (eventId?: string) => {
@@ -40,7 +52,7 @@ export const useEventAthletesQuery = (eventId?: string) => {
 
 	return useQuery({
 		queryFn: () =>
-			fetcher<Athlete[]>(
+			fetcher<AthleteWithDisciplines[]>(
 				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/events/${currentEventId}/athletes`,
 			),
 		queryKey: ["events-athletes::retrieve", currentEventId],

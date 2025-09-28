@@ -1,7 +1,4 @@
-import type {
-	Athlete,
-	AthleteWithDisciplines,
-} from "@fan-athletics/shared/types";
+import type { AthleteWithDisciplines } from "@fan-athletics/shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useGlobalSearchParams } from "expo-router";
 import fetcher from "#/helpers/fetcher";
@@ -12,7 +9,7 @@ export const useAthletesQuery = (query?: Record<string, string>) => {
 
 	return useQuery({
 		queryFn: () =>
-			fetcher<Athlete[]>(
+			fetcher<AthleteWithDisciplines[]>(
 				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/athletes?${params}`,
 			),
 		queryKey: ["athletes::retrieve", params],
