@@ -258,7 +258,7 @@ export const processCompetitionsAndResults = async (
 									.values({
 										athleteId: athlete.id,
 										competitionId: competition.id,
-										place: Number.parseInt(result.Miejsce, 10),
+										place: result.Miejsce !== "0" ? Number.parseInt(result.Miejsce, 10) : 9999,
 										results: {
 											score: result.Wynik,
 											ranking: result.Ranking,

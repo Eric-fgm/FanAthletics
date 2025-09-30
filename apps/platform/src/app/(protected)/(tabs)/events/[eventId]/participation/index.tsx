@@ -8,8 +8,10 @@ import { Header, ScrollArea } from "#/features/layout";
 import {
 	TeamManageDialog,
 	useAddTeamMemberMutation,
+	useDeleteTeamLeaderPrivilegeMutation,
 	useDeleteTeamMemberMutation,
 	useInvalidateParticipation,
+	useMakeTeamLeaderMutation,
 	useParticipationQuery,
 	useTeamMembersQuery,
 } from "#/features/participation";
@@ -101,7 +103,15 @@ const Participation = () => {
 						</Typography>
 					</View>
 				</View>
-				<View className="bg-gray-100 rounded-2xl h-32" />
+				<View className="gap-y-2 bg-gray-100 px-8 py-6 rounded-2xl">
+					<Typography type="washed">Punkty</Typography>
+					<View className="flex-row items-end gap-1.5">
+						<Typography size="large4.5">{participation.lastPoints}</Typography>
+						<Typography size="large2" className="mb-1">
+							PKT
+						</Typography>
+					</View>
+				</View>
 				<View className="bg-gray-100 rounded-2xl h-32" />
 				<View className="bg-gray-100 rounded-2xl h-32" />
 			</View>
@@ -160,8 +170,10 @@ const Participation = () => {
 							textClassName="!text-sm"
 							rounded
 							onPress={async () => {
-								if (memberToDelete && typeof memberToDelete === "object")
+								if (memberToDelete && typeof memberToDelete === "object") {
 									await deleteTeamMember(memberToDelete.id);
+									await invalidateParticipation(memberToDelete?.eventId);
+								}
 								setMemberToDelete(null);
 							}}
 						/>
@@ -177,6 +189,17 @@ const Participation = () => {
 					</View>
 				</View>
 			</Dialog>
+			<View className="w-full items-center p-3">
+				<Button
+					text="Oblicz punkty"
+					variant="primary"
+					size="base"
+					className="mt-auto"
+					textClassName="!text-sm"
+					rounded
+					onPress={() => {}}
+				/>
+			</View>
 		</ScrollArea>
 	);
 };
@@ -186,14 +209,16 @@ const AthleteSlot: React.FC<{ index: number; onPress: () => void }> = ({
 	onPress,
 }) => {
 	return (
-		<View className="relative justify-center items-center border border-gray-200 border-dashed rounded-2xl h-[432px]" style={{backgroundColor: "lightgrey"}}>
-			<Pressable
-				className="justify-center items-center rounded-full w-16 h-16"
-				onPress={onPress}
-			>
-				<UserRoundPlus size={72} className="text-gray-500" />
-			</Pressable>
-			<Typography className="mt-4">Miejsce {index}</Typography>
+		<View className="p-4 rounded-2xl">
+			<View className="relative justify-center items-center border border-gray-200 border-dashed rounded-2xl h-[432px]" style={{backgroundColor: "lightgrey"}}>
+				<Pressable
+					className="justify-center items-center rounded-full w-16 h-16"
+					onPress={onPress}
+				>
+					<UserRoundPlus size={72} className="text-gray-500" />
+				</Pressable>
+				<Typography className="mt-4">Miejsce {index}</Typography>
+			</View>
 		</View>
 	);
 };
@@ -205,45 +230,157 @@ const AthletePreview: React.FC<{
 	onEdit?: () => void;
 	onDelete?: () => void;
 }> = ({ athlete, isCaptain, isLoading, onEdit, onDelete }) => {
+	// var rand = Math.random();
+	// console.log(rand, athlete.lastName);
+	// if (rand > 0.5)
+	// 	isCaptain = true;
+
+	
+	const {
+		mutateAsync: makeAthleteCaptain,
+		isPending: isMakeAthleteCaptainPending
+	} = useMakeTeamLeaderMutation();
+	const {
+		mutateAsync: deleteCaptainPrivilege,
+		isPending: isDeleteCaptainPrivilegePending
+	} = useDeleteTeamLeaderPrivilegeMutation();
+	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
+
+	const [detailedMember, setDetailedMember] = useState<Athlete | null>(null);
+
 	return (
-		<View className="items-center border border-gray-200 rounded-2xl h-[432px]" style={{backgroundColor: "#ffffffff"}}>
-			{athlete.imageUrl ?
-				// <View className="items-center rounded-xl">
-				// 	{/* <Typography>{athlete.imageUrl}</Typography> */}
-				// 	<Image source={{ uri: athlete.imageUrl }} style={{ width: 200, height: 200 }} className="rounded-2xl"/> 
-				// </View>
-				<ImageBackground
-					source={{ uri: athlete.imageUrl }}
-					imageStyle={{ borderRadius: 16 }}
-					// className="rounded-2xl"
-					style={{ width: '100%', height: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-					<View className="w-full items-end mt-3 me-5">
-						<View className="p-2 rounded-2xl" style={{backgroundColor: "yellow"}}>
-							<Typography>{athlete.cost} XP</Typography>
+		// <View className="items-center border border-gray-200 rounded-2xl h-[432px]" style={{backgroundColor: "#ffffffff"}}>
+		<View className="p-4 rounded-2xl" style={{ backgroundColor: isCaptain ? "#A32929" : "white" }}>
+			<Pressable onPress={() => {console.log("Kliknięto: ", athlete.lastName); setDetailedMember(athlete)}}>
+				<View
+					className="items-center border border-gray-200 rounded-2xl h-[432px]"
+					style={{ backgroundColor: "#ffffffff" }}
+				>
+					{athlete.imageUrl ?
+						// <View className="items-center rounded-xl">
+						// 	{/* <Typography>{athlete.imageUrl}</Typography> */}
+						// 	<Image source={{ uri: athlete.imageUrl }} style={{ width: 200, height: 200 }} className="rounded-2xl"/> 
+						// </View>
+						<ImageBackground
+							source={{ uri: athlete.imageUrl }}
+							imageStyle={{ borderRadius: 16 }}
+							// className="rounded-2xl"
+							style={{ width: '100%', height: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
+							<View className="w-full items-end mt-3 me-5">
+								<View className="p-2 rounded-2xl" style={{backgroundColor: "yellow"}}>
+									<Typography>{athlete.cost} XP</Typography>
+								</View>
+							</View>
+							<AthleteBasicInfo
+								athlete={athlete}
+								isCaptain={isCaptain}
+								isLoading={isLoading}
+								onEdit={onEdit}
+								onDelete={onDelete}
+							/>
+						</ImageBackground> :
+						<View className="justify-center items-center rounded-full w-16 h-16">
+							<UserRound size={100} className="text-gray-600" />
+							<AthleteBasicInfo
+								athlete={athlete}
+								isCaptain={isCaptain}
+								isLoading={isLoading}
+								onEdit={onEdit}
+								onDelete={onDelete}
+							/>
 						</View>
-					</View>
-					<AthleteBasicInfo
-						athlete={athlete}
-						isCaptain={isCaptain}
-						isLoading={isLoading}
-						onEdit={onEdit}
-						onDelete={onDelete}
-					/>
-				</ImageBackground> :
-				<View className="justify-center items-center rounded-full w-16 h-16">
-					<UserRound size={100} className="text-gray-600" />
-					<AthleteBasicInfo
-						athlete={athlete}
-						isCaptain={isCaptain}
-						isLoading={isLoading}
-						onEdit={onEdit}
-						onDelete={onDelete}
-					/>
+					}
 				</View>
-			}
+				{isCaptain &&
+					<View className="items-center mt-3">
+						<Typography size="large" type="bright" className="mb-2">Kapitan drużyny</Typography>
+						<Typography size="base">Zbiera podwójne punkty</Typography>
+					</View>
+				}
+			</Pressable>
+
+			<Dialog
+				webOptions={{ variant: "wide"}}
+				isOpen={detailedMember !== null}
+				onClose={() => setDetailedMember(null)}>
+				<AthleteInfoDialog
+					athlete={detailedMember}
+					isCaptain={isCaptain}
+					onCaptainPressed={async () => {
+						if (detailedMember && typeof detailedMember === "object") {
+							await makeAthleteCaptain(detailedMember.id);
+							await invalidateParticipation(detailedMember.eventId);
+						}
+						setDetailedMember(null)}
+					}
+					onCaptainDeletePressed={async () => {
+						if (detailedMember && typeof detailedMember === "object") {
+							await deleteCaptainPrivilege(detailedMember.id);
+							await invalidateParticipation(detailedMember.eventId);
+						}
+						setDetailedMember(null)
+					}}
+				/>
+			</Dialog>
 		</View>
 	);
 };
+
+const AthleteInfoDialog: React.FC<{
+	athlete: Athlete | null;
+	isCaptain: boolean;
+	isLoading?: boolean;
+	onCaptainPressed?: () => void;
+	onCaptainDeletePressed?: () => void;
+}> = ({ athlete, isCaptain, isLoading, onCaptainPressed, onCaptainDeletePressed }) => {
+	if (athlete === null)
+		return null;
+
+	console.log(athlete.lastName, isCaptain);
+	return (
+		<View className="p-3">
+			<View className="flex-row">
+				<View className="m-3 items-center">
+					{athlete.imageUrl ?
+						<Image source={{ uri: athlete.imageUrl }} className="m-2 rounded-xl" style={{ width: 300, height: 400 }} /> :
+						<View className="justify-center items-center rounded-full w-16 h-16 m-5">
+								<UserRound size={100} className="text-gray-600" />
+						</View>
+					}
+					<Typography className="mb-2" size="large1">{athlete.firstName} {athlete.lastName}</Typography>
+					<Typography className="mb-2" size="large">Klub: {athlete.coach}</Typography>
+					<Typography className="mb-2" size="large">Numer: {athlete.number}</Typography>
+					{isCaptain && <Typography>Jestem kapitanem</Typography>}
+				</View>
+				<View className="flex-column items-center">
+					{isCaptain ?
+						<Button
+							text="Usuń przywilej kapitana"
+							variant="danger"
+							size="base"
+							className="mt-auto"
+							textClassName="!text-sm"
+							isLoading={isLoading}
+							rounded
+							onPress={onCaptainDeletePressed}
+						/> :
+						<Button
+							text="Ustaw jako kapitana"
+							variant="primary"
+							size="base"
+							className="mt-auto"
+							textClassName="!text-sm"
+							isLoading={isLoading}
+							rounded
+							onPress={onCaptainPressed}
+						/>
+					}
+				</View>
+			</View>
+			
+		</View>
+	)
+}
 
 const AthleteBasicInfo: React.FC<{
 	athlete: Athlete;
@@ -253,7 +390,7 @@ const AthleteBasicInfo: React.FC<{
 	onDelete?: () => void;
 }> = ({ athlete, isCaptain, isLoading, onEdit, onDelete }) => {
 	return (
-		<View className="items-center p-3 rounded-xl w-full" style={{backgroundColor: "#a8b1ffff"}}>
+		<View className="items-center p-3 rounded-xl w-full" style={{backgroundColor: "#FFC4C4"}}>
 			<Typography size="large" className="mt-1" numberOfLines={1}>
 				{athlete.firstName} {athlete.lastName}
 			</Typography>

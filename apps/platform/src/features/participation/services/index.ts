@@ -86,6 +86,21 @@ export const useMakeTeamLeaderMutation = () => {
 	});
 };
 
+export const useDeleteTeamLeaderPrivilegeMutation = () => {
+	const eventId = useGlobalSearchParams().eventId?.toString();
+
+	return useMutation({
+		mutationFn: (athleteId: string) =>
+			fetcher(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/delete-captain-privilege`,
+				{
+					method: "POST",
+					body: { athleteId },
+				},
+			),
+	});
+};
+
 export const useParticipationQuery = () => {
 	const eventId = useGlobalSearchParams().eventId?.toString();
 
