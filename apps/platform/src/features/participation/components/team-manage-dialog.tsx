@@ -1,6 +1,12 @@
 import type { AthleteWithDisciplines } from "@fan-athletics/shared/types";
 import { useGlobalSearchParams } from "expo-router";
-import { CircleUser, Info, Plus, UserRoundPlus, UserRound } from "lucide-react-native";
+import {
+	CircleUser,
+	Info,
+	Plus,
+	UserRound,
+	UserRoundPlus,
+} from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
@@ -173,9 +179,6 @@ const PlayerPreview: React.FC<
 				numberOfLines={1}
 			>
 				{firstName} {lastName}
-			</Typography>
-			<Typography type="washed" className="text-center" numberOfLines={1}>
-				{coach}
 			</Typography>
 			<Typography type="washed" className="text-center" numberOfLines={1}>
 				{coach}

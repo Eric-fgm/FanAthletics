@@ -258,7 +258,10 @@ export const processCompetitionsAndResults = async (
 									.values({
 										athleteId: athlete.id,
 										competitionId: competition.id,
-										place: result.Miejsce !== "0" ? Number.parseInt(result.Miejsce, 10) : 9999,
+										place:
+											result.Miejsce !== "0"
+												? Number.parseInt(result.Miejsce, 10)
+												: 9999,
 										results: {
 											score: result.Wynik,
 											ranking: result.Ranking,
@@ -374,6 +377,9 @@ export const saveAthletes = async (
 					lastName,
 					number: Number.parseInt(athlete.number, 10),
 					coach: athlete.club,
+					club: athlete.club,
+					nationality: "Poland",
+					sex: firstName === "Karol" || firstName === "Jakub" ? "M" : "K",
 					imageUrl: "https://starter.pzla.pl/foto/277503.jpg?m=20230118093122",
 					cost: 100,
 					updatedAt: nowDate,

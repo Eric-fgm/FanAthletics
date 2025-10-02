@@ -78,6 +78,9 @@ export interface Athlete {
 	lastName: string;
 	cost: number;
 	coach: string;
+	club: string | null,
+	sex: string,
+	nationality: string,
 	createdAt: string;
 	updatedAt: string;
 }
