@@ -189,17 +189,6 @@ const Participation = () => {
 					</View>
 				</View>
 			</Dialog>
-			<View className="w-full items-center p-3">
-				<Button
-					text="Oblicz punkty"
-					variant="primary"
-					size="base"
-					className="mt-auto"
-					textClassName="!text-sm"
-					rounded
-					onPress={() => {}}
-				/>
-			</View>
 		</ScrollArea>
 	);
 };

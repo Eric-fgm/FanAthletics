@@ -1,5 +1,6 @@
 import type {
 	Athlete,
+	Participant,
 	UserWithParticipation,
 } from "@fan-athletics/shared/types";
 import { Link, useRouter } from "expo-router";
@@ -98,11 +99,11 @@ const LeaderboardList: React.FC<LeaderboardListProps> & {
 			{
 				key: "score",
 				name: "Wynik",
-				render: ({ score }: { score: number }) => (
+				render: ({ participant }: { participant: Participant }) => (
 					<View className="flex-row items-end">
-						<Typography size="base">{score} </Typography>
+						<Typography size="base">{participant.lastPoints} </Typography>
 						<Typography size="small" className="mb-0.5">
-							XP
+							PKT
 						</Typography>
 					</View>
 				),

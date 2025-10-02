@@ -24,6 +24,9 @@ export const useInvalidateParticipation = () => {
 				queryClient.invalidateQueries({
 					queryKey: ["game::team-members", eventId],
 				}),
+				queryClient.invalidateQueries({
+					queryKey: ["game::participation"],
+				}),
 			]);
 		},
 	};
@@ -96,6 +99,18 @@ export const useDeleteTeamLeaderPrivilegeMutation = () => {
 				{
 					method: "POST",
 					body: { athleteId },
+				},
+			),
+	});
+};
+
+export const useCountPointsMutation = () => {
+	return useMutation({
+		mutationFn: (eventId: string) =>
+			fetcher(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/count-points`,
+				{
+					method: "POST",
 				},
 			),
 	});

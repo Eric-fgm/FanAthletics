@@ -3,12 +3,20 @@ import { Settings } from "lucide-react-native";
 import React, { useState } from "react";
 import { Button, Dropdown } from "#/components";
 import { EventCreateDialog, useEventPullMutation } from "#/features/admin";
+import { useCountPointsMutation, useInvalidateParticipation } from "#/features/participation";
 
 const AdminTools = () => {
 	const { eventId } = useGlobalSearchParams();
 
 	const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 	const { mutate: pullEvent, isPending } = useEventPullMutation();
+	const {
+			mutateAsync: countPoints,
+			isPending: isCountPointsPending,
+		} = useCountPointsMutation();
+	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
+
+
 
 	return (
 		<>
@@ -26,6 +34,14 @@ const AdminTools = () => {
 						disabled: typeof eventId !== "string" || isPending,
 						onPress: () => {
 							pullEvent(eventId.toString());
+						},
+					},
+					{
+						name: "Oblicz punkty",
+						onPress: async () => {
+							console.log("Liczenie...");
+							await countPoints(eventId.toString());
+							await invalidateParticipation(eventId.toString());;
 						},
 					},
 				]}
