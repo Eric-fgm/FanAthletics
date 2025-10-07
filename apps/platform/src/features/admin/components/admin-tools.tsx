@@ -36,7 +36,9 @@ const AdminTools = () => {
 						},
 					},
 					{
-						name: isCountPointsPending ? "Trwa obliczanie punktów..." : "Oblicz punkty",
+						name: isCountPointsPending
+							? "Trwa obliczanie punktów..."
+							: "Oblicz punkty",
 						disabled: typeof eventId !== "string" || isCountPointsPending,
 						onPress: async () => {
 							console.log("Liczenie...");

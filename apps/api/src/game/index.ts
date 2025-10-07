@@ -331,37 +331,36 @@ export default new Hono<{
 	.post("/count-points", async (c) => {
 		const eventId = c.req.param("eventId");
 
-		const disciplineIds = (await db.query.discipline.findMany({
-			where: (discipline, { eq }) => eq(discipline.eventId, eventId)
-		})).map(dis => dis.id);
+		const disciplineIds = (
+			await db.query.discipline.findMany({
+				where: (discipline, { eq }) => eq(discipline.eventId, eventId),
+			})
+		).map((dis) => dis.id);
 
-		const competitions = (await db.query.competition.findMany({
-			where: (competition, { inArray }) => inArray(competition.disciplineId, disciplineIds)
-		}));
+		const competitions = await db.query.competition.findMany({
+			where: (competition, { inArray }) =>
+				inArray(competition.disciplineId, disciplineIds),
+		});
 
 		const filtered = [];
 
 		for (const disciplineId of disciplineIds) {
-			const comps = competitions.filter(c => c.disciplineId === disciplineId);
+			const comps = competitions.filter((c) => c.disciplineId === disciplineId);
 
-			if (comps.length === 0)
-				continue;
+			if (comps.length === 0) continue;
 
-			const round3Exists = comps.some(c => c.round === 3);
+			const round3Exists = comps.some((c) => c.round === 3);
 
 			if (round3Exists) {
 				for (const comp of comps) {
-					if (comp.round === 3)
-						filtered.push(comp);
+					if (comp.round === 3) filtered.push(comp);
 				}
-			}
-			else {
-				for (const comp of comps)
-					filtered.push(comp);
+			} else {
+				for (const comp of comps) filtered.push(comp);
 			}
 		}
 
-		const competitionIds = filtered.map(c => c.id);
+		const competitionIds = filtered.map((c) => c.id);
 
 		process.stdout.write(`COMPETITION IDS:  ${competitionIds}`);
 
@@ -390,32 +389,44 @@ export default new Hono<{
 		// }
 
 		const competitors = await db.query.competitor.findMany({
-			where: (competitor, { inArray }) => inArray(competitor.competitionId, competitionIds)
+			where: (competitor, { inArray }) =>
+				inArray(competitor.competitionId, competitionIds),
 		});
 
-		for (const competitor of competitors)  {
-			const participantIds = (await db.query.teamMember.findMany({
-				where: (member, { eq }) => eq(member.athleteId, competitor.athleteId)
-			})).map(mem => mem.participantId);
+		for (const competitor of competitors) {
+			const participantIds = (
+				await db.query.teamMember.findMany({
+					where: (member, { eq }) => eq(member.athleteId, competitor.athleteId),
+				})
+			).map((mem) => mem.participantId);
 
 			for (const participId of participantIds) {
 				let pointsToAdd: number;
-				if (competitor.place === null)
-					pointsToAdd = 0;
+				if (competitor.place === null) pointsToAdd = 0;
 				else {
-					const competitorResults = competitor.results as { score: string, ranking: string };
-					pointsToAdd = Math.max(8-Number.parseInt(competitorResults.ranking)+1, 0);
+					const competitorResults = competitor.results as {
+						score: string;
+						ranking: string;
+					};
+					pointsToAdd = Math.max(
+						8 - Number.parseInt(competitorResults.ranking) + 1,
+						0,
+					);
 					// Kapitan musi mieć podwójne punkty - trzeba to dodać.
 				}
-				await db.update(tables.participant).set({ lastPoints: sql`${tables.participant.lastPoints} + ${pointsToAdd}`})
+				await db
+					.update(tables.participant)
+					.set({
+						lastPoints: sql`${tables.participant.lastPoints} + ${pointsToAdd}`,
+					})
 					.where(eq(tables.participant.id, participId));
 				// const particip = await db.query.participant.findFirst({
 				// 	where: (participant, { eq }) => eq(participant.id, participId)
 				// });
 			}
-		};
+		}
 
-		return c.json({message: "Points successfully counted."}, 200);
+		return c.json({ message: "Points successfully counted." }, 200);
 	});
 
 async function doesAthleteBelongToTeam(

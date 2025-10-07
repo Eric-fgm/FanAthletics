@@ -78,9 +78,9 @@ export interface Athlete {
 	lastName: string;
 	cost: number;
 	coach: string;
-	club: string | null,
-	sex: string,
-	nationality: string,
+	club: string | null;
+	sex: string;
+	nationality: string;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -108,4 +108,22 @@ export interface Competitor extends Athlete {
 
 export interface CompetitionWithCompetitors extends Competition {
 	competitors: Competitor[];
+}
+
+export interface PersonalRecord {
+	id: string;
+	athleteId: string;
+	disciplineName: string;
+	result: string;
+	resultPoints: number | null;
+	isWorldRecord: boolean;
+}
+
+export interface Honour {
+	id: string;
+	athleteId: string;
+	championships: string;
+	year: number | null;
+	place: number;
+	result: string;
 }

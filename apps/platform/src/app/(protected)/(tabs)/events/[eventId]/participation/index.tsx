@@ -1,7 +1,5 @@
 import type { Athlete } from "@fan-athletics/shared/types";
 import {
-	CircleUser,
-	Plus,
 	UserRound,
 	UserRoundPlus,
 } from "lucide-react-native";
@@ -20,23 +18,8 @@ import {
 	useParticipationQuery,
 	useTeamMembersQuery,
 } from "#/features/participation";
-
-const menColors = {
-	cardUpGradient: "#0B89A5",
-	cardDownGradient: "#8EEAFF",
-	honoursUpGradient: "#077D8F",
-	honoursDownGradient: "#60CAE2",
-	basicInfoColor: "#CCF6FF"
-}
-const womenColors ={
-	cardUpGradient: "#FF5757",
-	cardDownGradient: "#FFB2B2",
-	honoursUpGradient: "#6E2121",
-	honoursDownGradient: "#DB3131",
-	basicInfoColor: "#FFC4C4"
-}
-
-type AthleteColors = typeof menColors;
+import { menColors, womenColors, GradientBox, AthleteCostBox, flags } from "./utils";
+import type { AthleteColors } from "./utils";
 
 const Participation = () => {
 	const [selectedMember, setSelectedMember] = useState<Athlete | "edit" | null>(
@@ -144,6 +127,38 @@ const Participation = () => {
 				{teamMembersSlots.map((member, index) => (
 					<React.Fragment key={member?.id ?? index}>
 						{member ? (
+							member.isCaptain ? (
+								<View
+									className="rounded-2xl"
+									style={{
+										shadowOpacity: 0.25,
+										shadowColor: "black",
+										shadowRadius: 10,
+										shadowOffset: { width: 4, height: 4 },
+										elevation: 8
+									}}
+								>
+									<GradientBox
+										sex={member.sex}
+										vertical
+										leftUpColor={member.sex === "M" ?
+														menColors.captainAndHonoursUpGradient :
+														womenColors.captainAndHonoursUpGradient
+													}
+										rightDownColor={member.sex === "M" ?
+														menColors.captainAndHonoursDownGradient :
+														womenColors.captainAndHonoursDownGradient
+													}
+									>
+										<AthletePreview
+											isLoading={isAddTeamMemberPending || isDeleteTeamMemberPending}
+											onEdit={() => setSelectedMember(member)}
+											onDelete={() => setMemberToDelete(member)}
+											athlete={member}
+											isCaptain={member.isCaptain}/>
+									</GradientBox>
+								</View>
+							) : (
 							<AthletePreview
 								isLoading={isAddTeamMemberPending || isDeleteTeamMemberPending}
 								onEdit={() => setSelectedMember(member)}
@@ -151,6 +166,7 @@ const Participation = () => {
 								athlete={member}
 								isCaptain={member.isCaptain}
 							/>
+							)
 						) : (
 							<AthleteSlot
 								index={index + 1}
@@ -246,11 +262,8 @@ const AthletePreview: React.FC<{
 	onEdit?: () => void;
 	onDelete?: () => void;
 }> = ({ athlete, isCaptain, isLoading, onEdit, onDelete }) => {
-	// var rand = Math.random();
-	// console.log(rand, athlete.lastName);
-	// if (rand > 0.5)
-	// 	isCaptain = true;
 
+	console.log(athlete.nationality, flags[athlete.nationality], `https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`)
 	const {
 		mutateAsync: makeAthleteCaptain,
 		isPending: isMakeAthleteCaptainPending,
@@ -267,13 +280,10 @@ const AthletePreview: React.FC<{
 
 	return (
 		// <View className="items-center border border-gray-200 rounded-2xl h-[432px]" style={{backgroundColor: "#ffffffff"}}>
-		<View
-			className="p-4 rounded-2xl"
-			style={{ backgroundColor: isCaptain ? "#A32929" : "white" }}
-		>
+		<View className="p-5 rounded-2xl">
 			<Pressable
 				onPress={() => {
-					console.log("Kliknięto: ", athlete.lastName);
+					console.log("Kliknięto: ", athlete);
 					setDetailedMember(athlete);
 				}}
 			>
@@ -295,23 +305,26 @@ const AthletePreview: React.FC<{
 								height: "100%",
 								justifyContent: "space-between",
 								alignItems: "center",
+								borderRadius: 16,
+								shadowOpacity: !isCaptain ? 0.25 : undefined,
+								shadowColor: !isCaptain ? "black" : undefined,
+								shadowRadius: !isCaptain ? 10 : undefined,
+								shadowOffset: !isCaptain ? { width: 4, height: 4 } : undefined,
+								elevation: !isCaptain ? 8 : 0
 							}}
 						>
-							<View className="w-full items-end mt-3 me-5">
-								<View
+							<View className="w-full items-end">
+								{/* <View
 									className="p-2 rounded-2xl"
 									style={{ backgroundColor: "yellow" }}
 								>
 									<Typography>{athlete.cost} XP</Typography>
-								</View>
+								</View> */}
+								<AthleteCostBox cost={athlete.cost} />
 							</View>
 							<AthleteBasicInfo
 								athlete={athlete}
-								isCaptain={isCaptain}
-								isLoading={isLoading}
 								colors={colors}
-								onEdit={onEdit}
-								onDelete={onDelete}
 							/>
 						</ImageBackground>
 					) : (
@@ -319,11 +332,7 @@ const AthletePreview: React.FC<{
 							<UserRound size={100} className="text-gray-600" />
 							<AthleteBasicInfo
 								athlete={athlete}
-								isCaptain={isCaptain}
-								isLoading={isLoading}
 								colors={colors}
-								onEdit={onEdit}
-								onDelete={onDelete}
 							/>
 						</View>
 					)}
@@ -360,9 +369,12 @@ const AthletePreview: React.FC<{
 						}
 						setDetailedMember(null);
 					}}
+					onEdit={onEdit}
+					onDelete={onDelete}
 				/>
 			</Dialog>
 		</View>
+		
 	);
 };
 
@@ -372,12 +384,16 @@ const AthleteInfoDialog: React.FC<{
 	isLoading?: boolean;
 	onCaptainPressed?: () => void;
 	onCaptainDeletePressed?: () => void;
+	onEdit?: () => void;
+	onDelete?: () => void;
 }> = ({
 	athlete,
 	isCaptain,
 	isLoading,
 	onCaptainPressed,
 	onCaptainDeletePressed,
+	onEdit,
+	onDelete
 }) => {
 	if (athlete === null) return null;
 
@@ -408,7 +424,7 @@ const AthleteInfoDialog: React.FC<{
 					</Typography>
 					{isCaptain && <Typography>Jestem kapitanem</Typography>}
 				</View>
-				<View className="flex-column items-center">
+				<View className="flex-row items-center">
 					{isCaptain ? (
 						<Button
 							text="Usuń przywilej kapitana"
@@ -432,6 +448,26 @@ const AthleteInfoDialog: React.FC<{
 							onPress={onCaptainPressed}
 						/>
 					)}
+					<Button
+						text="Usuń zawodnika"
+						variant="danger"
+						size="base"
+						className="mt-auto"
+						textClassName="!text-sm"
+						isLoading={isLoading}
+						rounded
+						onPress={onDelete}
+					/>
+					<Button
+						text="Edytuj zawodnika"
+						variant="primary"
+						size="base"
+						className="mt-auto"
+						textClassName="!text-sm"
+						isLoading={isLoading}
+						rounded
+						onPress={onEdit}
+					/>
 				</View>
 			</View>
 		</View>
@@ -440,45 +476,25 @@ const AthleteInfoDialog: React.FC<{
 
 const AthleteBasicInfo: React.FC<{
 	athlete: Athlete;
-	isCaptain: boolean;
-	isLoading?: boolean;
 	colors: AthleteColors;
-	onEdit?: () => void;
-	onDelete?: () => void;
-}> = ({ athlete, isCaptain, isLoading, colors, onEdit, onDelete }) => {
+}> = ({ athlete, colors }) => {
 	return (
-		<View
-			className="items-center p-3 rounded-xl w-full"
-			style={{ backgroundColor: colors.basicInfoColor }}
-		>
-			<Typography size="large" className="mt-1" numberOfLines={1}>
-				{athlete.firstName} {athlete.lastName}
-			</Typography>
-			<Typography type="washed" className="mt-1" numberOfLines={1}>
-				{athlete.coach}
-			</Typography>
-
-			<View className="flex-row items-center justify-center w-full mt-2">
-				<Button
-					text="Edytuj"
-					variant="secondary"
-					size="small"
-					className="mt-auto me-2"
-					textClassName="!text-sm"
-					isLoading={isLoading}
-					rounded
-					onPress={onEdit}
-				/>
-				<Button
-					text="Usuń"
-					variant="danger"
-					size="small"
-					className="mt-auto"
-					textClassName="!text-sm"
-					isLoading={isLoading}
-					rounded
-					onPress={onDelete}
-				/>
+		<View className="flex-column w-full">
+			<Image
+				source={{ uri: `https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`}}
+				style={{ width: 48, height: 32, borderRadius: 24}}
+				className="w-full h-full ms-3 mb-2"
+			/>
+			<View
+				className="items-center px-3 py-5 rounded-xl w-full"
+				style={{ backgroundColor: colors.basicInfoColor }}
+			>
+				<Typography size="large1" className="mt-1" numberOfLines={1}>
+					{athlete.firstName} {athlete.lastName}
+				</Typography>
+				<Typography size="large" type="washed" className="mt-1" numberOfLines={1}>
+					{athlete.coach}
+				</Typography>
 			</View>
 		</View>
 	);
