@@ -1,13 +1,33 @@
-import { useLocalSearchParams } from "expo-router";
-import { View } from "react-native";
+import type { UserTeam } from "@fan-athletics/shared/types";
+import {
+	Link,
+	useFocusEffect,
+	useLocalSearchParams,
+	useRouter,
+} from "expo-router";
+import { Trophy } from "lucide-react-native";
+import React from "react";
+import { Image, Pressable, View } from "react-native";
 import { Avatar, Button, Typography } from "#/components";
 import { useSessionSuspeneQuery } from "#/features/auth";
-import { UserEditDialog, useUserQuery } from "#/features/users";
+import {
+	UserEditDialog,
+	useUserQuery,
+	useUserTeamsQuery,
+} from "#/features/users";
 
 export default function UserProfile() {
 	const { id } = useLocalSearchParams();
 	const { data: user } = useUserQuery(id.toString());
 	const { data: session } = useSessionSuspeneQuery();
+
+	const { data: userTeams, refetch } = useUserTeamsQuery(id.toString());
+
+	useFocusEffect(
+		React.useCallback(() => {
+			refetch();
+		}, [refetch]),
+	);
 
 	if (!user) {
 		return null;
@@ -17,6 +37,8 @@ export default function UserProfile() {
 		...user,
 		...(user.id === session?.user.id && session.user),
 	};
+
+	const isMyProfile = user.id === session?.user.id;
 
 	return (
 		<View className="items-center pt-16 pb-8">
@@ -40,6 +62,113 @@ export default function UserProfile() {
 					user={session.user}
 				/>
 			)}
+			<View className="w-full p-7 mt-3">
+				<Typography size="large3" className="ms-3">
+					{isMyProfile ? "Moje drużyny" : `Drużyny użytkownika ${user.name}`}
+				</Typography>
+				<TeamList teams={userTeams ?? []} isMyProfile={isMyProfile} />
+			</View>
 		</View>
 	);
 }
+
+const TeamList: React.FC<{
+	teams: UserTeam[];
+	isMyProfile: boolean;
+}> = ({ teams, isMyProfile }) => {
+	const router = useRouter();
+
+	teams.sort((a, b) => {
+		if (a.eventName.toLowerCase() < b.eventName.toLowerCase()) return -1;
+		return 1;
+	});
+
+	return (
+		<View className="flex-column p-5">
+			{teams.map((team, index) => (
+				<View
+					key={team.id}
+					className="sm:flex-row flex-col p-4 gap-4 sm:items-center sm:h-[100] h-[150] border border-gray-200"
+					style={{
+						backgroundColor: index % 2 === 0 ? "#c9c9c9ff" : "#ffffff",
+						borderTopLeftRadius: index === 0 ? 16 : 0,
+						borderTopRightRadius: index === 0 ? 16 : 0,
+						borderBottomLeftRadius: index === teams.length - 1 ? 16 : 0,
+						borderBottomRightRadius: index === teams.length - 1 ? 16 : 0,
+					}}
+				>
+					<View className="bg-red-50 mr-3 px-2 py-1 rounded-full hidden sm:flex">
+						<Typography size="small" className="text-red-600">
+							#{index + 1}
+						</Typography>
+					</View>
+					<View className="flex-row items-center gap-3 basis-[50%] xl:basis-1/3">
+						<View className="w-12 h-12 rounded-full">
+							{team.eventIcon ? (
+								<Image
+									source={{ uri: team.eventIcon }}
+									className="w-full h-full rounded-full"
+								/>
+							) : (
+								<Trophy size={20} className="text-gray-600" />
+							)}
+						</View>
+						<Link href={`/events/${team.eventId}`}>
+							<Typography size="base">{team.eventName}</Typography>
+						</Link>
+					</View>
+					<View className="flex-row">
+						<View className="bg-red-50 mr-3 px-2 py-1 rounded-full justify-center max-sm:flex hidden lg:flex">
+							<Typography size="base" className="text-red-600">
+								{team.points} PKT
+							</Typography>
+						</View>
+						<View className="bg-red-50 mr-3 px-2 py-1 rounded-full justify-center max-sm:flex hidden lg:flex">
+							<Typography size="base" className="text-red-600">
+								{team.budget} XP
+							</Typography>
+						</View>
+						<View className="hidden max-sm:flex">
+							{isMyProfile && (
+								<Button
+									text="Zobacz drużynę"
+									rounded
+									onPress={() =>
+										router.push(`/events/${team.eventId}/participation`)
+									}
+								/>
+							)}
+						</View>
+					</View>
+					<View className="flex-row flex-wrap gap-2 basis-[40%] sm:basis-[70%] xl:basis-1/3 hidden lg:flex">
+						{team.athletes.map((member) => (
+							<Pressable
+								key={member.id}
+								onPress={() =>
+									router.push(`/events/${team.eventId}/athletes/${member.id}`)
+								}
+								className="w-16 h-16"
+							>
+								<Image
+									source={{ uri: member.imageUrl ?? undefined }}
+									className="w-full h-full rounded-full"
+								/>
+							</Pressable>
+						))}
+					</View>
+					<View className="ml-auto justify-center items-center">
+						{isMyProfile && (
+							<Button
+								text="Zobacz drużynę"
+								rounded
+								onPress={() =>
+									router.push(`/events/${team.eventId}/participation`)
+								}
+							/>
+						)}
+					</View>
+				</View>
+			))}
+		</View>
+	);
+};
