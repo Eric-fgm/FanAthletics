@@ -2,7 +2,7 @@ import type { AthleteWithDisciplines } from "@fan-athletics/shared/types";
 import { CircleUser } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { Dialog, Typography } from "#/components";
 import { useEventAthletesQuery } from "#/features/events";
 
@@ -33,7 +33,7 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 					Znajdź zawodnika, którego chcesz dodać.
 				</Typography>
 			</View>
-			<View className="gap-y-2 px-6 pt-4 pb-2 border-gray-200 border-t">
+			<ScrollView className="gap-y-2 px-6 pt-4 pb-2 border-gray-200 border-t max-h-[524px]">
 				<TextInput
 					placeholder="Szukaj zawodników"
 					className="bg-gray-100 px-4 rounded-xl h-10 placeholder:text-gray-500"
@@ -52,7 +52,7 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 					</View>
 				) : (
 					<View>
-						{filteredAthletes.slice(0, 5).map((athlete) => {
+						{filteredAthletes.map((athlete) => {
 							const isDisabled = disabledAtletes.includes(athlete.id);
 							return (
 								<Pressable
@@ -77,7 +77,7 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 						})}
 					</View>
 				)}
-			</View>
+			</ScrollView>
 		</Dialog>
 	);
 };

@@ -1,5 +1,5 @@
 {
-  "id": "122fd457-74d1-4a83-922a-c88c07ec4d85",
+  "id": "a4049ae2-1122-4c24-95f0-770c929f6c41",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -575,6 +575,13 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'idle'"
         },
         "startAt": {
           "name": "startAt",

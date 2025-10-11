@@ -52,6 +52,13 @@ const TabsLayout = () => {
 					title: "Zawodnicy",
 				}}
 			/>
+			<Tabs.Screen
+				name="events/[eventId]/participation/index"
+				options={{
+					title: "Druzyna",
+					// href: null,
+				}}
+			/>
 		</Tabs>
 	);
 };

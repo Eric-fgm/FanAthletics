@@ -7,7 +7,7 @@ import { CircleUser, Ellipsis } from "lucide-react-native";
 import type React from "react";
 import { useMemo } from "react";
 import { Image, View } from "react-native";
-import { Dropdown, Skeleton, Table, Typography } from "#/components";
+import { Avatar, Dropdown, Skeleton, Table, Typography } from "#/components";
 
 interface LeaderboardListProps {
 	users: UserWithParticipation[];
@@ -33,7 +33,7 @@ const LeaderboardList: React.FC<LeaderboardListProps> & {
 				render: ({ place }: { place: number }) => {
 					return (
 						<View className="bg-red-50 mr-3 px-2 py-1 rounded-full">
-							<Typography size="small" className="text-red-600">
+							<Typography size="small" className="text-red-400">
 								#{place}
 							</Typography>
 						</View>
@@ -92,17 +92,23 @@ const LeaderboardList: React.FC<LeaderboardListProps> & {
 				}: {
 					team: Athlete[];
 				}) => {
-					return <View className="hidden xl:flex flex-row gap-4" />;
+					return (
+						<View className="hidden xl:flex flex-row gap-2 basis-[45%]">
+							{team.map((athlete) => (
+								<Avatar key={athlete.id} name={athlete.firstName} />
+							))}
+						</View>
+					);
 				},
 			},
 			{
 				key: "score",
 				name: "Wynik",
-				render: ({ score }: { score: number }) => (
+				render: ({ participant }: { participant: { lastPoints: number } }) => (
 					<View className="flex-row items-end">
-						<Typography size="base">{score} </Typography>
+						<Typography size="base">{participant.lastPoints} </Typography>
 						<Typography size="small" className="mb-0.5">
-							XP
+							PKT
 						</Typography>
 					</View>
 				),
@@ -138,7 +144,6 @@ const LeaderboardList: React.FC<LeaderboardListProps> & {
 				...user,
 				id: user.user.id,
 				place: index + 1,
-				score: 100,
 			}))}
 			{...props}
 		/>

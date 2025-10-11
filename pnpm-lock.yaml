@@ -72,6 +72,9 @@ importers:
       '@fan-athletics/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@gorhom/portal':
+        specifier: ^1.0.14
+        version: 1.0.14(react-native@0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@headlessui/react':
         specifier: ^2.2.4
         version: 2.2.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -126,6 +129,9 @@ importers:
       react-native:
         specifier: 0.79.2
         version: 0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
+      react-native-element-dropdown:
+        specifier: ^2.12.4
+        version: 2.12.4(react-native@0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-gesture-handler:
         specifier: ^2.27.1
         version: 2.27.1(react-native@0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -1205,6 +1211,12 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@gorhom/portal@1.0.14':
+    resolution: {integrity: sha512-MXyL4xvCjmgaORr/rtryDNFy3kU4qUbKlwtQqqsygd0xX3mhKjOLn6mQK8wfu0RkoE0pBE0nAasRoHua+/QZ7A==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   '@headlessui/react@2.2.4':
     resolution: {integrity: sha512-lz+OGcAH1dK93rgSMzXmm1qKOJkBUqZf1L4M8TWLNplftQD3IkoEDdUFNfAn4ylsN6WOTVtWaLmvmaHOUk1dTA==}
@@ -3501,6 +3513,13 @@ packages:
       react: '*'
       react-native: '*'
 
+  react-native-element-dropdown@2.12.4:
+    resolution: {integrity: sha512-abZc5SVji9FIt7fjojRYrbuvp03CoeZJrgvezQoDoSOrpiTqkX69ix5m+j06W2AVncA0VWvbT+vCMam8SoVadw==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
   react-native-gesture-handler@2.27.1:
     resolution: {integrity: sha512-57TUWerhdz589OcDD21e/YlL923Ma4OIpyWsP0hy7gItBCPm5d7qIUW7Yo/cS2wo1qDdOhJaNlvlBD1lDou1fA==}
     peerDependencies:
@@ -5362,6 +5381,12 @@ snapshots:
       tabbable: 6.2.0
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@gorhom/portal@1.0.14(react-native@0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      nanoid: 3.3.11
+      react: 19.0.0
+      react-native: 0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
 
   '@headlessui/react@2.2.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
@@ -7867,6 +7892,12 @@ snapshots:
 
   react-native-edge-to-edge@1.6.0(react-native@0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
     dependencies:
+      react: 19.0.0
+      react-native: 0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
+
+  react-native-element-dropdown@2.12.4(react-native@0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      lodash: 4.17.21
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
 

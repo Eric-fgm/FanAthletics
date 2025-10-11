@@ -24,6 +24,9 @@ export const useInvalidateParticipation = () => {
 				queryClient.invalidateQueries({
 					queryKey: ["game::team-members", eventId],
 				}),
+				queryClient.invalidateQueries({
+					queryKey: ["game::participants", eventId],
+				}),
 			]);
 		},
 	};
@@ -73,6 +76,7 @@ export const useDeleteTeamMemberMutation = () => {
 
 export const useMakeTeamLeaderMutation = () => {
 	const eventId = useGlobalSearchParams().eventId?.toString();
+	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: (athleteId: string) =>
@@ -83,6 +87,10 @@ export const useMakeTeamLeaderMutation = () => {
 					body: { athleteId },
 				},
 			),
+		onSuccess: () =>
+			queryClient.invalidateQueries({
+				queryKey: ["game::team-members", eventId],
+			}),
 	});
 };
 
@@ -124,7 +132,7 @@ export const useParticipantsQuery = () => {
 			fetcher<UserWithParticipation[]>(
 				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/participants`,
 			),
-		queryKey: ["disciplines::retrieve", eventId],
+		queryKey: ["game::participants", eventId],
 		enabled: !!eventId,
 	});
 };

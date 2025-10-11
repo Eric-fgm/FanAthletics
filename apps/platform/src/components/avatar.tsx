@@ -27,7 +27,7 @@ const Avatar: React.FC<AvatarProps> = ({
 			{image ? (
 				<Image source={{ uri: image }} className="w-full h-full" />
 			) : (
-				<Typography size={size === "large" ? "large2" : "normal"} type="washed">
+				<Typography size={size === "large" ? "large2" : "small"} type="washed">
 					{!name?.length ? "?" : name[0]}
 				</Typography>
 			)}

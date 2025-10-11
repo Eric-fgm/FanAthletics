@@ -1,5 +1,6 @@
 import { db, operators, tables } from "@fan-athletics/database";
 import type {
+	AthletePayload,
 	DisciplinePayload,
 	EventPayload,
 } from "@fan-athletics/shared/types";
@@ -71,6 +72,20 @@ const eventsApp = new Hono()
 
 		return c.json({ message: "Competitions successfully processed!" }, 200);
 	})
+	.put("/:eventId", async (c) => {
+		const body = await c.req.json<Partial<EventPayload>>();
+		const eventId = c.req.param("eventId");
+
+		await db
+			.update(tables.event)
+			.set({
+				...body,
+				updatedAt: new Date(),
+			})
+			.where(operators.eq(tables.event.id, eventId));
+
+		return c.json({ message: "Event successfully updated!" }, 200);
+	})
 	.delete("/:eventId", async (c) => {
 		const eventId = c.req.param("eventId");
 
@@ -104,7 +119,18 @@ const disciplinesApp = new Hono()
 			createdAt: nowDate,
 		});
 
-		return c.json({ message: "Discipline successfully created!" }, 200);
+		return c.json({ message: "Discipline successfully created!" }, 201);
+	})
+	.put("/:disciplineId", async (c) => {
+		const payload = await c.req.json<Partial<DisciplinePayload>>();
+		const disciplineId = c.req.param("disciplineId");
+
+		await db
+			.update(tables.discipline)
+			.set({ ...payload, updatedAt: new Date() })
+			.where(operators.eq(tables.discipline.id, disciplineId));
+
+		return c.json({ message: "Discipline successfully updated!" }, 200);
 	})
 	.delete("/:disciplineId", async (c) => {
 		const disciplineId = c.req.param("disciplineId");
@@ -120,7 +146,20 @@ const disciplinesApp = new Hono()
 		return c.json({ message: "Discipline successfully deleted" }, 200);
 	});
 
+const athletesApp = new Hono().put("/:athleteId", async (c) => {
+	const payload = await c.req.json<Partial<AthletePayload>>();
+	const athleteId = c.req.param("athleteId");
+
+	await db
+		.update(tables.athlete)
+		.set({ ...payload, updatedAt: new Date() })
+		.where(operators.eq(tables.athlete.id, athleteId));
+
+	return c.json({ message: "Athlete successfully updated!" }, 200);
+});
+
 adminApp.route("/events", eventsApp);
 adminApp.route("/disciplines", disciplinesApp);
+adminApp.route("/athletes", athletesApp);
 
 export default adminApp;

@@ -5,9 +5,11 @@ import { EventItem, useEventsQuery } from "#/features/events";
 import { ScrollArea } from "#/features/layout";
 
 export default function Events() {
-	const { status = "" } = useLocalSearchParams();
+	const { status = "", sortBy = "" } = useLocalSearchParams();
+
 	const { data: events = [] } = useEventsQuery({
 		available: status.toString(),
+		sortBy: sortBy.toString(),
 	});
 
 	return (
@@ -31,14 +33,28 @@ export default function Events() {
 			<View className="flex-row justify-between items-center mt-12 px-4 lg:px-12 pb-6">
 				<View className="flex-row items-center gap-2">
 					<Typography size="large2">Trending</Typography>
-					<Typography
-						size="small"
-						className="flex justify-center items-center bg-gray-100 rounded-full w-6 h-6"
-					>
-						{events.length}
-					</Typography>
+					<View className="flex justify-center items-center bg-gray-100 px-1.5 rounded-full min-w-6 h-6">
+						<Typography size="small" className="!text-[10px]">
+							{events.length < 100 ? events.length : "99+"}
+						</Typography>
+					</View>
 				</View>
-				<Select />
+				<Select
+					items={[
+						{
+							name: "Popularność",
+							value: "",
+						},
+						{
+							name: "Data rozpoczęcia",
+							value: "date",
+						},
+					]}
+					value={sortBy}
+					onChange={(value) =>
+						router.setParams({ sortBy: value ? value : undefined })
+					}
+				/>
 			</View>
 			<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 px-4 lg:px-12 w-full">
 				{events.map((event) => (

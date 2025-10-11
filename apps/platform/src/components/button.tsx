@@ -14,6 +14,7 @@ type ButtonProps = {
 	textStyle?: TextStyle;
 	icon?: LucideIcon;
 	className?: string;
+	disabled?: boolean;
 } & ({ onPress?: (event: GestureResponderEvent) => void } | { href: string });
 
 const variantClassNamesMap = {
@@ -49,6 +50,7 @@ const Button: React.FC<ButtonProps> = ({
 	isLoading = false,
 	className = "",
 	textStyle,
+	disabled,
 	...props
 }) => {
 	const variantClassNames = variantClassNamesMap[variant];
@@ -60,10 +62,10 @@ const Button: React.FC<ButtonProps> = ({
 	return (
 		<Comp
 			className={`relative flex items-center justify-center flex-shrink-0 gap-2 overflow-hidden ${rounded ? "rounded-full" : "rounded-xl"} ${className} ${variantClassNames} ${sizeClassNames}`}
-			disabled={isLoading}
+			disabled={isLoading || disabled}
 			{...props}
 		>
-			{Icon && <Icon color="white" />}
+			{Icon && <Icon size={size === "small" ? 16 : 24} color="white" />}
 			{text && (
 				<Typography
 					style={textStyle}

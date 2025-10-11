@@ -53,6 +53,28 @@ export const useEventPullMutation = () => {
 	});
 };
 
+export const useEventUpdateMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (data: EventPayload & { id: string }) =>
+			fetcher(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/admin/events/${data.id}`,
+				{
+					method: "PUT",
+					body: data,
+				},
+			),
+		async onSuccess() {
+			await queryClient.invalidateQueries({ queryKey: ["events::retrieve"] });
+			showToast({
+				text1: "Zaktualizowano Wydarzenie",
+				text2: "Twoje dane zostały pomyślnie zapisane",
+			});
+		},
+	});
+};
+
 export const useEventDeletedMutation = () => {
 	const queryClient = useQueryClient();
 

@@ -1,10 +1,16 @@
-import type { AthleteWithDisciplines } from "@fan-athletics/shared/types";
+import type {
+	Athlete,
+	AthleteWithDisciplines,
+} from "@fan-athletics/shared/types";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { CircleUser, Ellipsis } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import { useMemo } from "react";
 import { Image, View } from "react-native";
 import { Dropdown, Skeleton, Table, Typography } from "#/components";
+import { AthleteUpdateDialog } from "#/features/admin";
+import { useSessionSuspeneQuery } from "#/features/auth";
+import { isAdmin } from "#/helpers/user";
 import { getDisciplineIcon } from "../helpers";
 
 interface AthleteListProps {
@@ -17,6 +23,9 @@ const AthleteList: React.FC<AthleteListProps> & {
 } = ({ athletes, ...props }) => {
 	const { eventId } = useLocalSearchParams();
 	const router = useRouter();
+	const { data: session } = useSessionSuspeneQuery();
+
+	const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
 
 	const columns = useMemo(() => {
 		return [
@@ -100,7 +109,7 @@ const AthleteList: React.FC<AthleteListProps> & {
 			},
 			{
 				key: "action",
-				render: ({ id }: { id: string }) => (
+				render: (athlete: Athlete) => (
 					<View className="ml-auto">
 						<Dropdown
 							className="!mt-2"
@@ -113,17 +122,36 @@ const AthleteList: React.FC<AthleteListProps> & {
 								{
 									name: "Zobacz więcej",
 									onPress: () =>
-										router.push(`/events/${eventId}/athletes/${id}`),
+										router.push(`/events/${eventId}/athletes/${athlete.id}`),
 								},
+								...(session && isAdmin(session.user)
+									? [
+											{
+												name: "Edytuj zawodnika",
+												onPress: () => setSelectedAthlete(athlete),
+											},
+										]
+									: []),
 							]}
 						/>
 					</View>
 				),
 			},
 		];
-	}, [eventId, router]);
+	}, [eventId, router, session]);
 
-	return <Table columns={columns} data={athletes} {...props} />;
+	return (
+		<>
+			<Table columns={columns} data={athletes} {...props} />
+			{selectedAthlete !== null && (
+				<AthleteUpdateDialog
+					isOpen
+					onClose={() => setSelectedAthlete(null)}
+					values={selectedAthlete}
+				/>
+			)}
+		</>
+	);
 };
 
 const AthleteListSkeleton: React.FC<{ rowsCount?: number }> = ({

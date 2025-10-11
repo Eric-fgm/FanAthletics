@@ -12,9 +12,9 @@ const Input: React.FC<InputProps> = ({
 }) => {
 	return (
 		<TextInput
-			style={{ fontFamily: "inter-medium" }}
+			style={{ fontFamily: "inter-regular" }}
 			placeholder={placeholder}
-			className={`text-md font-medium px-4 h-12 rounded-xl bg-gray-100 outline-none placeholder:text-gray-400 ${className} ${disabled ? "opacity-50" : ""}`}
+			className={`text-sm px-4 h-12 rounded-xl bg-gray-100 outline-none placeholder:text-gray-400 ${className} ${disabled ? "opacity-50" : ""}`}
 			editable={!disabled}
 			selectTextOnFocus={!disabled}
 			{...props}

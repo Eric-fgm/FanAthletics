@@ -1,6 +1,5 @@
-import { db, tables } from "@fan-athletics/database";
+import { db, operators, tables } from "@fan-athletics/database";
 import type { Participant, User } from "@fan-athletics/shared/types";
-import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 export type TeamMembership = {
@@ -72,18 +71,40 @@ export default new Hono<{
 			.from(tables.user)
 			.innerJoin(
 				tables.participant,
-				eq(tables.user.id, tables.participant.userId),
+				operators.eq(tables.user.id, tables.participant.userId),
 			)
-			.where(eq(tables.participant.referenceId, eventId));
+			.where(operators.eq(tables.participant.referenceId, eventId))
+			.orderBy(operators.desc(tables.participant.lastPoints));
 
-		return c.json(usersWithParticipation);
+		return c.json(
+			await Promise.all(
+				usersWithParticipation.map(async (userWithParticipation) => ({
+					...userWithParticipation,
+					team: (
+						await db
+							.select()
+							.from(tables.athlete)
+							.innerJoin(
+								tables.teamMember,
+								operators.eq(tables.athlete.id, tables.teamMember.athleteId),
+							)
+							.where(
+								operators.eq(
+									tables.teamMember.participantId,
+									userWithParticipation.participant.id,
+								),
+							)
+					).map(({ athlete }) => athlete),
+				})),
+			),
+		);
 	})
 	.use(async (c, next) => {
 		const user = c.get("user");
 		const eventId = c.req.param("eventId");
 
 		const participant = await db.query.participant.findFirst({
-			where: (participant, { eq }) =>
+			where: (participant, { eq, and }) =>
 				and(
 					eq(participant.userId, user.id),
 					eq(participant.referenceId, eventId),
@@ -119,12 +140,25 @@ export default new Hono<{
 
 		return c.json(results);
 	})
+	.use(async (c, next) => {
+		const eventId = c.req.param("eventId");
+
+		const event = await db.query.event.findFirst({
+			where: (event, { eq }) => eq(event.id, eventId),
+		});
+
+		if (event?.status !== "available") {
+			return c.json({ message: "Event is currently unavailable" }, 403);
+		}
+
+		return await next();
+	})
 	.post("/participation/team", async (c) => {
 		const body = await c.req.json<TeamMembership>();
 		const participant = c.get("participant");
 
 		const athlete = await db.query.athlete.findFirst({
-			where: (athlete, { eq }) =>
+			where: (athlete, { and, eq }) =>
 				and(
 					eq(athlete.id, body.athleteId),
 					eq(athlete.eventId, participant.referenceId),
@@ -167,7 +201,7 @@ export default new Hono<{
 		await db
 			.update(tables.participant)
 			.set({ budget: participant.budget - athlete.cost })
-			.where(eq(tables.participant.id, participant.id));
+			.where(operators.eq(tables.participant.id, participant.id));
 
 		return c.json({ message: "Athlete successfully added to the team." }, 200);
 	})
@@ -176,7 +210,7 @@ export default new Hono<{
 		const participant = c.get("participant");
 
 		const athlete = await db.query.athlete.findFirst({
-			where: (athlete, { eq }) =>
+			where: (athlete, { and, eq }) =>
 				and(
 					eq(athlete.id, body.athleteId),
 					eq(athlete.eventId, participant.referenceId),
@@ -211,14 +245,14 @@ export default new Hono<{
 		await db
 			.update(tables.participant)
 			.set({ budget: participant.budget + athlete.cost })
-			.where(eq(tables.participant.id, participant.id));
+			.where(operators.eq(tables.participant.id, participant.id));
 
 		await db
 			.delete(tables.teamMember)
 			.where(
-				and(
-					eq(tables.teamMember.participantId, participant.id),
-					eq(tables.teamMember.athleteId, athlete.id),
+				operators.and(
+					operators.eq(tables.teamMember.participantId, participant.id),
+					operators.eq(tables.teamMember.athleteId, athlete.id),
 				),
 			);
 
@@ -229,7 +263,7 @@ export default new Hono<{
 		const participant = c.get("participant");
 
 		const athlete = await db.query.athlete.findFirst({
-			where: (athlete, { eq }) =>
+			where: (athlete, { and, eq }) =>
 				and(
 					eq(athlete.id, body.athleteId),
 					eq(athlete.eventId, participant.referenceId),
@@ -255,9 +289,9 @@ export default new Hono<{
 			.update(tables.teamMember)
 			.set({ isCaptain: false })
 			.where(
-				and(
-					eq(tables.teamMember.participantId, participant.id),
-					eq(tables.teamMember.isCaptain, true),
+				operators.and(
+					operators.eq(tables.teamMember.participantId, participant.id),
+					operators.eq(tables.teamMember.isCaptain, true),
 				),
 			);
 
@@ -265,9 +299,9 @@ export default new Hono<{
 			.update(tables.teamMember)
 			.set({ isCaptain: true })
 			.where(
-				and(
-					eq(tables.teamMember.participantId, participant.id),
-					eq(tables.teamMember.athleteId, athlete.id),
+				operators.and(
+					operators.eq(tables.teamMember.participantId, participant.id),
+					operators.eq(tables.teamMember.athleteId, athlete.id),
 				),
 			);
 
@@ -281,7 +315,7 @@ export default new Hono<{
 		const participant = c.get("participant");
 
 		const athlete = await db.query.athlete.findFirst({
-			where: (athlete, { eq }) =>
+			where: (athlete, { and, eq }) =>
 				and(
 					eq(athlete.id, body.athleteId),
 					eq(athlete.eventId, participant.referenceId),
@@ -317,9 +351,9 @@ export default new Hono<{
 			.update(tables.teamMember)
 			.set({ isCaptain: false })
 			.where(
-				and(
-					eq(tables.teamMember.participantId, participant.id),
-					eq(tables.teamMember.athleteId, athlete.id),
+				operators.and(
+					operators.eq(tables.teamMember.participantId, participant.id),
+					operators.eq(tables.teamMember.athleteId, athlete.id),
 				),
 			);
 

@@ -52,7 +52,7 @@ const Dialog: React.FC<DialogProps> = ({
 			>
 				<div className="fixed inset-0 flex justify-center items-center bg-[#00000095] p-4 lg:p-12 w-screen">
 					<HeadlessDialogPanel
-						className={`relative bg-white rounded-3xl w-full ${variant === "wide" ? "max-w-5xl" : "max-w-xl"}`}
+						className={`relative bg-white rounded-3xl w-full ${variant === "wide" ? "max-w-5xl" : "max-w-xl overflow-hidden"}`}
 					>
 						<>
 							{typeof children === "function"

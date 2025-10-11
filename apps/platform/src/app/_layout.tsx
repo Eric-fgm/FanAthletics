@@ -5,6 +5,7 @@ import {
 	Inter_700Bold,
 	useFonts,
 } from "@expo-google-fonts/inter";
+import { PortalProvider } from "@gorhom/portal";
 import { Slot, SplashScreen } from "expo-router";
 import { Suspense, useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -38,10 +39,12 @@ const AppLayout = () => {
 		<GestureHandlerRootView>
 			<SafeAreaProvider>
 				<QueryProvider>
-					<Suspense fallback={<Typography>Loading...</Typography>}>
-						<Slot />
-					</Suspense>
-					<Toast position="bottom" />
+					<PortalProvider>
+						<Suspense fallback={<Typography>Loading...</Typography>}>
+							<Slot />
+						</Suspense>
+						<Toast position="bottom" />
+					</PortalProvider>
 				</QueryProvider>
 			</SafeAreaProvider>
 		</GestureHandlerRootView>

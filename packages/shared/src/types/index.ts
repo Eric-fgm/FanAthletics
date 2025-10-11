@@ -5,6 +5,7 @@ export interface Event {
 	domtelApp: string | null;
 	image: string;
 	icon: string;
+	status: "idle" | "unavailable" | "available";
 	startAt: string;
 	endAt: string;
 	createdAt: string;
@@ -47,7 +48,6 @@ export interface UserWithParticipation {
 	participant: Participant;
 	place: number;
 	team: Athlete[];
-	score: number;
 }
 
 export interface Discipline {
@@ -64,7 +64,7 @@ export interface Discipline {
 export interface DisciplinePayload {
 	eventId: string;
 	name: string;
-	organization?: string;
+	organization?: string | null;
 	record: string;
 	icon: string;
 }
@@ -80,6 +80,15 @@ export interface Athlete {
 	coach: string;
 	createdAt: string;
 	updatedAt: string;
+}
+
+export interface AthletePayload {
+	number: number;
+	imageUrl: string | null;
+	firstName: string;
+	lastName: string;
+	cost: number;
+	coach: string;
 }
 
 export interface AthleteWithDisciplines extends Athlete {

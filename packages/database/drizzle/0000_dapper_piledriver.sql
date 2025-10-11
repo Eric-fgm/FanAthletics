@@ -76,6 +76,7 @@ CREATE TABLE "event" (
 	"domtelApp" varchar(255),
 	"image" varchar(255) NOT NULL,
 	"icon" varchar(255) NOT NULL,
+	"status" varchar(255) DEFAULT 'idle' NOT NULL,
 	"startAt" timestamp with time zone NOT NULL,
 	"endAt" timestamp with time zone NOT NULL,
 	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,

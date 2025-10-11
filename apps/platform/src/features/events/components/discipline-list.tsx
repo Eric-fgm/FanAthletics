@@ -2,9 +2,12 @@ import type { Discipline } from "@fan-athletics/shared/types";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { Ellipsis } from "lucide-react-native";
 import type React from "react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { Dropdown, Skeleton, Table, Typography } from "#/components";
+import { DisciplineUpdateDialog } from "#/features/admin";
+import { useSessionSuspeneQuery } from "#/features/auth";
+import { isAdmin } from "#/helpers/user";
 import { getDisciplineIcon } from "../helpers";
 
 interface DisciplineListProps {
@@ -17,6 +20,10 @@ const DisciplineList: React.FC<DisciplineListProps> & {
 } = ({ disciplines, ...props }) => {
 	const { eventId } = useLocalSearchParams();
 	const router = useRouter();
+	const { data: session } = useSessionSuspeneQuery();
+
+	const [selectedDiscipline, setSelectedDiscipline] =
+		useState<Discipline | null>(null);
 
 	const columns = useMemo(() => {
 		return [
@@ -54,7 +61,7 @@ const DisciplineList: React.FC<DisciplineListProps> & {
 			{
 				key: "action",
 				name: "",
-				render: ({ id }: { id: string }) => (
+				render: (discipline: Discipline) => (
 					<View className="ml-auto">
 						<Dropdown
 							className="!mt-2"
@@ -67,17 +74,38 @@ const DisciplineList: React.FC<DisciplineListProps> & {
 								{
 									name: "Zobacz więcej",
 									onPress: () =>
-										router.push(`/events/${eventId}/disciplines/${id}`),
+										router.push(
+											`/events/${eventId}/disciplines/${discipline.id}`,
+										),
 								},
+								...(session && isAdmin(session.user)
+									? [
+											{
+												name: "Edytuj dyscypline",
+												onPress: () => setSelectedDiscipline(discipline),
+											},
+										]
+									: []),
 							]}
 						/>
 					</View>
 				),
 			},
 		];
-	}, [eventId, router]);
+	}, [eventId, router, session]);
 
-	return <Table columns={columns} data={disciplines} {...props} />;
+	return (
+		<>
+			<Table columns={columns} data={disciplines} {...props} />
+			{selectedDiscipline !== null && (
+				<DisciplineUpdateDialog
+					isOpen
+					onClose={() => setSelectedDiscipline(null)}
+					values={selectedDiscipline}
+				/>
+			)}
+		</>
+	);
 };
 
 const DisciplineListSkeleton: React.FC<{ rowsCount?: number }> = ({

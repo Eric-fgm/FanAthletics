@@ -77,6 +77,7 @@ export const event = pgTable("event", {
 	domtelApp: varchar({ length: 255 }),
 	image: varchar({ length: 255 }).notNull(),
 	icon: varchar({ length: 255 }).notNull(),
+	status: varchar({ length: 255 }).notNull().default("idle"),
 	startAt: timestamp({ withTimezone: true }).notNull(),
 	endAt: timestamp({ withTimezone: true }).notNull(),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
@@ -212,12 +213,18 @@ export const league = pgTable("league", {
 });
 
 export const disciplineRelations = relations(discipline, ({ one, many }) => ({
-	event: one(event),
+	event: one(event, {
+		fields: [discipline.eventId],
+		references: [event.id],
+	}),
 	athleteDisciplines: many(athleteDiscipline),
 }));
 
 export const athleteRelations = relations(athlete, ({ one, many }) => ({
-	event: one(event),
+	event: one(event, {
+		fields: [athlete.eventId],
+		references: [event.id],
+	}),
 	athleteDisciplines: many(athleteDiscipline),
 }));
 

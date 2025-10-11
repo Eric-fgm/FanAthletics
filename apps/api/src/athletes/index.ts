@@ -1,4 +1,5 @@
 import { db, operators, tables } from "@fan-athletics/database";
+import type { Athlete, Discipline } from "@fan-athletics/shared/types";
 import { Hono } from "hono";
 import { clamp } from "#/utils/math";
 
@@ -20,30 +21,41 @@ export default new Hono()
 		if (eventId) filters.push(operators.eq(tables.athlete.eventId, eventId));
 		if (disciplineId)
 			filters.push(
-				operators.eq(tables.athleteDiscipline.disciplineId, disciplineId),
+				operators.sql`${tables.athlete}.id IN (
+					SELECT ${tables.athleteDiscipline.athleteId}
+					FROM ${tables.athleteDiscipline}
+					WHERE ${tables.athleteDiscipline.disciplineId} = ${disciplineId}
+				)`,
 			);
 
 		const result = await db
-			.selectDistinct()
+			.select({
+				athlete: operators.sql<Athlete>`to_jsonb(${tables.athlete})`,
+				disciplines: operators.sql<Discipline>`COALESCE(
+      json_agg(DISTINCT to_jsonb(${tables.discipline}))
+      FILTER (WHERE ${tables.discipline}.id IS NOT NULL),
+      '[]'
+    )`,
+			})
 			.from(tables.athlete)
-			.innerJoin(
+			.leftJoin(
 				tables.athleteDiscipline,
-				operators.eq(tables.athleteDiscipline.athleteId, tables.athlete.id),
+				operators.eq(tables.athlete.id, tables.athleteDiscipline.athleteId),
 			)
-			.where(operators.or(...filters))
+			.leftJoin(
+				tables.discipline,
+				operators.eq(
+					tables.discipline.id,
+					tables.athleteDiscipline.disciplineId,
+				),
+			)
+			.where(operators.and(...filters))
+			.groupBy(tables.athlete.id)
 			.limit(limit)
 			.offset(offset);
 
 		return c.json(
-			await Promise.all(
-				result.map(async ({ athlete, athlete_discipline }) => ({
-					...athlete,
-					disciplines: await db.query.discipline.findMany({
-						where: (table) =>
-							operators.eq(table.id, athlete_discipline.disciplineId),
-					}),
-				})),
-			),
+			result.map(({ athlete, disciplines }) => ({ ...athlete, disciplines })),
 		);
 	})
 	.get("/:athleteId", async (c) => {

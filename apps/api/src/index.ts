@@ -9,6 +9,7 @@ import disciplines from "#/disciplines";
 import events from "#/events";
 import game from "#/game";
 import { cors, requireUser } from "#/middlewares";
+import search from "#/search";
 import users from "#/users";
 
 const app = new Hono();
@@ -23,6 +24,7 @@ app
 	.route("v1/competitions", competitions)
 	.route("v1/disciplines", disciplines)
 	.route("v1/athletes", athletes)
+	.route("v1/search", search)
 	.route("/v1/users", users)
 	.route("/v1/game", game);
 

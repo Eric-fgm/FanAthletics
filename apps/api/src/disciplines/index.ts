@@ -6,7 +6,7 @@ export default new Hono()
 	.get("/", async (c) => {
 		const { page, perPage, name, eventId, athleteId } = c.req.query();
 
-		const limit = clamp(perPage ? Number.parseInt(perPage, 10) : 50, 5, 100);
+		const limit = clamp(perPage ? Number.parseInt(perPage, 10) : 25, 5, 100);
 		const offset =
 			clamp(page ? Number.parseInt(page, 10) - 1 : 0, 0, 999) * limit;
 
@@ -17,8 +17,10 @@ export default new Hono()
 		if (athleteId)
 			filters.push(operators.eq(tables.athleteDiscipline.athleteId, athleteId));
 
-		const result = await db
-			.selectDistinct()
+		const filteredDisciplines = await db
+			.select({
+				id: tables.discipline.id,
+			})
 			.from(tables.discipline)
 			.innerJoin(
 				tables.athleteDiscipline,
@@ -28,10 +30,19 @@ export default new Hono()
 				),
 			)
 			.where(operators.and(...filters))
+			.groupBy(tables.discipline.id)
 			.limit(limit)
 			.offset(offset);
 
-		return c.json(result.map(({ discipline }) => discipline));
+		const disciplines = await db.query.discipline.findMany({
+			where: (discipline, { inArray }) =>
+				inArray(
+					discipline.id,
+					filteredDisciplines.map(({ id }) => id),
+				),
+		});
+
+		return c.json(disciplines);
 	})
 	.get("/:disciplineId", async (c) => {
 		const id = c.req.param("disciplineId");

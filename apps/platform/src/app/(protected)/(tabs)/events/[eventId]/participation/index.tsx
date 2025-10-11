@@ -1,5 +1,6 @@
 import type { Athlete } from "@fan-athletics/shared/types";
-import { CircleUser, Plus } from "lucide-react-native";
+import { useLocalSearchParams } from "expo-router";
+import { CircleUser, Crown, Info, Plus } from "lucide-react-native";
 import React, { useState } from "react";
 import { Pressable, View } from "react-native";
 import { Button, Select, Typography } from "#/components";
@@ -10,11 +11,14 @@ import {
 	useAddTeamMemberMutation,
 	useDeleteTeamMemberMutation,
 	useInvalidateParticipation,
+	useMakeTeamLeaderMutation,
 	useParticipationQuery,
 	useTeamMembersQuery,
 } from "#/features/participation";
+import { formatDate } from "#/helpers/date";
 
 const Participation = () => {
+	const { tab } = useLocalSearchParams<{ tab?: string }>();
 	const [selectedMember, setSelectedMember] = useState<Athlete | "edit" | null>(
 		null,
 	);
@@ -37,6 +41,7 @@ const Participation = () => {
 					...(Array(8 - teamMembers.length).fill(null) as null[]),
 				]
 			: teamMembers;
+	const hasChoosenCaptain = teamMembers.some((member) => member.isCaptain);
 
 	if (!event) return null;
 
@@ -84,47 +89,81 @@ const Participation = () => {
 					},
 				]}
 			/>
-			<View className="flex-row justify-between items-center mt-12 px-4 lg:px-12 pb-6">
-				<View className="flex-row items-center gap-2">
-					<Typography size="large2">Statystyki</Typography>
-				</View>
-				<Select />
-			</View>
-			<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 lg:px-12">
-				<View className="gap-y-2 bg-gray-100 px-8 py-6 rounded-2xl">
-					<Typography type="washed">Budżet</Typography>
-					<View className="flex-row items-end gap-1.5">
-						<Typography size="large4.5">{participation.budget}</Typography>
-						<Typography size="large2" className="mb-1">
-							XP
-						</Typography>
+			{tab === "history" ? null : (
+				<>
+					{((teamMembers.length < 8 && teamMembers.length > 0) ||
+						!hasChoosenCaptain) && (
+						<View className="mt-4 -mb-4 px-4 lg:px-12 w-full">
+							<View className="flex-row items-center gap-2 bg-gray-100 px-4 rounded-xl w-full h-10">
+								<Info size={16} />
+								<Typography>
+									{teamMembers.length < 8
+										? "Nie wybrano wszystkich 8 zawodników"
+										: "Nie wybrano lidera drużyny"}
+								</Typography>
+							</View>
+						</View>
+					)}
+					<View className="flex-row justify-between items-center mt-12 px-4 lg:px-12 pb-6">
+						<View className="flex-row items-center gap-2">
+							<Typography size="large2">Statystyki</Typography>
+						</View>
 					</View>
-				</View>
-				<View className="bg-gray-100 rounded-2xl h-32" />
-				<View className="bg-gray-100 rounded-2xl h-32" />
-				<View className="bg-gray-100 rounded-2xl h-32" />
-			</View>
-			<View className="mt-12 px-4 lg:px-12 pb-6">
-				<Typography size="large2">Zespół</Typography>
-			</View>
-			<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 lg:px-12">
-				{teamMembersSlots.map((member, index) => (
-					<React.Fragment key={member?.id ?? index}>
-						{member ? (
-							<AthletePreview
-								isLoading={isAddTeamMemberPending || isDeleteTeamMemberPending}
-								onEdit={() => setSelectedMember(member)}
-								{...member}
-							/>
-						) : (
-							<AthleteSlot
-								index={index + 1}
-								onPress={() => setSelectedMember("edit")}
-							/>
-						)}
-					</React.Fragment>
-				))}
-			</View>
+					<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 lg:px-12">
+						{[
+							{ title: "Budżet", value: participation.budget, excerpt: "XP" },
+							{
+								title: "Wynik",
+								value: participation.lastPoints,
+								excerpt: "PKT",
+							},
+							{
+								title: "Rozpoczęto",
+								value: formatDate(new Date(participation.createdAt)),
+							},
+							{ title: "Koniec", value: formatDate(new Date(event.endAt)) },
+						].map((card) => (
+							<View
+								key={card.title}
+								className="gap-y-2 bg-gray-100 px-8 py-6 rounded-2xl"
+							>
+								<Typography type="washed">{card.title}</Typography>
+								<View className="flex-row items-end gap-1.5">
+									<Typography size="large4.5" numberOfLines={1}>
+										{card.value}
+									</Typography>
+									<Typography size="large2" className="mb-1">
+										{card.excerpt}
+									</Typography>
+								</View>
+							</View>
+						))}
+					</View>
+					<View className="mt-12 px-4 lg:px-12 pb-6">
+						<Typography size="large2">Zespół</Typography>
+					</View>
+					<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 lg:px-12">
+						{teamMembersSlots.map((member, index) => (
+							<React.Fragment key={member?.id ?? index}>
+								{member ? (
+									<AthletePreview
+										isLoading={
+											isAddTeamMemberPending || isDeleteTeamMemberPending
+										}
+										onEdit={() => setSelectedMember(member)}
+										{...member}
+									/>
+								) : (
+									<AthleteSlot
+										index={index + 1}
+										onPress={() => setSelectedMember("edit")}
+									/>
+								)}
+							</React.Fragment>
+						))}
+					</View>
+				</>
+			)}
 			<AthletesSearchDialog
 				disabledAtletes={teamMembers.map((member) => member.id)}
 				isOpen={selectedMember !== null}
@@ -163,14 +202,20 @@ const AthleteSlot: React.FC<{ index: number; onPress: () => void }> = ({
 };
 
 const AthletePreview: React.FC<{
+	id: string;
 	firstName: string;
 	lastName: string;
 	coach: string;
+	isCaptain: boolean;
 	isLoading?: boolean;
 	onEdit?: () => void;
-}> = ({ firstName, lastName, coach, isLoading, onEdit }) => {
+}> = ({ id, firstName, lastName, coach, isCaptain, isLoading, onEdit }) => {
+	const { mutate: makeCaptain, isPending } = useMakeTeamLeaderMutation();
+
 	return (
-		<View className="items-center px-8 pt-12 pb-8 border border-gray-200 rounded-2xl h-[324px]">
+		<View
+			className={`items-center px-8 pt-12 pb-8 border-gray-200 rounded-2xl h-[324px] ${isCaptain ? "border-4" : "border"}`}
+		>
 			<View className="justify-center items-center bg-gray-100 rounded-full w-16 h-16">
 				<CircleUser size={24} className="text-gray-600" />
 			</View>
@@ -180,16 +225,26 @@ const AthletePreview: React.FC<{
 			<Typography type="washed" className="mt-1" numberOfLines={1}>
 				{coach}
 			</Typography>
-			<Button
-				text="Edytuj"
-				variant="secondary"
-				size="small"
-				className="mt-auto"
-				textClassName="!text-sm"
-				isLoading={isLoading}
-				rounded
-				onPress={onEdit}
-			/>
+			<View className="flex-row gap-2 mt-auto">
+				<Button
+					text="Edytuj"
+					variant="secondary"
+					size="small"
+					textClassName="!text-sm"
+					isLoading={isLoading}
+					rounded
+					onPress={onEdit}
+				/>
+				{!isCaptain && (
+					<Button
+						size="small"
+						icon={Crown}
+						rounded
+						isLoading={isPending}
+						onPress={() => makeCaptain(id)}
+					/>
+				)}
+			</View>
 		</View>
 	);
 };
