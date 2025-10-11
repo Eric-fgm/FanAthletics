@@ -128,7 +128,7 @@ const TeamList: React.FC<{
 								{team.budget} XP
 							</Typography>
 						</View>
-						<View className="hidden max-sm:flex">
+						<View className="hidden max-sm:flex ms-auto">
 							{isMyProfile && (
 								<Button
 									text="Zobacz drużynę"
