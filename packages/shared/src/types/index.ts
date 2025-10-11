@@ -127,3 +127,13 @@ export interface Honour {
 	place: number;
 	result: string;
 }
+
+export interface UserTeam {
+	id: string;
+	eventId: string;
+	eventName: string;
+	eventIcon: string | null;
+	budget: number;
+	points: number;
+	athletes: Athlete[];
+}
