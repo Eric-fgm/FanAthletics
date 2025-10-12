@@ -202,6 +202,7 @@ const upsertCompetition = async (
 export const processCompetitionsAndResults = async (
 	app: string,
 	eventId: string,
+	withResults = true,
 ) => {
 	const schedule = await getSchedule(app);
 	const curriculums = (
@@ -253,21 +254,23 @@ export const processCompetitionsAndResults = async (
 									),
 							});
 							if (athlete) {
-								await db
-									.insert(tables.competitor)
-									.values({
-										athleteId: athlete.id,
-										competitionId: competition.id,
-										place:
-											result.Miejsce !== "0"
-												? Number.parseInt(result.Miejsce, 10)
-												: 9999,
-										results: {
-											score: result.Wynik,
-											ranking: result.Ranking,
-										},
-									})
-									.onConflictDoNothing();
+								if (withResults) {
+									await db
+										.insert(tables.competitor)
+										.values({
+											athleteId: athlete.id,
+											competitionId: competition.id,
+											place:
+												result.Miejsce !== "0"
+													? Number.parseInt(result.Miejsce, 10)
+													: 9999,
+											results: {
+												score: result.Wynik,
+												ranking: result.Ranking,
+											},
+										})
+										.onConflictDoNothing();
+								}
 								await db
 									.insert(tables.athleteDiscipline)
 									.values({

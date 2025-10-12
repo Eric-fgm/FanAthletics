@@ -122,6 +122,7 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 							.map((athlete) => athlete.id)}
 						budget={400} // Do poprawy
 						isOpen={selectedPlayerSlot !== null}
+						webOptions={{ variant: "wide" }}
 						onClose={() => setSelectedPlayerSlot(null)}
 						onSelect={(athlete) => {
 							if (selectedPlayerSlot === null) return;
