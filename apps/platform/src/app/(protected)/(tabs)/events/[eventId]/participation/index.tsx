@@ -1,8 +1,5 @@
 import type { Athlete } from "@fan-athletics/shared/types";
-import {
-	UserRound,
-	UserRoundPlus,
-} from "lucide-react-native";
+import { UserRound, UserRoundPlus } from "lucide-react-native";
 import React, { useState } from "react";
 import { Image, ImageBackground, Pressable, View } from "react-native";
 import { Button, Dialog, Select, Typography } from "#/components";
@@ -18,7 +15,13 @@ import {
 	useParticipationQuery,
 	useTeamMembersQuery,
 } from "#/features/participation";
-import { menColors, womenColors, GradientBox, AthleteCostBox, flags } from "./utils";
+import {
+	AthleteCostBox,
+	GradientBox,
+	flags,
+	menColors,
+	womenColors,
+} from "./utils";
 import type { AthleteColors } from "./utils";
 
 const Participation = () => {
@@ -135,37 +138,44 @@ const Participation = () => {
 										shadowColor: "black",
 										shadowRadius: 10,
 										shadowOffset: { width: 4, height: 4 },
-										elevation: 8
+										elevation: 8,
 									}}
 								>
 									<GradientBox
 										sex={member.sex}
 										vertical
-										leftUpColor={member.sex === "M" ?
-														menColors.captainAndHonoursUpGradient :
-														womenColors.captainAndHonoursUpGradient
-													}
-										rightDownColor={member.sex === "M" ?
-														menColors.captainAndHonoursDownGradient :
-														womenColors.captainAndHonoursDownGradient
-													}
+										leftUpColor={
+											member.sex === "M"
+												? menColors.captainAndHonoursUpGradient
+												: womenColors.captainAndHonoursUpGradient
+										}
+										rightDownColor={
+											member.sex === "M"
+												? menColors.captainAndHonoursDownGradient
+												: womenColors.captainAndHonoursDownGradient
+										}
 									>
 										<AthletePreview
-											isLoading={isAddTeamMemberPending || isDeleteTeamMemberPending}
+											isLoading={
+												isAddTeamMemberPending || isDeleteTeamMemberPending
+											}
 											onEdit={() => setSelectedMember(member)}
 											onDelete={() => setMemberToDelete(member)}
 											athlete={member}
-											isCaptain={member.isCaptain}/>
+											isCaptain={member.isCaptain}
+										/>
 									</GradientBox>
 								</View>
 							) : (
-							<AthletePreview
-								isLoading={isAddTeamMemberPending || isDeleteTeamMemberPending}
-								onEdit={() => setSelectedMember(member)}
-								onDelete={() => setMemberToDelete(member)}
-								athlete={member}
-								isCaptain={member.isCaptain}
-							/>
+								<AthletePreview
+									isLoading={
+										isAddTeamMemberPending || isDeleteTeamMemberPending
+									}
+									onEdit={() => setSelectedMember(member)}
+									onDelete={() => setMemberToDelete(member)}
+									athlete={member}
+									isCaptain={member.isCaptain}
+								/>
 							)
 						) : (
 							<AthleteSlot
@@ -178,7 +188,9 @@ const Participation = () => {
 			</View>
 			<AthletesSearchDialog
 				disabledAtletes={teamMembers.map((member) => member.id)}
+				budget={participation.budget}
 				isOpen={selectedMember !== null}
+				webOptions={{ variant: "wide"}}
 				onClose={() => setSelectedMember(null)}
 				onSelect={async (athlete) => {
 					try {
@@ -262,8 +274,11 @@ const AthletePreview: React.FC<{
 	onEdit?: () => void;
 	onDelete?: () => void;
 }> = ({ athlete, isCaptain, isLoading, onEdit, onDelete }) => {
-
-	console.log(athlete.nationality, flags[athlete.nationality], `https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`)
+	console.log(
+		athlete.nationality,
+		flags[athlete.nationality],
+		`https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`,
+	);
 	const {
 		mutateAsync: makeAthleteCaptain,
 		isPending: isMakeAthleteCaptainPending,
@@ -310,7 +325,7 @@ const AthletePreview: React.FC<{
 								shadowColor: !isCaptain ? "black" : undefined,
 								shadowRadius: !isCaptain ? 10 : undefined,
 								shadowOffset: !isCaptain ? { width: 4, height: 4 } : undefined,
-								elevation: !isCaptain ? 8 : 0
+								elevation: !isCaptain ? 8 : 0,
 							}}
 						>
 							<View className="w-full items-end">
@@ -322,18 +337,12 @@ const AthletePreview: React.FC<{
 								</View> */}
 								<AthleteCostBox cost={athlete.cost} />
 							</View>
-							<AthleteBasicInfo
-								athlete={athlete}
-								colors={colors}
-							/>
+							<AthleteBasicInfo athlete={athlete} colors={colors} />
 						</ImageBackground>
 					) : (
 						<View className="justify-center items-center rounded-full w-16 h-16">
 							<UserRound size={100} className="text-gray-600" />
-							<AthleteBasicInfo
-								athlete={athlete}
-								colors={colors}
-							/>
+							<AthleteBasicInfo athlete={athlete} colors={colors} />
 						</View>
 					)}
 				</View>
@@ -374,7 +383,6 @@ const AthletePreview: React.FC<{
 				/>
 			</Dialog>
 		</View>
-		
 	);
 };
 
@@ -393,7 +401,7 @@ const AthleteInfoDialog: React.FC<{
 	onCaptainPressed,
 	onCaptainDeletePressed,
 	onEdit,
-	onDelete
+	onDelete,
 }) => {
 	if (athlete === null) return null;
 
@@ -481,8 +489,10 @@ const AthleteBasicInfo: React.FC<{
 	return (
 		<View className="flex-column w-full">
 			<Image
-				source={{ uri: `https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`}}
-				style={{ width: 48, height: 32, borderRadius: 24}}
+				source={{
+					uri: `https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`,
+				}}
+				style={{ width: 48, height: 32, borderRadius: 24 }}
 				className="w-full h-full ms-3 mb-2"
 			/>
 			<View
@@ -492,7 +502,12 @@ const AthleteBasicInfo: React.FC<{
 				<Typography size="large1" className="mt-1" numberOfLines={1}>
 					{athlete.firstName} {athlete.lastName}
 				</Typography>
-				<Typography size="large" type="washed" className="mt-1" numberOfLines={1}>
+				<Typography
+					size="large"
+					type="washed"
+					className="mt-1"
+					numberOfLines={1}
+				>
 					{athlete.coach}
 				</Typography>
 			</View>

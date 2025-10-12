@@ -31,7 +31,7 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 	const { mutateAsync: addTeamMember, isPending: isAddTeamMemberPending } =
 		useAddTeamMemberMutation();
 
-	const [selectedPlayerSlor, setSelectedPlayerSlot] = useState<number | null>(
+	const [selectedPlayerSlot, setSelectedPlayerSlot] = useState<number | null>(
 		null,
 	);
 	const [selectedAthletes, setSelectedAthletes] = useState<
@@ -120,12 +120,13 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 						disabledAtletes={selectedAthletes
 							.filter((athlete) => !!athlete)
 							.map((athlete) => athlete.id)}
-						isOpen={selectedPlayerSlor !== null}
+						budget={400} // Do poprawy
+						isOpen={selectedPlayerSlot !== null}
 						onClose={() => setSelectedPlayerSlot(null)}
 						onSelect={(athlete) => {
-							if (selectedPlayerSlor === null) return;
+							if (selectedPlayerSlot === null) return;
 							const newSelectedAthletes = [...selectedAthletes];
-							newSelectedAthletes[selectedPlayerSlor] = athlete;
+							newSelectedAthletes[selectedPlayerSlot] = athlete;
 							setSelectedAthletes(newSelectedAthletes);
 							setSelectedPlayerSlot(null);
 						}}
