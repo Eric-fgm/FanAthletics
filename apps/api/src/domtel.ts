@@ -209,9 +209,9 @@ export const processCompetitionsAndResults = async (
 		await Promise.all(schedule.map((_, index) => getCurriculum(app, index + 1)))
 	).flat();
 
-	for (const { Konkurencja, seria, seriaMax } of curriculums) {
+	for (const { Konkurencja, runda, seriaMax } of curriculums) {
 		try {
-			const round = Number.parseInt(seria, 10);
+			const round = Number.parseInt(runda, 10);
 			const metadata = domtel.disciplines[
 				Konkurencja as keyof (typeof domtel)["disciplines"]
 			] ?? {
@@ -226,10 +226,11 @@ export const processCompetitionsAndResults = async (
 
 			if (discipline) {
 				for (
-					let series = 1;
+					let series = seriaMax === "0" && round === 3 ? 0 : 1;
 					series <= Number.parseInt(seriaMax, 10);
 					series++
 				) {
+					console.log(series, discipline.name, seriaMax, round);
 					const { details, results } = await getCompetitionsWithResults(
 						app,
 						Konkurencja,
@@ -278,6 +279,15 @@ export const processCompetitionsAndResults = async (
 										disciplineId: discipline.id,
 									})
 									.onConflictDoNothing();
+								
+								if (athlete.sex !== "M" && athlete.sex !== "K") {
+									await db
+										.update(tables.athlete)
+										.set({
+											sex: Konkurencja[0]
+										})
+										.where(operators.eq(tables.athlete.id, athlete.id))
+								}
 							}
 						}),
 					);
@@ -382,7 +392,7 @@ export const saveAthletes = async (
 					coach: athlete.club,
 					club: athlete.club,
 					nationality: "Poland",
-					sex: firstName === "Karol" || firstName === "Jakub" ? "M" : "K",
+					sex: "",
 					imageUrl: "https://starter.pzla.pl/foto/277503.jpg?m=20230118093122",
 					cost: 100,
 					updatedAt: nowDate,
