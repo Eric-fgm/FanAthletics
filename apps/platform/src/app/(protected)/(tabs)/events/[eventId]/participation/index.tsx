@@ -23,13 +23,14 @@ import {
 	womenColors,
 } from "./utils";
 import type { AthleteColors } from "./utils";
+import EventHeader from "#/components/event-header";
 
 const Participation = () => {
 	const [selectedMember, setSelectedMember] = useState<Athlete | "edit" | null>(
 		null,
 	);
 	const [memberToDelete, setMemberToDelete] = useState<Athlete | null>(null);
-	const { data: event } = useEventQuery();
+	const { data: event, isLoading: isEventLoading } = useEventQuery();
 	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
 	const { mutateAsync: addTeamMember, isPending: isAddTeamMemberPending } =
 		useAddTeamMemberMutation();
@@ -80,6 +81,7 @@ const Participation = () => {
 
 	return (
 		<ScrollArea>
+			<EventHeader event={event}/>
 			<Header
 				title="Drużyna"
 				// titleClassName="items-center"

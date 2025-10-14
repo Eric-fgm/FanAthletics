@@ -42,7 +42,7 @@ export default function UserProfile() {
 	const isMyProfile = user.id === session?.user.id;
 
 	return (
-		<ScrollArea className="items-center pt-16 pb-8">
+		<ScrollArea className="pt-12 lg:pt-16 pb-8 items-center">
 			<Avatar name={name} image={image} size="large" />
 			<Typography size="large4" className="mt-6">
 				{name}

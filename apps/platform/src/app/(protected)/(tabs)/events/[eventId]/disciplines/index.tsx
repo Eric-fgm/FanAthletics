@@ -1,13 +1,16 @@
 import { View } from "react-native";
 import { Select, Typography } from "#/components";
-import { DisciplineList, useEventDiscpilinesQuery } from "#/features/events";
+import { DisciplineList, useEventDiscpilinesQuery, useEventQuery } from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
+import EventHeader from "#/components/event-header";
 
 export default function EventDisciplines() {
 	const { data: disciplines = [], isLoading } = useEventDiscpilinesQuery();
+	const { data: event, isLoading: isEventLoading } = useEventQuery();
 
 	return (
 		<ScrollArea>
+			<EventHeader event={event} />
 			<Header title="Dyscypliny" />
 			<View className="flex-row justify-between items-center mt-12 px-4 lg:px-12 pb-6">
 				<View className="flex-row items-center gap-2">
