@@ -37,12 +37,15 @@ export default new Hono<{ Variables: { user: User } }>()
 
 				const athletesId: string[] = (
 					await db.query.teamMember.findMany({
-						where: (teamMember, { eq }) =>
-							eq(teamMember.participantId, participation.id),
+						where: (teamMember, { and, eq }) =>
+							and(
+								eq(teamMember.participantId, participation.id),
+								eq(teamMember.stillInTeam, true),
+							),
 					})
 				).map((member) => member.athleteId);
 
-				const athletes = (
+				const athletes: Athlete[] = (
 					await Promise.all(
 						athletesId.map((athleteId) =>
 							db.query.athlete.findFirst({

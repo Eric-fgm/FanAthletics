@@ -10,6 +10,7 @@ import React from "react";
 import { Image, Pressable, View } from "react-native";
 import { Avatar, Button, Typography } from "#/components";
 import { useSessionSuspeneQuery } from "#/features/auth";
+import ScrollArea from "#/features/layout/components/scroll-area";
 import {
 	UserEditDialog,
 	useUserQuery,
@@ -41,7 +42,7 @@ export default function UserProfile() {
 	const isMyProfile = user.id === session?.user.id;
 
 	return (
-		<View className="items-center pt-16 pb-8">
+		<ScrollArea className="items-center pt-16 pb-8">
 			<Avatar name={name} image={image} size="large" />
 			<Typography size="large4" className="mt-6">
 				{name}
@@ -68,7 +69,7 @@ export default function UserProfile() {
 				</Typography>
 				<TeamList teams={userTeams ?? []} isMyProfile={isMyProfile} />
 			</View>
-		</View>
+		</ScrollArea>
 	);
 }
 
@@ -103,14 +104,14 @@ const TeamList: React.FC<{
 						</Typography>
 					</View>
 					<View className="flex-row items-center gap-3 basis-[50%] xl:basis-1/3">
-						<View className="w-12 h-12 rounded-full">
+						<View className="w-12 h-12 rounded-full items-center justify-center">
 							{team.eventIcon ? (
 								<Image
 									source={{ uri: team.eventIcon }}
 									className="w-full h-full rounded-full"
 								/>
 							) : (
-								<Trophy size={20} className="text-gray-600" />
+								<Trophy size={40} className="text-gray-600" />
 							)}
 						</View>
 						<Link href={`/events/${team.eventId}`}>
@@ -140,19 +141,20 @@ const TeamList: React.FC<{
 							)}
 						</View>
 					</View>
-					<View className="flex-row flex-wrap gap-2 basis-[40%] sm:basis-[70%] xl:basis-1/3 hidden lg:flex">
+					<View className="flex-row flex-wrap gap-2 basis-[40%] sm:basis-[70%] xl:basis-1/3 hidden lg:flex overflow-hidden">
 						{team.athletes.map((member) => (
 							<Pressable
 								key={member.id}
 								onPress={() =>
 									router.push(`/events/${team.eventId}/athletes/${member.id}`)
 								}
-								className="w-16 h-16"
+								className="w-16 h-16 relative group"
 							>
 								<Image
 									source={{ uri: member.imageUrl ?? undefined }}
 									className="w-full h-full rounded-full"
 								/>
+								<View className="absolute top-0 left-0 w-full h-full bg-black rounded-full opacity-0 group-hover:opacity-30" />
 							</Pressable>
 						))}
 					</View>

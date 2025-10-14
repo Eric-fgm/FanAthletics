@@ -186,6 +186,7 @@ export const teamMember = pgTable(
 			.notNull(),
 		isCaptain: boolean().default(false).notNull(),
 		pointsGathered: integer().default(0).notNull(),
+		stillInTeam: boolean().default(true).notNull(),
 	},
 	(table) => [
 		primaryKey({
@@ -205,6 +206,7 @@ export const competition = pgTable("competition", {
 	trials: json().notNull(),
 	startAt: timestamp({ withTimezone: true }).notNull(),
 	endedAt: timestamp({ withTimezone: true }),
+	pointsAlreadyCounted: boolean().default(false).notNull(),
 });
 
 export const competitor = pgTable(

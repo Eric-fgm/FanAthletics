@@ -163,6 +163,7 @@ const Participation = () => {
 											onDelete={() => setMemberToDelete(member)}
 											athlete={member}
 											isCaptain={member.isCaptain}
+											pointsGathered={member.pointsGathered}
 										/>
 									</GradientBox>
 								</View>
@@ -175,6 +176,7 @@ const Participation = () => {
 									onDelete={() => setMemberToDelete(member)}
 									athlete={member}
 									isCaptain={member.isCaptain}
+									pointsGathered={member.pointsGathered}
 								/>
 							)
 						) : (
@@ -190,7 +192,7 @@ const Participation = () => {
 				disabledAtletes={teamMembers.map((member) => member.id)}
 				budget={participation.budget}
 				isOpen={selectedMember !== null}
-				webOptions={{ variant: "wide"}}
+				webOptions={{ variant: "wide" }}
 				onClose={() => setSelectedMember(null)}
 				onSelect={async (athlete) => {
 					try {
@@ -270,10 +272,11 @@ const AthleteSlot: React.FC<{ index: number; onPress: () => void }> = ({
 const AthletePreview: React.FC<{
 	athlete: Athlete;
 	isCaptain: boolean;
+	pointsGathered: number;
 	isLoading?: boolean;
 	onEdit?: () => void;
 	onDelete?: () => void;
-}> = ({ athlete, isCaptain, isLoading, onEdit, onDelete }) => {
+}> = ({ athlete, isCaptain, pointsGathered, isLoading, onEdit, onDelete }) => {
 	console.log(
 		athlete.nationality,
 		flags[athlete.nationality],
@@ -337,6 +340,9 @@ const AthletePreview: React.FC<{
 								</View> */}
 								<AthleteCostBox cost={athlete.cost} />
 							</View>
+							<Typography className="mt-auto" size="large" type="bright">
+								{pointsGathered}
+							</Typography>
 							<AthleteBasicInfo athlete={athlete} colors={colors} />
 						</ImageBackground>
 					) : (
