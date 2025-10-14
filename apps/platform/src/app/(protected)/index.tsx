@@ -13,7 +13,7 @@ export default function Events() {
 	});
 
 	return (
-		<ScrollArea>
+		<ScrollArea className="pt-12 lg:pt-16 pb-8">
 			<View className="px-4 lg:px-12 pb-8 border-[#eeeff1] border-b">
 				<Typography size="large6">Wydarzenia</Typography>
 			</View>

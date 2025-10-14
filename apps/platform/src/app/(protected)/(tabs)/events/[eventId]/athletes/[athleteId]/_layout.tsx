@@ -2,16 +2,19 @@ import { Slot } from "expo-router";
 import { CircleUser } from "lucide-react-native";
 import { Image, View } from "react-native";
 import { Tabs } from "#/components";
-import { useAthleteQuery } from "#/features/events";
-import { Header, HeaderWithIcon, ScrollArea } from "#/features/layout";
+import { useAthleteQuery, useEventQuery } from "#/features/events";
+import { HeaderWithIcon, ScrollArea } from "#/features/layout";
+import EventHeader from "#/components/event-header";
 
 export default function EventSingleAthleteLayout() {
 	const { data: athlete } = useAthleteQuery();
+	const { data: event, isLoading: isEventLoading } = useEventQuery();
 
 	if (!athlete) return null;
 
 	return (
 		<ScrollArea>
+			<EventHeader event={event} />
 			<View className="px-4 lg:px-12">
 				<HeaderWithIcon
 					icon={

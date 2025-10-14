@@ -13,6 +13,11 @@ import {
 	useDisciplineQuery,
 	useEventQuery,
 } from "#/features/events";
+import {
+	useCountPointsMutation,
+	useInvalidateParticipation,
+} from "#/features/participation";
+import { useGlobalSearchParams } from "expo-router";
 
 const AdminTools = () => {
 	const [isCreateEventDialogOpen, setIsCreateEventDialogOpen] = useState(false);
@@ -21,11 +26,16 @@ const AdminTools = () => {
 		useState(false);
 	const [isUpdateAthleteDialogOpen, setIsUpdateAthleteDialogOpen] =
 		useState(false);
+		
+	const { eventId } = useGlobalSearchParams();
 
 	const { data: event } = useEventQuery();
 	const { data: discipline } = useDisciplineQuery();
 	const { data: athlete } = useAthleteQuery();
 	const { mutate: pullEvent, isPending } = useEventPullMutation();
+	const { mutateAsync: countPoints, isPending: isCountPointsPending } =
+		useCountPointsMutation();
+	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
 
 	return (
 		<>
@@ -75,6 +85,17 @@ const AdminTools = () => {
 								},
 							]
 						: []),
+					{
+						name: isCountPointsPending
+							? "Trwa obliczanie punktów..."
+							: "Oblicz punkty",
+						disabled: typeof eventId !== "string" || isCountPointsPending,
+						onPress: async () => {
+							console.log("Liczenie...");
+							await countPoints(eventId.toString());
+							await invalidateParticipation(eventId.toString());
+						},
+					},
 				]}
 				className="-mt-4"
 			/>

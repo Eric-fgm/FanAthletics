@@ -4,7 +4,7 @@ import {
 	MenuItem as HeadlessMenuItem,
 	MenuItems as HeadlessMenuItems,
 } from "@headlessui/react";
-import { View } from "react-native";
+import { View, Image } from "react-native";
 import { Divider, Typography } from "#/components";
 import type { DropdownProps } from "#/components/dropdown/types";
 
@@ -34,23 +34,26 @@ const Dropdown: React.FC<DropdownProps> = ({
 							</>
 						)}
 						<View className="p-2">
-							{items.map(({ name, disabled, className, onPress }) => (
+							{items.map(({ name, disabled, imageUrl, className, onPress }) => (
 								<HeadlessMenuItem key={name}>
 									<button
 										type="button"
-										className={`py-1.5 px-3 text-left rounded-lg data-[focus]:bg-[#ededed14] ${className} ${disabled ? "opacity-60 pointer-events-none" : ""}`}
+										className={`py-3 px-3 text-left rounded-lg data-[focus]:bg-[#ededed14] ${className} ${disabled ? "opacity-60 pointer-events-none" : ""}`}
 										onClick={() => {
 											onPress?.();
 											close();
 										}}
 									>
-										<Typography
-											type="bright"
-											size="raw"
-											className="text-[14px]"
-										>
-											{name}
-										</Typography>
+										<View className="flex-row w-full items-center flex-1">
+											<Typography
+												type="bright"
+												size="raw"
+												className="text-[14px]"
+											>
+												{name}
+											</Typography>
+											{imageUrl && <Image source={{ uri: imageUrl }} style={{ width: 20, height: 14 }} className="ms-auto"/>}
+										</View>
 									</button>
 								</HeadlessMenuItem>
 							))}

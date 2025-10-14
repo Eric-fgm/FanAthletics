@@ -31,10 +31,12 @@ const EventItem: React.FC<EventItemProps> = ({
 				W trakcie
 			</Typography>
 			<View className="items-center">
-				<Image
-					source={{ uri: icon, height: 48, width: 48 }}
-					className="rounded-xl"
-				/>
+				<View className="w-[56] h-[56] bg-white rounded-xl items-center justify-center">
+					<Image
+						source={{ uri: icon }}
+						style={{ width: "75%", height: "75%" }}
+					/>
+				</View>
 				<Typography type="bright" size="large" className="mt-4 mb-1">
 					{name}
 				</Typography>

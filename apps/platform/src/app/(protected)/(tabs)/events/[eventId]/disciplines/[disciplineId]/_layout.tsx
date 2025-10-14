@@ -1,11 +1,13 @@
 import { Slot } from "expo-router";
 import { View } from "react-native";
 import { Tabs } from "#/components";
-import { getDisciplineIcon, useDisciplineQuery } from "#/features/events";
+import { getDisciplineIcon, useDisciplineQuery, useEventQuery } from "#/features/events";
 import { HeaderWithIcon, ScrollArea } from "#/features/layout";
+import EventHeader from "#/components/event-header";
 
 export default function EventSingleDisciplineLayout() {
 	const { data: discipline } = useDisciplineQuery();
+	const { data: event, isLoading: isEventLoading } = useEventQuery();
 
 	if (!discipline) return null;
 
@@ -13,6 +15,7 @@ export default function EventSingleDisciplineLayout() {
 
 	return (
 		<ScrollArea>
+			<EventHeader event={event} />
 			<View className="px-4 lg:px-12">
 				<HeaderWithIcon
 					icon={Icon}

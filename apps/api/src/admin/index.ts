@@ -50,6 +50,8 @@ const eventsApp = new Hono()
 
 			const athletes = await getAthletes(event.domtelApp);
 			await saveAthletes(event.id, athletes);
+
+			await processCompetitionsAndResults(event.domtelApp, event.id, false);
 		}
 
 		return c.json({ message: "Event successfully created!" }, 201);

@@ -1,18 +1,26 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 import { Select, Typography } from "#/components";
-import { AthleteList, useAthletesQuery } from "#/features/events";
+import EventHeader from "#/components/event-header";
+import {
+	AthleteList,
+	useAthletesQuery,
+	useEventQuery,
+} from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
 
 export default function EventAthletes() {
 	const { sortBy = "" } = useLocalSearchParams();
 
-	const { data: athletes = [], isLoading } = useAthletesQuery({
+	const { data: athletes = [], isLoading: areAthletesLoading } =
+		useAthletesQuery({
 		sortBy: sortBy.toString(),
 	});
+	const { data: event, isLoading: isEventLoading } = useEventQuery();
 
 	return (
 		<ScrollArea>
+			<EventHeader event={event} />
 			<Header title="Zawodnicy" />
 			<View className="flex-row justify-between items-center mt-12 px-4 lg:px-12 pb-6">
 				<View className="flex-row items-center gap-2">
@@ -37,7 +45,7 @@ export default function EventAthletes() {
 			<View className="px-4 lg:px-12">
 				<AthleteList
 					athletes={athletes}
-					placeholder={isLoading && <AthleteList.Skeleton />}
+					placeholder={areAthletesLoading && <AthleteList.Skeleton />}
 				/>
 			</View>
 		</ScrollArea>

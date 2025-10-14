@@ -6,6 +6,7 @@ export interface DropdownProps {
 	items: {
 		name: string;
 		disabled?: boolean;
+		imageUrl?: string;
 		className?: string;
 		onPress?: () => void;
 	}[];

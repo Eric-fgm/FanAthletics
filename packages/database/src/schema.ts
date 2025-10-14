@@ -121,8 +121,34 @@ export const athlete = pgTable("athlete", {
 	lastName: varchar({ length: 255 }).notNull(),
 	cost: integer().notNull(),
 	coach: varchar({ length: 255 }).notNull(),
+	club: varchar({ length: 255 }),
+	nationality: varchar({ length: 255 }).notNull(),
+	sex: varchar({ length: 1 }),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+});
+
+export const personalRecords = pgTable("personal_records", {
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	athleteId: text()
+		.references(() => athlete.id)
+		.notNull(),
+	disciplineName: varchar({ length: 255 }).notNull(),
+	result: varchar({ length: 255 }).notNull(),
+	// date:
+	resultPoints: integer(),
+	isWorldRecord: boolean().default(false).notNull(),
+});
+
+export const honours = pgTable("honours", {
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	athleteId: text()
+		.references(() => athlete.id)
+		.notNull(),
+	championships: varchar({ length: 255 }).notNull(),
+	year: integer(),
+	place: integer().notNull(),
+	result: varchar({ length: 255 }).notNull(),
 });
 
 export const athleteDiscipline = pgTable(
@@ -160,6 +186,8 @@ export const teamMember = pgTable(
 			.references(() => participant.id)
 			.notNull(),
 		isCaptain: boolean().default(false).notNull(),
+		pointsGathered: integer().default(0).notNull(),
+		stillInTeam: boolean().default(true).notNull(),
 	},
 	(table) => [
 		primaryKey({
@@ -179,6 +207,7 @@ export const competition = pgTable("competition", {
 	trials: json().notNull(),
 	startAt: timestamp({ withTimezone: true }).notNull(),
 	endedAt: timestamp({ withTimezone: true }),
+	pointsAlreadyCounted: boolean().default(false).notNull(),
 });
 
 export const competitor = pgTable(

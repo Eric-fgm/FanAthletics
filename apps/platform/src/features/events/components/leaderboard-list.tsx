@@ -1,5 +1,6 @@
 import type {
 	Athlete,
+	Participant,
 	UserWithParticipation,
 } from "@fan-athletics/shared/types";
 import { Link, useRouter } from "expo-router";

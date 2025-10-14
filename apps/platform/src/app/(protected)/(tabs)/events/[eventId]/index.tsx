@@ -1,11 +1,20 @@
-import { CompetitionList, useEventCompetitionsQuery } from "#/features/events";
+import { useLocalSearchParams } from "expo-router";
+import { View } from "react-native";
+import EventHeader from "#/components/event-header";
+import {
+	CompetitionList,
+	useEventCompetitionsQuery,
+	useEventQuery,
+} from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
 
 export default function SingleEvent() {
 	const { data: competitions = [] } = useEventCompetitionsQuery();
+	const { data: event, isLoading: isEventLoading } = useEventQuery();
 
 	return (
 		<ScrollArea>
+			<EventHeader event={event} />
 			<Header
 				title="Aktualności"
 				filters={[

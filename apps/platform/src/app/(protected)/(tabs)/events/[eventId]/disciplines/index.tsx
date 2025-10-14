@@ -1,8 +1,9 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 import { Select, Typography } from "#/components";
-import { DisciplineList, useDisciplinesQuery } from "#/features/events";
+import { DisciplineList, useDisciplinesQuery, useEventQuery } from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
+import EventHeader from "#/components/event-header";
 
 export default function EventDisciplines() {
 	const { sortBy = "" } = useLocalSearchParams();
@@ -10,9 +11,11 @@ export default function EventDisciplines() {
 	const { data: disciplines = [], isLoading } = useDisciplinesQuery({
 		sortBy: sortBy.toString(),
 	});
+	const { data: event, isLoading: isEventLoading } = useEventQuery();
 
 	return (
 		<ScrollArea>
+			<EventHeader event={event} />
 			<Header title="Dyscypliny" />
 			<View className="flex-row justify-between items-center mt-12 px-4 lg:px-12 pb-6">
 				<View className="flex-row items-center gap-2">

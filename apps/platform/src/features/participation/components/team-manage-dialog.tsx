@@ -1,6 +1,12 @@
 import type { AthleteWithDisciplines } from "@fan-athletics/shared/types";
 import { useGlobalSearchParams } from "expo-router";
-import { CircleUser, Info, Plus } from "lucide-react-native";
+import {
+	CircleUser,
+	Info,
+	Plus,
+	UserRound,
+	UserRoundPlus,
+} from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
@@ -25,7 +31,7 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 	const { mutateAsync: addTeamMember, isPending: isAddTeamMemberPending } =
 		useAddTeamMemberMutation();
 
-	const [selectedPlayerSlor, setSelectedPlayerSlot] = useState<number | null>(
+	const [selectedPlayerSlot, setSelectedPlayerSlot] = useState<number | null>(
 		null,
 	);
 	const [selectedAthletes, setSelectedAthletes] = useState<
@@ -114,12 +120,14 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 						disabledAtletes={selectedAthletes
 							.filter((athlete) => !!athlete)
 							.map((athlete) => athlete.id)}
-						isOpen={selectedPlayerSlor !== null}
+						budget={400} // Do poprawy
+						isOpen={selectedPlayerSlot !== null}
+						webOptions={{ variant: "wide" }}
 						onClose={() => setSelectedPlayerSlot(null)}
 						onSelect={(athlete) => {
-							if (selectedPlayerSlor === null) return;
+							if (selectedPlayerSlot === null) return;
 							const newSelectedAthletes = [...selectedAthletes];
-							newSelectedAthletes[selectedPlayerSlor] = athlete;
+							newSelectedAthletes[selectedPlayerSlot] = athlete;
 							setSelectedAthletes(newSelectedAthletes);
 							setSelectedPlayerSlot(null);
 						}}
@@ -140,7 +148,7 @@ const PlayerSlot: React.FC<{ index: number; onPress: () => void }> = ({
 				className="justify-center items-center bg-gray-100 rounded-full w-12 h-12"
 				onPress={onPress}
 			>
-				<Plus size={20} className="text-gray-500" />
+				<UserRoundPlus size={20} className="text-gray-500" />
 			</Pressable>
 			<Typography className="mt-4">Miejsce {index}</Typography>
 		</View>
@@ -153,19 +161,19 @@ const PlayerPreview: React.FC<
 	return (
 		<View
 			className="relative items-center p-6 border border-gray-200 rounded-2xl h-[224px]"
-			// style={{
-			// 	backgroundColor: "white",
-			// 	shadowColor: "#000",
-			// 	shadowOpacity: 0.08,
-			// 	shadowOffset: { width: 0, height: 4 },
-			// 	shadowRadius: 16,
-			// }}
+			style={{
+				backgroundColor: "white",
+				shadowColor: "#000",
+				shadowOpacity: 0.08,
+				shadowOffset: { width: 0, height: 4 },
+				shadowRadius: 16,
+			}}
 		>
 			<View className="top-3 right-3 absolute text-gray-500">
 				<Info size={16} />
 			</View>
 			<View className="justify-center items-center bg-gray-100 rounded-full w-12 h-12">
-				<CircleUser size={20} className="text-gray-600" />
+				<UserRound size={20} className="text-gray-600" />
 			</View>
 			<Typography
 				size="base"
