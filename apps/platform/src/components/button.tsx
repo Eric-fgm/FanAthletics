@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import type { LucideIcon } from "lucide-react-native";
-import { type TextStyle, View } from "react-native";
+import { type TextStyle, View, Image } from "react-native";
 import { type GestureResponderEvent, Pressable } from "react-native";
 import { Typography } from "#/components";
 
@@ -13,6 +13,7 @@ type ButtonProps = {
 	textClassName?: string;
 	textStyle?: TextStyle;
 	icon?: LucideIcon;
+	imageUrl?: string;
 	className?: string;
 } & ({ onPress?: (event: GestureResponderEvent) => void } | { href: string });
 
@@ -43,6 +44,7 @@ const Button: React.FC<ButtonProps> = ({
 	text,
 	textClassName,
 	icon: Icon,
+	imageUrl,
 	variant = "primary",
 	size = "base",
 	rounded = false,
@@ -59,7 +61,7 @@ const Button: React.FC<ButtonProps> = ({
 
 	return (
 		<Comp
-			className={`relative flex items-center justify-center flex-shrink-0 gap-2 overflow-hidden ${rounded ? "rounded-full" : "rounded-xl"} ${className} ${variantClassNames} ${sizeClassNames}`}
+			className={`relative flex-row items-center justify-center flex-shrink-0 gap-2 overflow-hidden ${rounded ? "rounded-full" : "rounded-xl"} ${className} ${variantClassNames} ${sizeClassNames}`}
 			disabled={isLoading}
 			{...props}
 		>
@@ -74,6 +76,7 @@ const Button: React.FC<ButtonProps> = ({
 					{text}
 				</Typography>
 			)}
+			{imageUrl && <Image source={{ uri: imageUrl }} style={{ width: 20, height: 14 }}/>}
 			{isLoading && (
 				<View
 					className={`absolute top-0 left-0 w-full h-full flex items-center justify-center ${variantClassNames}`}

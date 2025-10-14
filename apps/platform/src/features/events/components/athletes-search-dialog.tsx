@@ -2,7 +2,7 @@ import type {
 	AthleteWithDisciplines,
 	Discipline,
 } from "@fan-athletics/shared/types";
-import { CircleUser } from "lucide-react-native";
+import { CircleUser, Globe } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import { Image, Pressable, ScrollView, TextInput, View } from "react-native";
@@ -18,6 +18,7 @@ import {
 	useEventAthletesQuery,
 	useEventDiscpilinesQuery,
 } from "#/features/events";
+import { countries } from "#/app/(protected)/(tabs)/events/[eventId]/participation/utils";
 
 interface AthletesSearchDialogProps
 	extends React.ComponentProps<typeof Dialog> {
@@ -40,6 +41,7 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 	const nationalities = [
 		...new Set(athletes.map((athlete) => athlete.nationality)),
 	];
+	nationalities.push("Albania", "Bosnia and Herzegovina");
 
 	const [currentSex, setCurrentSex] = useState("both");
 	const [currentDiscipline, setCurrentDiscipline] = useState<Discipline>();
@@ -198,9 +200,11 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 								<Button
 									text={
 										currentNationality !== ""
-											? currentNationality
+											? countries[currentNationality].polishName
 											: "Wybierz narodowość"
 									}
+									imageUrl={currentNationality !== "" ? `https://flagsapi.com/${countries[currentNationality].code}/flat/64.png` : undefined}
+									icon={currentNationality === "" ? Globe : undefined}
 								/>
 							}
 							items={[
@@ -212,7 +216,8 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 							].concat(
 								nationalities.map((nationality) => {
 									return {
-										name: nationality,
+										name: countries[nationality].polishName,
+										imageUrl: `https://flagsapi.com/${countries[nationality].code}/flat/64.png`,
 										onPress: () => setCurrentNationality(nationality),
 										className: "",
 									};

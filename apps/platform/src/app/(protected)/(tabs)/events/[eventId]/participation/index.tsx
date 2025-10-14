@@ -3,6 +3,7 @@ import { UserRound, UserRoundPlus } from "lucide-react-native";
 import React, { useState } from "react";
 import { Image, ImageBackground, Pressable, View } from "react-native";
 import { Button, Dialog, Select, Typography } from "#/components";
+import EventHeader from "#/components/event-header";
 import { AthletesSearchDialog, useEventQuery } from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
 import {
@@ -18,12 +19,11 @@ import {
 import {
 	AthleteCostBox,
 	GradientBox,
-	flags,
+	countries,
 	menColors,
 	womenColors,
 } from "./utils";
 import type { AthleteColors } from "./utils";
-import EventHeader from "#/components/event-header";
 
 const Participation = () => {
 	const [selectedMember, setSelectedMember] = useState<Athlete | "edit" | null>(
@@ -81,7 +81,7 @@ const Participation = () => {
 
 	return (
 		<ScrollArea>
-			<EventHeader event={event}/>
+			<EventHeader event={event} />
 			<Header
 				title="Drużyna"
 				// titleClassName="items-center"
@@ -281,8 +281,8 @@ const AthletePreview: React.FC<{
 }> = ({ athlete, isCaptain, pointsGathered, isLoading, onEdit, onDelete }) => {
 	console.log(
 		athlete.nationality,
-		flags[athlete.nationality],
-		`https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`,
+		countries[athlete.nationality],
+		`https://flagsapi.com/${countries[athlete.nationality].code}/flat/64.png`,
 	);
 	const {
 		mutateAsync: makeAthleteCaptain,
@@ -498,7 +498,7 @@ const AthleteBasicInfo: React.FC<{
 		<View className="flex-column w-full">
 			<Image
 				source={{
-					uri: `https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`,
+					uri: `https://flagsapi.com/${countries[athlete.nationality].code}/flat/64.png`,
 				}}
 				style={{ width: 48, height: 32, borderRadius: 24 }}
 				className="w-full h-full ms-3 mb-2"
