@@ -214,9 +214,9 @@ export default new Hono<{
 					stillInTeam: true,
 				})
 				.where(
-					and(
-						eq(tables.teamMember.participantId, participant.id),
-						eq(tables.teamMember.athleteId, athlete.id),
+					operators.and(
+						operators.eq(tables.teamMember.participantId, participant.id),
+						operators.eq(tables.teamMember.athleteId, athlete.id),
 					),
 				);
 		} else {
@@ -433,6 +433,8 @@ export default new Hono<{
 			}
 		}
 
+		// TRZEBA COŚ POPRAWIĆ Z TYM LICZENIEM!!!
+
 		const onlyNotCounted = filtered.filter((c) => !c.pointsAlreadyCounted);
 		for (const c of onlyNotCounted) {
 			await db
@@ -440,7 +442,7 @@ export default new Hono<{
 				.set({
 					pointsAlreadyCounted: true,
 				})
-				.where(eq(tables.competition.id, c.id));
+				.where(operators.eq(tables.competition.id, c.id));
 		}
 
 		const competitionIds = filtered
@@ -481,14 +483,14 @@ export default new Hono<{
 					await db
 						.update(tables.teamMember)
 						.set({
-							pointsGathered: sql`${tables.teamMember.pointsGathered} + ${member.isCaptain ? pointsToAdd * 2 : pointsToAdd}`,
+							pointsGathered: operators.sql`${tables.teamMember.pointsGathered} + ${member.isCaptain ? pointsToAdd * 2 : pointsToAdd}`,
 						})
 						.where(
-							and(
-								eq(tables.teamMember.participantId, member.participantId),
-								eq(tables.teamMember.athleteId, member.athleteId),
-								eq(tables.teamMember.isCaptain, member.isCaptain),
-								eq(tables.teamMember.pointsGathered, member.pointsGathered),
+							operators.and(
+								operators.eq(tables.teamMember.participantId, member.participantId),
+								operators.eq(tables.teamMember.athleteId, member.athleteId),
+								operators.eq(tables.teamMember.isCaptain, member.isCaptain),
+								operators.eq(tables.teamMember.pointsGathered, member.pointsGathered),
 							),
 						);
 				}
@@ -538,7 +540,7 @@ export default new Hono<{
 				.set({
 					lastPoints: allPoints,
 				})
-				.where(eq(tables.participant.id, participant.id));
+				.where(operators.eq(tables.participant.id, participant.id));
 		}
 
 		return c.json({ message: "Points successfully counted." }, 200);

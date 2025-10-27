@@ -5,7 +5,7 @@ import type {
 import { CircleUser, Globe } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
-import { Image, Pressable, ScrollView, ScrollView, TextInput, View } from "react-native";
+import { Image, Pressable, ScrollView, TextInput, View } from "react-native";
 import { countries } from "#/app/(protected)/(tabs)/events/[eventId]/participation/utils";
 import {
 	Button,

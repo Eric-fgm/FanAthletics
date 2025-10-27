@@ -91,11 +91,18 @@ export const AthleteCostBox: React.FC<{
 	);
 };
 
-export const countries: Record<string, { polishName: string, code: string; continent: string }> = {
+export const countries: Record<
+	string,
+	{ polishName: string; code: string; continent: string }
+> = {
 	Andorra: { polishName: "Andora", code: "AD", continent: "Europe" },
 	Albania: { polishName: "Albania", code: "AL", continent: "Europe" },
 	Austria: { polishName: "Austria", code: "AT", continent: "Europe" },
-	"Bosnia and Herzegovina": { polishName: "Bośnia i Hercegowina", code: "BA", continent: "Europe" },
+	"Bosnia and Herzegovina": {
+		polishName: "Bośnia i Hercegowina",
+		code: "BA",
+		continent: "Europe",
+	},
 	Belgium: { polishName: "Belgia", code: "BE", continent: "Europe" },
 	Bulgaria: { polishName: "Bułgaria", code: "BG", continent: "Europe" },
 	Poland: { polishName: "Polska", code: "PL", continent: "Europe" },
