@@ -1,9 +1,13 @@
 import { Slot } from "expo-router";
 import { View } from "react-native";
 import { Tabs } from "#/components";
-import { getDisciplineIcon, useDisciplineQuery, useEventQuery } from "#/features/events";
-import { HeaderWithIcon, ScrollArea } from "#/features/layout";
 import EventHeader from "#/components/event-header";
+import {
+	getDisciplineIcon,
+	useDisciplineQuery,
+	useEventQuery,
+} from "#/features/events";
+import { HeaderWithIcon, ScrollArea } from "#/features/layout";
 
 export default function EventSingleDisciplineLayout() {
 	const { data: discipline } = useDisciplineQuery();

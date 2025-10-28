@@ -14,6 +14,7 @@ import { Button, Dialog, Typography } from "#/components";
 import { AthletesSearchDialog } from "#/features/events";
 import {
 	useAddTeamMemberMutation,
+	useGameSpecificationQuery,
 	useInvalidateParticipation,
 	useParticipateMutation,
 } from "../services";
@@ -30,6 +31,7 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 		useParticipateMutation();
 	const { mutateAsync: addTeamMember, isPending: isAddTeamMemberPending } =
 		useAddTeamMemberMutation();
+	const { data: gameSpecification, isLoading } = useGameSpecificationQuery();
 
 	const [selectedPlayerSlot, setSelectedPlayerSlot] = useState<number | null>(
 		null,
@@ -37,6 +39,9 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 	const [selectedAthletes, setSelectedAthletes] = useState<
 		(AthleteWithDisciplines | null)[]
 	>(Array(8).fill(null));
+	const [budgetLeft, setBudgetLeft] = useState<number>(
+		gameSpecification ? gameSpecification.budget : 0
+	);
 
 	return (
 		<Dialog trigger={trigger} webOptions={{ variant: "wide" }}>
@@ -47,7 +52,7 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 							<View>
 								<Typography size="small">Bilans</Typography>
 								<View className="flex-row items-end gap-0.5">
-									<Typography>300</Typography>
+									<Typography>{budgetLeft}</Typography>
 									<Typography size="small" className="mb-px">
 										XP
 									</Typography>
@@ -120,16 +125,20 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 						disabledAtletes={selectedAthletes
 							.filter((athlete) => !!athlete)
 							.map((athlete) => athlete.id)}
-						budget={400} // Do poprawy
+						budget={budgetLeft} // Do poprawy
 						isOpen={selectedPlayerSlot !== null}
 						webOptions={{ variant: "wide" }}
 						onClose={() => setSelectedPlayerSlot(null)}
 						onSelect={(athlete) => {
 							if (selectedPlayerSlot === null) return;
-							const newSelectedAthletes = [...selectedAthletes];
-							newSelectedAthletes[selectedPlayerSlot] = athlete;
-							setSelectedAthletes(newSelectedAthletes);
-							setSelectedPlayerSlot(null);
+							if (athlete.cost <= budgetLeft) {
+								const newSelectedAthletes = [...selectedAthletes];
+								newSelectedAthletes[selectedPlayerSlot] = athlete;
+								setSelectedAthletes(newSelectedAthletes);
+								setSelectedPlayerSlot(null);
+								setBudgetLeft(budgetLeft - athlete.cost);
+							}
+							else console.log("Too expensive to hire!");
 						}}
 					/>
 				</>

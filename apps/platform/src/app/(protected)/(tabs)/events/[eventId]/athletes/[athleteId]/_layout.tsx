@@ -2,9 +2,9 @@ import { Slot } from "expo-router";
 import { CircleUser } from "lucide-react-native";
 import { Image, View } from "react-native";
 import { Tabs } from "#/components";
+import EventHeader from "#/components/event-header";
 import { useAthleteQuery, useEventQuery } from "#/features/events";
 import { HeaderWithIcon, ScrollArea } from "#/features/layout";
-import EventHeader from "#/components/event-header";
 
 export default function EventSingleAthleteLayout() {
 	const { data: athlete } = useAthleteQuery();
@@ -19,7 +19,11 @@ export default function EventSingleAthleteLayout() {
 				<HeaderWithIcon
 					icon={
 						athlete.imageUrl ? (
-							<Image source={{ uri: athlete.imageUrl }} />
+							<Image
+								source={{ uri: athlete.imageUrl }}
+								style={{ width: "100%", height: "100%" }}
+								className="rounded-full"
+							/>
 						) : (
 							CircleUser
 						)
@@ -39,7 +43,7 @@ export default function EventSingleAthleteLayout() {
 				<Tabs
 					items={[
 						{
-							name: "Na żywo",
+							name: "Wyniki",
 							href: `/events/${athlete.eventId}/athletes/${athlete.id}`,
 						},
 						{
@@ -50,6 +54,10 @@ export default function EventSingleAthleteLayout() {
 							name: "Dyscypliny",
 							href: `/events/${athlete.eventId}/athletes/${athlete.id}/disciplines`,
 						},
+						// {
+						// 	name: "Wyniki",
+						// 	href: `/events/${athlete.eventId}/athletes/${athlete.id}/results`,
+						// },
 					]}
 					className="mt-8 px-4 lg:px-12 border-[#eeeff1] border-b"
 				/>

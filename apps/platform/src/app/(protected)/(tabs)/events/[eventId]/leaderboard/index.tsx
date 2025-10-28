@@ -1,5 +1,6 @@
 import { View } from "react-native";
 import { Typography } from "#/components";
+import EventHeader from "#/components/event-header";
 import { LeaderboardList, useEventQuery } from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
 import {
@@ -7,17 +8,12 @@ import {
 	useParticipationQuery,
 } from "#/features/participation";
 import { diffDays } from "#/helpers/date";
-import EventHeader from "#/components/event-header";
 
 export default function EventLeaderboard() {
 	const { data: participation } = useParticipationQuery();
 	const { data: usersWithParticipation = [], isLoading } =
 		useParticipantsQuery();
 	const { data: event, isLoading: isEventLoading } = useEventQuery();
-
-	// ODŚWIEŻANIE WYNIKÓW!!!
-	// Coś jest nie tak, jak kliknę oblicz punkty bez zaciągniętych danych - zwraca 401 Unauthorized
-	// Chyba trzeba zrobić to invalidateQueries
 
 	const days = participation
 		? diffDays(participation.updatedAt, new Date())

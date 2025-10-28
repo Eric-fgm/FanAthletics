@@ -1,6 +1,6 @@
 import type { Athlete } from "@fan-athletics/shared/types";
-import { UserRound, UserRoundPlus } from "lucide-react-native";
 import { useLocalSearchParams } from "expo-router";
+import { UserRound, UserRoundPlus } from "lucide-react-native";
 import { CircleUser, Crown, Info, Plus } from "lucide-react-native";
 import React, { useState } from "react";
 import { Image, ImageBackground, Pressable, View } from "react-native";
@@ -15,9 +15,11 @@ import {
 	useDeleteTeamMemberMutation,
 	useInvalidateParticipation,
 	useMakeTeamLeaderMutation,
+	useParticipateMutation,
 	useParticipationQuery,
 	useTeamMembersQuery,
 } from "#/features/participation";
+import { formatDate } from "#/helpers/date";
 import {
 	AthleteCostBox,
 	GradientBox,
@@ -26,7 +28,6 @@ import {
 	womenColors,
 } from "./utils";
 import type { AthleteColors } from "./utils";
-import { formatDate } from "#/helpers/date";
 
 const Participation = () => {
 	const { tab } = useLocalSearchParams<{ tab?: string }>();
@@ -42,6 +43,7 @@ const Participation = () => {
 		mutateAsync: deleteTeamMember,
 		isPending: isDeleteTeamMemberPending,
 	} = useDeleteTeamMemberMutation();
+	const { mutateAsync: participate, isPending: isParticipatePending } = useParticipateMutation();
 	const { data: participation } = useParticipationQuery();
 	const { data: teamMembers = [] } = useTeamMembersQuery({
 		enabled: !!participation,
@@ -69,17 +71,20 @@ const Participation = () => {
 				>
 					Weź udział w wydarzeniu i konkuruj z innymi.
 				</Typography>
-				<TeamManageDialog
-					trigger={
-						<Button
-							text="Stwórz"
-							size="small"
-							textStyle={{ fontFamily: "inter-regular", letterSpacing: 0.1 }}
-							textClassName="!text-sm px-1"
-							rounded
-						/>
-					}
+				<Button
+					text="Stwórz"
+					size="small"
+					textStyle={{ fontFamily: "inter-regular", letterSpacing: 0.1 }}
+					textClassName="!text-sm px-1"
+					rounded
+					disabled={event.status !== "available"}
+					variant={event.status === "available" ? "primary" : "washed"}
+					onPress={async () => {
+						await participate(event.id);
+						await invalidateParticipation(event.id);
+					}}
 				/>
+				{event.status !== "available" && <Typography type="washed">Nie można jeszcze utworzyć drużyny w ramach tego wydarzenia</Typography>}
 			</View>
 		);
 	}
@@ -151,37 +156,6 @@ const Participation = () => {
 								</View>
 							</View>
 						))}
-					</View>
-					<View className="mt-12 px-4 lg:px-12 pb-6">
-						<Typography size="large2">Zespół</Typography>
-					</View>
-				<View className="flex-row justify-between items-center mt-12 px-4 lg:px-12 pb-6">
-					<View className="flex-row items-center gap-2">
-						<Typography size="large2">Statystyki</Typography>
-					</View>
-					{/* <Select /> */}
-				</View>
-				<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 lg:px-12">
-					<View className="gap-y-2 bg-gray-100 px-8 py-6 rounded-2xl">
-						<Typography type="washed">Budżet</Typography>
-						<View className="flex-row items-end gap-1.5">
-							<Typography size="large4.5">{participation.budget}</Typography>
-							<Typography size="large2" className="mb-1">
-								XP
-							</Typography>
-						</View>
-					</View>
-					<View className="gap-y-2 bg-gray-100 px-8 py-6 rounded-2xl">
-						<Typography type="washed">Punkty</Typography>
-						<View className="flex-row items-end gap-1.5">
-							<Typography size="large4.5">{participation.lastPoints}</Typography>
-							<Typography size="large2" className="mb-1">
-								PKT
-							</Typography>
-						</View>
-					</View>
-					<View className="bg-gray-100 rounded-2xl h-32" />
-					<View className="bg-gray-100 rounded-2xl h-32" />
 					</View>
 					<View className="mt-12 px-4 lg:px-12 pb-6">
 						<Typography size="large2">Zespół</Typography>

@@ -4,6 +4,7 @@ import { Button, Typography } from "#/components";
 import { useEventDeletedMutation } from "#/features/admin";
 import { useSessionSuspeneQuery } from "#/features/auth";
 import { isAdmin } from "#/helpers/user";
+import { Trophy } from "lucide-react-native";
 
 interface EventItemProps extends Event {}
 
@@ -32,10 +33,13 @@ const EventItem: React.FC<EventItemProps> = ({
 			</Typography>
 			<View className="items-center">
 				<View className="w-[56] h-[56] bg-white rounded-xl items-center justify-center">
-					<Image
-						source={{ uri: icon }}
-						style={{ width: "75%", height: "75%" }}
-					/>
+					{icon ?
+						<Image
+							source={{ uri: icon }}
+							style={{ width: "75%", height: "75%" }}
+						/> :
+						<Trophy size="75%"/>
+					}
 				</View>
 				<Typography type="bright" size="large" className="mt-4 mb-1">
 					{name}

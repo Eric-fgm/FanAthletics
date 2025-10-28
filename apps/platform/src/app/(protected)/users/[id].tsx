@@ -89,7 +89,7 @@ const TeamList: React.FC<{
 			{teams.map((team, index) => (
 				<View
 					key={team.id}
-					className="sm:flex-row flex-col p-4 gap-4 sm:items-center sm:h-[100] h-[150] border border-gray-200"
+					className="sm:flex-row flex-col flex-1 p-4 gap-4 sm:items-center sm:h-[100] h-[150] border border-gray-200"
 					style={{
 						backgroundColor: index % 2 === 0 ? "#c9c9c9ff" : "#ffffff",
 						borderTopLeftRadius: index === 0 ? 16 : 0,
@@ -104,14 +104,16 @@ const TeamList: React.FC<{
 						</Typography>
 					</View>
 					<View className="flex-row items-center gap-3 basis-[50%] xl:basis-1/3">
-						<View className="w-12 h-12 rounded-full items-center justify-center">
+						<View className="w-16 h-16 rounded-full items-center justify-center">
 							{team.eventIcon ? (
-								<Image
-									source={{ uri: team.eventIcon }}
-									className="w-full h-full rounded-full"
-								/>
+								<View className="w-full h-full bg-white items-center justify-center rounded-xl">
+									<Image
+										source={{ uri: team.eventIcon }}
+										style={{ width: "75%", height: "75%" }}
+									/>
+								</View>
 							) : (
-								<Trophy size={40} className="text-gray-600" />
+								<Trophy size="75%" className="text-gray-600" />
 							)}
 						</View>
 						<Link href={`/events/${team.eventId}`}>
@@ -158,7 +160,7 @@ const TeamList: React.FC<{
 							</Pressable>
 						))}
 					</View>
-					<View className="ml-auto justify-center items-center">
+					<View className="ml-auto justify-center items-center hidden sm:flex">
 						{isMyProfile && (
 							<Button
 								text="Zobacz drużynę"
@@ -166,6 +168,7 @@ const TeamList: React.FC<{
 								onPress={() =>
 									router.push(`/events/${team.eventId}/participation`)
 								}
+								className="shrink"
 							/>
 						)}
 					</View>

@@ -4,7 +4,7 @@ import {
 	MenuItem as HeadlessMenuItem,
 	MenuItems as HeadlessMenuItems,
 } from "@headlessui/react";
-import { View, Image } from "react-native";
+import { Image, View } from "react-native";
 import { Divider, Typography } from "#/components";
 import type { DropdownProps } from "#/components/dropdown/types";
 
@@ -52,7 +52,13 @@ const Dropdown: React.FC<DropdownProps> = ({
 											>
 												{name}
 											</Typography>
-											{imageUrl && <Image source={{ uri: imageUrl }} style={{ width: 20, height: 14 }} className="ms-auto"/>}
+											{imageUrl && (
+												<Image
+													source={{ uri: imageUrl }}
+													style={{ width: 20, height: 14 }}
+													className="ms-auto"
+												/>
+											)}
 										</View>
 									</button>
 								</HeadlessMenuItem>

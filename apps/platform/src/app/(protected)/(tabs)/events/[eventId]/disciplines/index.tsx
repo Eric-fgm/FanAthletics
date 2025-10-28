@@ -1,9 +1,13 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 import { Select, Typography } from "#/components";
-import { DisciplineList, useDisciplinesQuery, useEventQuery } from "#/features/events";
-import { Header, ScrollArea } from "#/features/layout";
 import EventHeader from "#/components/event-header";
+import {
+	DisciplineList,
+	useDisciplinesQuery,
+	useEventQuery,
+} from "#/features/events";
+import { Header, ScrollArea } from "#/features/layout";
 
 export default function EventDisciplines() {
 	const { sortBy = "" } = useLocalSearchParams();

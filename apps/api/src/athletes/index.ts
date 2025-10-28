@@ -5,6 +5,7 @@ import { clamp } from "#/utils/math";
 
 export default new Hono()
 	.get("/", async (c) => {
+		// Można usunąć limity, bo zwraca tylko 50 zawodników
 		const { page, perPage, name, eventId, disciplineId } = c.req.query();
 
 		const limit = clamp(perPage ? Number.parseInt(perPage, 10) : 50, 5, 100);

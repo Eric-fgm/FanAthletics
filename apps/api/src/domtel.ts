@@ -205,6 +205,19 @@ export const processCompetitionsAndResults = async (
 	withResults = true,
 ) => {
 	const schedule = await getSchedule(app);
+	if (!withResults && Array.isArray(schedule) && schedule.length > 0) {
+		const startDate = schedule[0];
+		const endDate = schedule[schedule.length-1];
+		if (startDate && endDate) {
+			await db
+				.update(tables.event)
+				.set({
+					startAt: new Date(startDate),
+					endAt: new Date(endDate)
+				})
+				.where(operators.eq(tables.event.id, eventId));
+		}
+	}
 	const curriculums = (
 		await Promise.all(schedule.map((_, index) => getCurriculum(app, index + 1)))
 	).flat();
@@ -279,14 +292,14 @@ export const processCompetitionsAndResults = async (
 										disciplineId: discipline.id,
 									})
 									.onConflictDoNothing();
-								
+
 								if (athlete.sex !== "M" && athlete.sex !== "K") {
 									await db
 										.update(tables.athlete)
 										.set({
-											sex: Konkurencja[0]
+											sex: Konkurencja[0],
 										})
-										.where(operators.eq(tables.athlete.id, athlete.id))
+										.where(operators.eq(tables.athlete.id, athlete.id));
 								}
 							}
 						}),
@@ -377,7 +390,7 @@ export const saveAthletes = async (
 
 	while (athletes.length) {
 		const nowDate = new Date();
-		const chunkOfAthletes = athletes.splice(CHUNK_SIZE);
+		const chunkOfAthletes = athletes.splice(0, CHUNK_SIZE);
 
 		if (!chunkOfAthletes.length) return;
 

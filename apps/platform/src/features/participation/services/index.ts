@@ -1,5 +1,6 @@
 import type {
 	Athlete,
+	GameSpecification,
 	Participant,
 	UserWithParticipation,
 } from "@fan-athletics/shared/types";
@@ -94,6 +95,33 @@ export const useMakeTeamLeaderMutation = () => {
 	});
 };
 
+export const useDeleteTeamLeaderPrivilegeMutation = () => {
+	const eventId = useGlobalSearchParams().eventId?.toString();
+
+	return useMutation({
+		mutationFn: (athleteId: string) =>
+			fetcher(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/delete-captain-privilege`,
+				{
+					method: "POST",
+					body: { athleteId },
+				},
+			),
+	});
+};
+
+export const useCountPointsMutation = () => {
+	return useMutation({
+		mutationFn: (eventId: string) =>
+			fetcher(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/count-points`,
+				{
+					method: "POST",
+				},
+			),
+	});
+};
+
 export const useParticipationQuery = () => {
 	const eventId = useGlobalSearchParams().eventId?.toString();
 
@@ -108,7 +136,7 @@ export const useParticipationQuery = () => {
 
 export const useTeamMembersQuery = (
 	options?: Omit<
-		UseQueryOptions<(Athlete & { isCaptain: boolean })[]>,
+		UseQueryOptions<(Athlete & { isCaptain: boolean, pointsGathered: number })[]>,
 		"queryKey" | "queryFn"
 	>,
 ) => {
@@ -118,7 +146,7 @@ export const useTeamMembersQuery = (
 		...options,
 		queryKey: ["game::team-members", eventId],
 		queryFn: () =>
-			fetcher<(Athlete & { isCaptain: boolean })[]>(
+			fetcher<(Athlete & { isCaptain: boolean, pointsGathered: number })[]>(
 				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/participation/team`,
 			),
 	});
@@ -136,3 +164,17 @@ export const useParticipantsQuery = () => {
 		enabled: !!eventId,
 	});
 };
+
+export const useGameSpecificationQuery = (eventId?: string) => {
+	const { eventId: defaultEventId } = useGlobalSearchParams();
+	const currentEventId = eventId ?? defaultEventId?.toString();
+
+	return useQuery({
+		queryFn: () =>
+			fetcher<GameSpecification | null>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${currentEventId}/game-specification`
+			),
+		queryKey: ["game::specification", currentEventId],
+		enabled: !!currentEventId,
+	})
+}
