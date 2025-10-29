@@ -14,8 +14,8 @@ export default function EventAthletes() {
 
 	const { data: athletes = [], isLoading: areAthletesLoading } =
 		useAthletesQuery({
-		sortBy: sortBy.toString(),
-	});
+			sortBy: sortBy.toString(),
+		});
 	const { data: event, isLoading: isEventLoading } = useEventQuery();
 
 	return (

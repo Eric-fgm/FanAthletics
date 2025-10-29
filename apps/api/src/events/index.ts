@@ -92,7 +92,7 @@ export default new Hono()
 				},
 			},
 			where: (athlete, { eq }) => eq(athlete.eventId, eventId),
-			limit: 100,
+			// limit: 100,
 		});
 
 		return c.json(

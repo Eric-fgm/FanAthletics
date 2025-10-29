@@ -1,3 +1,4 @@
+import { useGlobalSearchParams } from "expo-router";
 import { Settings } from "lucide-react-native";
 import React, { useState } from "react";
 import { Button, Dropdown } from "#/components";
@@ -17,7 +18,6 @@ import {
 	useCountPointsMutation,
 	useInvalidateParticipation,
 } from "#/features/participation";
-import { useGlobalSearchParams } from "expo-router";
 
 const AdminTools = () => {
 	const [isCreateEventDialogOpen, setIsCreateEventDialogOpen] = useState(false);
@@ -26,7 +26,7 @@ const AdminTools = () => {
 		useState(false);
 	const [isUpdateAthleteDialogOpen, setIsUpdateAthleteDialogOpen] =
 		useState(false);
-		
+
 	const { eventId } = useGlobalSearchParams();
 
 	const { data: event } = useEventQuery();
@@ -85,17 +85,20 @@ const AdminTools = () => {
 								},
 							]
 						: []),
-					{
-						name: isCountPointsPending
-							? "Trwa obliczanie punktów..."
-							: "Oblicz punkty",
-						disabled: typeof eventId !== "string" || isCountPointsPending,
-						onPress: async () => {
-							console.log("Liczenie...");
-							await countPoints(eventId.toString());
-							await invalidateParticipation(eventId.toString());
-						},
-					},
+					...(event
+						? [
+							{
+								name: isCountPointsPending
+									? "Trwa obliczanie punktów..."
+									: "Oblicz punkty",
+								disabled: typeof eventId !== "string" || isCountPointsPending,
+								onPress: async () => {
+									console.log("Liczenie...");
+									await countPoints(eventId.toString());
+									await invalidateParticipation(eventId.toString());
+								},
+							},
+						] : []),
 				]}
 				className="-mt-4"
 			/>

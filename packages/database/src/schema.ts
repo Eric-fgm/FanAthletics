@@ -84,6 +84,15 @@ export const event = pgTable("event", {
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
 
+export const gameSpecification = pgTable("game_specification", {
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	eventId: text()
+		.references(() => event.id)
+		.notNull(),
+	budget: integer().default(300).notNull(),
+	maxExchanges: integer().default(8).notNull()
+})
+
 export const participant = pgTable("participant", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),
 	userId: text()
@@ -93,6 +102,7 @@ export const participant = pgTable("participant", {
 	type: varchar({ length: 255 }).notNull(),
 	budget: integer().notNull(),
 	lastPoints: integer().default(0).notNull(),
+	exchangesUsed: integer().default(0).notNull(),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });

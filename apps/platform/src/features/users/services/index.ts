@@ -14,6 +14,8 @@ export const useUserTeamsQuery = (userId: string) => {
 	return useQuery({
 		queryKey: ["users::teams", userId],
 		queryFn: () =>
-			fetcher<UserTeam[]>(`${process.env.EXPO_PUBLIC_API_URL}/api/v1/users/${userId}/teams`),
+			fetcher<UserTeam[]>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/users/${userId}/teams`,
+			),
 	});
 };

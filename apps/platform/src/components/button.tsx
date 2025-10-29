@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import type { LucideIcon } from "lucide-react-native";
-import { type TextStyle, View, Image } from "react-native";
+import { Image, type TextStyle, View } from "react-native";
 import { type GestureResponderEvent, Pressable } from "react-native";
 import { Typography } from "#/components";
 
@@ -25,6 +25,7 @@ const variantClassNamesMap = {
 	white: "bg-white",
 	bright: "bg-[#ededed14]",
 	danger: "bg-red-500",
+	washed: "bg-gray-400",
 };
 
 const typeClassNameMap = {
@@ -34,6 +35,7 @@ const typeClassNameMap = {
 	bright: "bright",
 	white: "dark",
 	danger: "bright",
+	washed: "bright",
 } as const;
 
 const sizeClassNamesMap = {
@@ -78,7 +80,9 @@ const Button: React.FC<ButtonProps> = ({
 					{text}
 				</Typography>
 			)}
-			{imageUrl && <Image source={{ uri: imageUrl }} style={{ width: 20, height: 14 }}/>}
+			{imageUrl && (
+				<Image source={{ uri: imageUrl }} style={{ width: 20, height: 14 }} />
+			)}
 			{isLoading && (
 				<View
 					className={`absolute top-0 left-0 w-full h-full flex items-center justify-center ${variantClassNames}`}

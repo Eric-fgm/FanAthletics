@@ -44,11 +44,18 @@ const eventsApp = new Hono()
 			return c.json({ message: "Database error!" }, 500);
 		}
 
+		// Domyślnie ustawiany jest budżet i maksymana liczba wymian.
+		await db.insert(tables.gameSpecification)
+			.values({
+				eventId: event.id,
+			})
+
 		if (event.domtelApp) {
 			const disciplines = await getDisciplines(event.domtelApp);
 			await saveDiscplines(event.id, disciplines);
 
 			const athletes = await getAthletes(event.domtelApp);
+			
 			await saveAthletes(event.id, athletes);
 
 			await processCompetitionsAndResults(event.domtelApp, event.id, false);

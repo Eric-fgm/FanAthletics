@@ -146,3 +146,10 @@ export interface UserTeam {
 	points: number;
 	athletes: Athlete[];
 }
+
+export interface GameSpecification {
+	id: string;
+	eventId: string;
+	budget: number;
+	maxExchanges: number;
+}

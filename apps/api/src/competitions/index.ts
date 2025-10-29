@@ -14,6 +14,9 @@ export default new Hono().get("/", async (c) => {
 	if (eventId) filters.push(operators.eq(tables.discipline.eventId, eventId));
 	if (disciplineId)
 		filters.push(operators.eq(tables.competition.disciplineId, disciplineId));
+	if (athleteId)
+		filters.push(operators.eq(tables.competitor.athleteId, athleteId));
+	// Coś nie działa
 
 	const competitions = await db
 		.select()
@@ -21,6 +24,10 @@ export default new Hono().get("/", async (c) => {
 		.innerJoin(
 			tables.discipline,
 			operators.eq(tables.discipline.id, tables.competition.disciplineId),
+		)
+		.innerJoin(
+			tables.competitor,
+			operators.eq(tables.competitor.competitionId, tables.competition.id)
 		)
 		.where(operators.and(...filters))
 		.limit(limit)

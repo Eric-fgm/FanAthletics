@@ -18,7 +18,7 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({
 	const orderedCompetitors = competitors.sort((a, b) => a.place - b.place);
 
 	return (
-		<View className="gap-y-5 px-4 py-5 border border-gray-200 rounded-2xl w-80">
+		<View className="gap-y-5 px-4 py-5 border border-gray-200 rounded-2xl w-80 mb-3">
 			<View className="flex-row justify-between items-start">
 				<View className="gap-1">
 					<View className="flex-row items-center gap-2">
@@ -42,7 +42,7 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({
 			</View>
 			<View className="gap-y-4">
 				{orderedCompetitors
-					.slice(0, 3)
+					.slice(0, 8)
 					.map(({ id, firstName, lastName, imageUrl, results }) => (
 						<View key={id} className="flex-row justify-between items-center">
 							<View className="flex-row items-center gap-2">
