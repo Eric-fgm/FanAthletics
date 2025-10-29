@@ -199,10 +199,12 @@ export default new Hono<{
 		if (inTeamAlready)
 			return c.json({ message: "This athlete is already in the team!" }, 409);
 
-		const participantAthletes = await db.query.teamMember.findMany({
-			where: (teamMember, { eq }) =>
-				eq(teamMember.participantId, participant.id),
-		});
+		const participantAthletes = (
+			await db.query.teamMember.findMany({
+				where: (teamMember, { eq }) =>
+					eq(teamMember.participantId, participant.id),
+			})
+		).filter((athlete) => athlete.stillInTeam);
 
 		if (participantAthletes.length >= 8)
 			return c.json({ message: "Your team is already full!" }, 409);

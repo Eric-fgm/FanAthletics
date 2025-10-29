@@ -276,6 +276,7 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 													{athlete.coach}
 												</Typography>
 											</View>
+											<Typography className="ms-auto">{athlete.cost} XP</Typography>
 										</Pressable>
 									);
 								})}
