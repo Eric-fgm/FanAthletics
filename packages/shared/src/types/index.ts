@@ -76,6 +76,7 @@ export interface Athlete {
 	imageUrl: string | null;
 	firstName: string;
 	lastName: string;
+	birthdate: string | null,
 	cost: number;
 	coach: string;
 	club: string | null;
@@ -115,8 +116,20 @@ export interface PersonalRecord {
 	athleteId: string;
 	disciplineName: string;
 	result: string;
+	date: string | null;
+	location: string | null;
 	resultPoints: number | null;
 	isWorldRecord: boolean;
+}
+
+export interface SeasonBest {
+	id: string;
+	athleteId: string;
+	disciplineName: string;
+	result: string;
+	date: string | null;
+	location: string | null;
+	resultPoints: number | null;
 }
 
 export interface Honour {

@@ -11,9 +11,13 @@ const sizeClassNamesMap = {
 	small: "text-xs -tracking-[0.1px]",
 	medium: "text-sm -tracking-[0.1px]",
 	base: "text-base -tracking-[0.1px]",
+	"base-s": "text-base -tracking-[0.1px]",
 	large: "text-lg tracking-tight",
+	"large-s": "text-lg tracking-tight",
 	large1: "text-xl tracking-tight",
+	"large1-s": "text-xl tracking-tight",
 	large2: "text-2xl tracking-tight",
+	"large2-s": "text-2xl tracking-tight",
 	large3: "text-3xl tracking-tight",
 	large4: "text-4xl tracking-tight",
 	"large4.5": "text-4.5xl tracking-tight",
@@ -29,9 +33,13 @@ const weightClassNamesMap = {
 	small: "inter-medium",
 	medium: "inter-medium",
 	base: "inter-medium",
+	"base-s": "inter-semibold",
 	large: "inter-medium",
+	"large-s": "inter-semibold",
 	large1: "inter-medium",
+	"large1-s": "inter-semibold",
 	large2: "inter-medium",
+	"large2-s": "inter-semibold",
 	large3: "inter-semibold",
 	large4: "inter-semibold",
 	"large4.5": "inter-semibold",
@@ -48,6 +56,7 @@ const typeClassNamesMap = {
 	"washed-bright": "text-gray-300",
 	inherit: "text-inherit",
 	danger: "text-red-600",
+	gold: "text-[#c0aa00]"
 };
 
 const Typography: React.FC<TypographyProps> = ({

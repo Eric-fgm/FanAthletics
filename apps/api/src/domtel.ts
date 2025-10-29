@@ -23,6 +23,7 @@ type Curriculum = Record<
 		NazwaRundy: string;
 		seriaMax: string;
 		Godzina_zak1?: string | null;
+		data: string;
 	}
 >;
 
@@ -98,7 +99,7 @@ const getSchedule = async (app: string) => {
 	return Object.values(schedule).map(({ Data }) => Data);
 };
 
-const getCurriculum = async (app: string, day: number | string) => {
+const getCurriculum = async (app: string, day: number | string, date: string) => {
 	const response = await fetch(
 		`https://${app}.domtel-sport.pl/api/program_dzien.php?dzien=${day}`,
 	);
@@ -108,6 +109,20 @@ const getCurriculum = async (app: string, day: number | string) => {
 	}
 
 	const curriculum = (await response.json()) as Curriculum;
+
+	for (let i = 1; String(i) in curriculum; i++) {
+		if (curriculum !== undefined) {
+			const item = curriculum[String(i)];
+			if (item) {
+				item.data = date;
+			}
+		}
+	}
+	// curriculum["data"] = date;
+	// const extended = {
+	// 	...curriculum,
+	// 	data: date,
+	// }
 
 	return Object.values(curriculum);
 };
@@ -205,12 +220,12 @@ export const processCompetitionsAndResults = async (
 ) => {
 	const schedule = await getSchedule(app);
 	const curriculums = (
-		await Promise.all(schedule.map((_, index) => getCurriculum(app, index + 1)))
+		await Promise.all(schedule.map((date, index) => getCurriculum(app, index + 1, date)))
 	).flat();
 
-	for (const { Konkurencja, seria, seriaMax } of curriculums) {
+	for (const { Konkurencja, runda, seriaMax, data } of curriculums) {
 		try {
-			const round = Number.parseInt(seria, 10);
+			const round = Number.parseInt(runda, 10);
 			const metadata = domtel.disciplines[
 				Konkurencja as keyof (typeof domtel)["disciplines"]
 			] ?? {
@@ -242,6 +257,19 @@ export const processCompetitionsAndResults = async (
 						series,
 						details,
 					);
+
+					if (!Konkurencja.includes("x")) {
+						const athletesData = await scrapeUrl(
+							app,
+							series,
+							round,
+							data,
+							Konkurencja,
+						) as AthletesRecord;
+
+						await savePersonalRecords(athletesData, eventId);
+					}
+					
 
 					await Promise.all(
 						results.map(async (result) => {
@@ -371,6 +399,10 @@ export const saveAthletes = async (
 		await db.insert(tables.athlete).values(
 			chunkOfAthletes.map((athlete) => {
 				const [lastName = "?", firstName = "?"] = athlete.name.split(" ");
+
+				const number = Number.parseInt(athlete.number, 10);
+				// const data = await fetchDomtel()
+
 				return {
 					eventId,
 					firstName,
@@ -389,3 +421,172 @@ export const saveAthletes = async (
 		);
 	}
 };
+
+const savePersonalRecords = async (athletesData: AthletesRecord, eventId: string) => {
+	for (const [key, value] of Object.entries(athletesData)) {
+		const foundAthlete = await db.query.athlete.findFirst({
+			where: (table, { and, eq }) =>
+				and(
+					eq(table.eventId, eventId),
+					eq(table.number, Number.parseInt(key))
+				)
+			});
+		if (foundAthlete !== undefined) {
+			await db
+				.update(tables.athlete)
+				.set({
+					imageUrl: value.photo,
+					birthdate: value.birthdate
+				})
+				.where(operators.eq(tables.athlete.id, foundAthlete.id));
+			}
+
+		if (foundAthlete && athletesData[key] !== undefined) {
+			for (const [discipline, recordData] of Object.entries(athletesData[key].profile_data.pbs)) {
+				const foundPersonalRecord = await db.query.personalRecords.findFirst({
+					where: (table, {and, eq}) =>
+						and(
+							eq(table.athleteId, foundAthlete.id),
+							eq(table.disciplineName, discipline)
+						)
+				});
+				if (foundPersonalRecord) {
+					await db
+						.update(tables.personalRecords)
+						.set({
+							result: recordData.result,
+							date: recordData.date,
+							location: recordData.location,
+						})
+						.where(
+							operators.and(
+								operators.eq(tables.personalRecords.athleteId, foundAthlete.id),
+								operators.eq(tables.personalRecords.disciplineName, discipline)
+							)
+						)
+				} else {
+					await db
+						.insert(tables.personalRecords)
+						.values({
+							athleteId: foundAthlete.id,
+							disciplineName: discipline,
+							result: recordData.result,
+							date: recordData.date,
+							location: recordData.location,
+						})
+				}
+				
+			}
+			for (const [discipline, recordData] of Object.entries(athletesData[key].profile_data.sbs)) {
+				const foundSeasonBest = await db.query.seasonBests.findFirst({
+					where: (table, {and, eq}) =>
+						and(
+							eq(table.athleteId, foundAthlete.id),
+							eq(table.disciplineName, discipline)
+						)
+				});
+				if (foundSeasonBest) {
+					await db
+						.update(tables.seasonBests)
+						.set({
+							result: recordData.result,
+							date: recordData.date,
+							location: recordData.location,
+						})
+						.where(
+							operators.and(
+								operators.eq(tables.seasonBests.athleteId, foundAthlete.id),
+								operators.eq(tables.seasonBests.disciplineName, discipline)
+							)
+						)
+				} else {
+					await db
+						.insert(tables.seasonBests)
+						.values({
+							athleteId: foundAthlete.id,
+							disciplineName: discipline,
+							result: recordData.result,
+							date: recordData.date,
+							location: recordData.location,
+						})
+				}
+				
+			}
+			
+		}
+	}
+}
+
+const scrapeUrl = async (app: string, series: number, round: number, day: string, discipline: string) => {
+	const url = `https://${app}.domtel-sport.pl/?seria=${series}&runda=${round}&konkurencja=${discipline}&dzien=${day}`;
+	
+	const res = await fetch(`${process.env.SCRAPER_URL}/api/scrape`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ url }),
+	});
+
+	const data = await res.json();
+
+	return data;
+};
+
+type AthletesRecord = Record<
+  string,
+  {
+    birthdate: string;
+	photo: string;
+    profile_data: {
+      pbs: Record<
+        string,
+        {
+          result: string;
+		  date: string;
+          location: string;
+        }
+      >;
+	  sbs: Record<
+	  	string,
+		{
+		  result: string;
+		  date: string;
+		  location: string;
+		}
+	  >;
+    };
+  }
+>;
+
+type RelayRecord = Record<
+  string,
+  {
+	athlete1: RelayAthleteRecord;
+	athlete2: RelayAthleteRecord;
+	athlete3: RelayAthleteRecord;
+	athlete4: RelayAthleteRecord;
+  }
+>;
+
+type RelayAthleteRecord = Record<
+  string,
+  {
+	profile_data: {
+	  pbs: Record<
+	    string,
+	    {
+		  result: string;
+		  date: string;
+		  location: string;
+	    }
+	  >;
+	  sbs: Record<
+	    string,
+	    {
+		  result: string;
+		  date: string;
+		  location: string;
+	    }
+	  >;
+	}
+  }
+>;

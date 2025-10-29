@@ -28,6 +28,12 @@ To start Web App:
 pnpm dev:web
 ```
 
+To start scraper server:
+
+```sh
+pnpm dev:scrap
+```
+
 To start iOS App:
 
 ```sh

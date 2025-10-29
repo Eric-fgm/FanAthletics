@@ -1,4 +1,4 @@
-import type { AthleteWithDisciplines } from "@fan-athletics/shared/types";
+import { type SeasonBest, type AthleteWithDisciplines, type PersonalRecord } from "@fan-athletics/shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useGlobalSearchParams } from "expo-router";
 import fetcher from "#/helpers/fetcher";
@@ -30,3 +30,25 @@ export const useAthleteQuery = (athleteId?: string) => {
 		enabled: !!currentAthleteId,
 	});
 };
+
+export const useAthletePersonalRecordsQuery = (athleteId: string) => {
+	return useQuery({
+		queryFn: () =>
+			fetcher<PersonalRecord[]>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/athletes/${athleteId}/personal-records`,
+			),
+		queryKey: ["athlete::personal-records", athleteId],
+		enabled: !!athleteId,
+	})
+}
+
+export const useAthleteSeasonBestsQuery = (athleteId: string) => {
+	return useQuery({
+		queryFn: () =>
+			fetcher<SeasonBest[]>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/athletes/${athleteId}/season-bests`,
+			),
+		queryKey: ["athlete::season-bests", athleteId],
+		enabled: !!athleteId,
+	})
+}

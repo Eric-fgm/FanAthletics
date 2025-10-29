@@ -25,7 +25,7 @@ export default function EventSingleAthleteLayout() {
 					info={[
 						{ name: "Klub", value: athlete.coach },
 						{
-							name: "Dyscypliny",
+							name: "Konkurencje",
 							value: athlete.disciplines.map(({ name }) => name).join(", "),
 						},
 						{ name: "Koszt", value: `${athlete.cost} XP` },

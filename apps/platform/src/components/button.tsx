@@ -23,6 +23,9 @@ const variantClassNamesMap = {
 	white: "bg-white",
 	bright: "bg-[#ededed14]",
 	danger: "bg-red-500",
+	assignCaptain: "bg-[#d33030]",
+	F: "bg-[#FFC4C4]",
+	M: "bg-[#CCF6FF]"
 };
 
 const typeClassNameMap = {
@@ -32,6 +35,9 @@ const typeClassNameMap = {
 	bright: "bright",
 	white: "dark",
 	danger: "bright",
+	assignCaptain: "bright",
+	F: "dark",
+	M: "dark",
 } as const;
 
 const sizeClassNamesMap = {

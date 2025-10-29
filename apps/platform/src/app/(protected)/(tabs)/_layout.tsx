@@ -43,7 +43,7 @@ const TabsLayout = () => {
 			<Tabs.Screen
 				name="events/[eventId]/disciplines"
 				options={{
-					title: "Dyscypliny",
+					title: "Konkurencje",
 				}}
 			/>
 			<Tabs.Screen

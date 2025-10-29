@@ -16,6 +16,7 @@ module.exports = {
 						shadowRadius: 16,
 					},
 				},
+				common: "4px 4px 4px rgba(0,0,0,0.25)", // ewentualnie blur na 10px
 			},
 		},
 	},
