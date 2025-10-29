@@ -118,7 +118,7 @@ export const athlete = pgTable("athlete", {
 	number: integer().notNull(),
 	firstName: varchar({ length: 255 }).notNull(),
 	lastName: varchar({ length: 255 }).notNull(),
-	birthdate: varchar({ length: 255}),
+	birthdate: varchar({ length: 255 }),
 	cost: integer().notNull(),
 	coach: varchar({ length: 255 }).notNull(),
 	club: varchar({ length: 255 }),
@@ -151,7 +151,7 @@ export const seasonBests = pgTable("season_bests", {
 	date: varchar({ length: 255 }),
 	location: varchar({ length: 255 }),
 	resultPoints: integer(),
-})
+});
 
 export const honours = pgTable("honours", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),

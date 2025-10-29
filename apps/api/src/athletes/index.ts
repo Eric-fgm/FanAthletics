@@ -75,8 +75,9 @@ export default new Hono()
 		const athleteId = c.req.param("athleteId");
 
 		const foundPersonalRecords = await db.query.personalRecords.findMany({
-			where: (personalRecord, { eq }) => eq(personalRecord.athleteId, athleteId)
-		})
+			where: (personalRecord, { eq }) =>
+				eq(personalRecord.athleteId, athleteId),
+		});
 
 		if (!foundPersonalRecords) {
 			return c.notFound();
@@ -88,12 +89,12 @@ export default new Hono()
 		const athleteId = c.req.param("athleteId");
 
 		const foundSeasonBests = await db.query.seasonBests.findMany({
-			where: (seasonBest, { eq }) => eq(seasonBest.athleteId, athleteId)
-		})
+			where: (seasonBest, { eq }) => eq(seasonBest.athleteId, athleteId),
+		});
 
 		if (!foundSeasonBests) {
 			return c.notFound();
 		}
 
 		return c.json(foundSeasonBests);
-	})
+	});

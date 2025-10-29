@@ -76,7 +76,7 @@ export interface Athlete {
 	imageUrl: string | null;
 	firstName: string;
 	lastName: string;
-	birthdate: string | null,
+	birthdate: string | null;
 	cost: number;
 	coach: string;
 	club: string | null;

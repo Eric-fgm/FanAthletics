@@ -57,8 +57,9 @@ This repository includes the following packages/apps:
   [Hono](https://hono.dev/)
 - `platform`: a [react-native](https://reactnative.dev/) app built with
   [expo](https://docs.expo.dev/)
+- `scraper`: a [python](https://www.python.org/) scraper build with [Express](https://expressjs.com/)
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+`api` and `platform` packages/apps are 100% [TypeScript](https://www.typescriptlang.org/).
 
 ### Utilities
 
