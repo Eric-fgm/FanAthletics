@@ -136,7 +136,9 @@ export const useParticipationQuery = () => {
 
 export const useTeamMembersQuery = (
 	options?: Omit<
-		UseQueryOptions<(Athlete & { isCaptain: boolean, pointsGathered: number })[]>,
+		UseQueryOptions<
+			(Athlete & { isCaptain: boolean; pointsGathered: number })[]
+		>,
 		"queryKey" | "queryFn"
 	>,
 ) => {
@@ -146,7 +148,7 @@ export const useTeamMembersQuery = (
 		...options,
 		queryKey: ["game::team-members", eventId],
 		queryFn: () =>
-			fetcher<(Athlete & { isCaptain: boolean, pointsGathered: number })[]>(
+			fetcher<(Athlete & { isCaptain: boolean; pointsGathered: number })[]>(
 				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/participation/team`,
 			),
 	});
@@ -172,9 +174,9 @@ export const useGameSpecificationQuery = (eventId?: string) => {
 	return useQuery({
 		queryFn: () =>
 			fetcher<GameSpecification | null>(
-				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${currentEventId}/game-specification`
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${currentEventId}/game-specification`,
 			),
 		queryKey: ["game::specification", currentEventId],
 		enabled: !!currentEventId,
-	})
-}
+	});
+};

@@ -1,4 +1,8 @@
-import type { SeasonBest, AthleteWithDisciplines, PersonalRecord } from "@fan-athletics/shared/types";
+import type {
+	AthleteWithDisciplines,
+	PersonalRecord,
+	SeasonBest,
+} from "@fan-athletics/shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useGlobalSearchParams } from "expo-router";
 import fetcher from "#/helpers/fetcher";
@@ -39,8 +43,8 @@ export const useAthletePersonalRecordsQuery = (athleteId: string) => {
 			),
 		queryKey: ["athlete::personal-records", athleteId],
 		enabled: !!athleteId,
-	})
-}
+	});
+};
 
 export const useAthleteSeasonBestsQuery = (athleteId: string) => {
 	return useQuery({
@@ -50,5 +54,5 @@ export const useAthleteSeasonBestsQuery = (athleteId: string) => {
 			),
 		queryKey: ["athlete::season-bests", athleteId],
 		enabled: !!athleteId,
-	})
-}
+	});
+};

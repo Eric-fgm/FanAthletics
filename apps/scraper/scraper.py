@@ -149,7 +149,7 @@ def get_season_bests(url):
                     del sbs[key + "*"]
             else:
                 res = compare_times(str(t1), str(t2))
-                if res == t1:
+                if res == str(t1):
                     del sbs[key + "*"]
 
     return sbs

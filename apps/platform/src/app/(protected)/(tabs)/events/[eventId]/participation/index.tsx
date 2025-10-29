@@ -1,12 +1,33 @@
-import type { Athlete, Discipline, PersonalRecord, SeasonBest } from "@fan-athletics/shared/types";
+import type {
+	Athlete,
+	Discipline,
+	PersonalRecord,
+	SeasonBest,
+} from "@fan-athletics/shared/types";
 import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { UserRound, UserRoundPlus } from "lucide-react-native";
 import { CircleUser, Crown, Info, Plus } from "lucide-react-native";
+import { ArrowRight, Cake, Earth, Star, Trash2 } from "lucide-react-native";
 import React, { useState, useRef } from "react";
-import { Animated, Easing, Image, ImageBackground, Pressable, ScrollView, View } from "react-native";
+import {
+	Animated,
+	Easing,
+	Image,
+	ImageBackground,
+	Pressable,
+	ScrollView,
+	View,
+} from "react-native";
 import { Button, Dialog, Select, Typography } from "#/components";
 import EventHeader from "#/components/event-header";
-import { AthletesSearchDialog, useAthletePersonalRecordsQuery, useAthleteQuery, useAthleteSeasonBestsQuery, useEventQuery } from "#/features/events";
+import {
+	AthletesSearchDialog,
+	useAthletePersonalRecordsQuery,
+	useAthleteQuery,
+	useAthleteSeasonBestsQuery,
+	useEventQuery,
+} from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
 import {
 	TeamManageDialog,
@@ -20,18 +41,17 @@ import {
 	useTeamMembersQuery,
 } from "#/features/participation";
 import { formatDate } from "#/helpers/date";
+import { shadow } from "#/helpers/styles";
 import {
 	AthleteCostBox,
 	GradientBox,
 	GradientType,
+	StarBadge,
 	countries,
 	menColors,
 	womenColors,
 } from "./utils";
 import type { AthleteColors } from "./utils";
-import { shadow } from "#/helpers/styles";
-import { Star, Trash2, ArrowRight, Earth, Cake } from "lucide-react-native";
-import { useRouter } from "expo-router";
 
 const Participation = () => {
 	const { tab } = useLocalSearchParams<{ tab?: string }>();
@@ -48,7 +68,8 @@ const Participation = () => {
 		mutateAsync: deleteTeamMember,
 		isPending: isDeleteTeamMemberPending,
 	} = useDeleteTeamMemberMutation();
-	const { mutateAsync: participate, isPending: isParticipatePending } = useParticipateMutation();
+	const { mutateAsync: participate, isPending: isParticipatePending } =
+		useParticipateMutation();
 	const { data: participation } = useParticipationQuery();
 	const { data: teamMembers = [] } = useTeamMembersQuery({
 		enabled: !!participation,
@@ -89,7 +110,11 @@ const Participation = () => {
 						await invalidateParticipation(event.id);
 					}}
 				/>
-				{event.status !== "available" && <Typography type="washed">Nie można jeszcze utworzyć drużyny w ramach tego wydarzenia</Typography>}
+				{event.status !== "available" && (
+					<Typography type="washed">
+						Nie można jeszcze utworzyć drużyny w ramach tego wydarzenia
+					</Typography>
+				)}
 			</View>
 		);
 	}
@@ -336,7 +361,6 @@ const AthletePreview: React.FC<{
 				onPress={() => {
 					console.log("Kliknięto: ", athlete);
 					setDetailedMember(athlete);
-					
 				}}
 			>
 				<View
@@ -365,18 +389,23 @@ const AthletePreview: React.FC<{
 								elevation: !isCaptain ? 8 : 0,
 							}}
 						>
-							<View className="w-full items-end">
+							<View className="flex-row w-full">
 								{/* <View
 									className="p-2 rounded-2xl"
 									style={{ backgroundColor: "yellow" }}
 								>
 									<Typography>{athlete.cost} XP</Typography>
 								</View> */}
-								<AthleteCostBox cost={athlete.cost} />
+								<GradientBox sex={athlete.sex} gradientType={GradientType.CAPTAIN} vertical>
+									<View className="flex-row items-center py-3 px-4 gap-x-2">
+										<Typography size="large2-s" type="bright">+{pointsGathered}</Typography>
+										<StarBadge width={25} height={25} colorCircle="#fff" colorStar={colors.captainDownGradient}/>
+									</View>
+								</GradientBox>
+								<View className="ml-auto">
+									<AthleteCostBox cost={athlete.cost}/>
+								</View>
 							</View>
-							<Typography className="mt-auto" size="large" type="bright">
-								{pointsGathered}
-							</Typography>
 							<AthleteBasicInfo athlete={athlete} colors={colors} />
 						</ImageBackground>
 					) : (
@@ -391,7 +420,9 @@ const AthletePreview: React.FC<{
 						<Typography size="large" type="bright" className="mb-2">
 							Kapitan drużyny
 						</Typography>
-						<Typography size="base" type="bright">Zbiera podwójne punkty</Typography>
+						<Typography size="base" type="bright">
+							Zbiera podwójne punkty
+						</Typography>
 					</View>
 				)}
 			</Pressable>
@@ -421,6 +452,7 @@ const AthletePreview: React.FC<{
 					onEdit={onEdit}
 					onDelete={onDelete}
 					setFunction={setDetailedMember}
+					pointsGathered={pointsGathered}
 				/>
 			</Dialog>
 		</View>
@@ -436,6 +468,7 @@ const AthleteInfoDialog: React.FC<{
 	setFunction: React.Dispatch<React.SetStateAction<Athlete | null>>;
 	onEdit?: () => void;
 	onDelete?: () => void;
+	pointsGathered: number;
 }> = ({
 	athlete,
 	isCaptain,
@@ -445,16 +478,21 @@ const AthleteInfoDialog: React.FC<{
 	setFunction,
 	onEdit,
 	onDelete,
+	pointsGathered,
 }) => {
 	if (athlete === null) return null;
 
 	const { data: athleteWithDisciplines } = useAthleteQuery(athlete.id);
 	const disciplines = athleteWithDisciplines?.disciplines;
 
-	const { data: personalRecords, isLoading: arePersonalRecordsLoading } = useAthletePersonalRecordsQuery(athlete.id);
-	const { data: seasonBests, isLoading: areSeasonBestsLoading } = useAthleteSeasonBestsQuery(athlete.id);
-	
-	const [activeRecordsView, setActiveRecordsView] = useState<"PBs" | "SBs">("PBs");
+	const { data: personalRecords, isLoading: arePersonalRecordsLoading } =
+		useAthletePersonalRecordsQuery(athlete.id);
+	const { data: seasonBests, isLoading: areSeasonBestsLoading } =
+		useAthleteSeasonBestsQuery(athlete.id);
+
+	const [activeRecordsView, setActiveRecordsView] = useState<"PBs" | "SBs">(
+		"PBs",
+	);
 
 	console.log("RECORDS:", personalRecords);
 
@@ -470,8 +508,8 @@ const AthleteInfoDialog: React.FC<{
 			toValue: 0,
 			duration: 200,
 			easing: Easing.out(Easing.ease),
-			useNativeDriver: true
-		}).start(()=>{
+			useNativeDriver: true,
+		}).start(() => {
 			setActiveRecordsView(records);
 			Animated.timing(fadeAnim, {
 				toValue: 1,
@@ -489,7 +527,11 @@ const AthleteInfoDialog: React.FC<{
 						className="rounded-2xl shadow-common w-full"
 						style={shadow.common}
 					>
-						<GradientBox sex={athlete.sex} vertical gradientType={GradientType.PROFILE}>
+						<GradientBox
+							sex={athlete.sex}
+							vertical
+							gradientType={GradientType.PROFILE}
+						>
 							<View className="m-5 items-center gap-y-3">
 								{athlete.imageUrl ? (
 									<ImageBackground
@@ -498,9 +540,22 @@ const AthleteInfoDialog: React.FC<{
 										className="items-center justify-center w-full mt-2 mb-1"
 										style={{ width: "95%", height: 350 }}
 									>
-										{isCaptain ? <View className="items-center w-full mt-auto p-2" style={{ backgroundColor: "#d33030", borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
-												<Typography size="large1" type="bright">Kapitan drużyny</Typography>
-											</View> : <></>}
+										{isCaptain ? (
+											<View
+												className="items-center w-full mt-auto p-2"
+												style={{
+													backgroundColor: "#d33030",
+													borderBottomLeftRadius: 16,
+													borderBottomRightRadius: 16,
+												}}
+											>
+												<Typography size="large1" type="bright">
+													Kapitan drużyny
+												</Typography>
+											</View>
+										) : (
+											<></>
+										)}
 									</ImageBackground>
 								) : (
 									<View className="justify-center items-center rounded-full w-16 h-16 m-5">
@@ -508,26 +563,46 @@ const AthleteInfoDialog: React.FC<{
 									</View>
 								)}
 								<View className="flex-row items-center gap-x-3">
-									<Typography size={athlete.firstName.concat(athlete.lastName).length < 15 ? "large3" : "large2"} style={athlete.firstName.concat(athlete.lastName).length >= 17 ? { textAlign: 'center', fontFamily: 'inter-semibold', marginRight: -12, marginVertical: -3} : { fontFamily: 'inter-semibold' }}>
+									<Typography
+										size={
+											athlete.firstName.concat(athlete.lastName).length < 15
+												? "large3"
+												: "large2"
+										}
+										style={
+											athlete.firstName.concat(athlete.lastName).length >= 17
+												? {
+														textAlign: "center",
+														fontFamily: "inter-semibold",
+														marginRight: -6,
+														marginVertical: -3,
+													}
+												: { fontFamily: "inter-semibold", textAlign: "center" }
+										}
+									>
 										{athlete.firstName} {athlete.lastName}
 									</Typography>
-									<Image className="ms-auto h-full"
-										source={{ uri: `https://flagsapi.com/${flags[athlete.nationality].code}/flat/64.png`}}
-										style={{ width: 48, height: 32, borderRadius: 24}} />
+									<Image
+										className="ms-auto h-full"
+										source={{
+											uri: `https://flagsapi.com/${countries[athlete.nationality].code}/flat/64.png`,
+										}}
+										style={{ width: 48, height: 32, borderRadius: 24 }}
+									/>
 								</View>
-								
+
 								<View
 									className="h-[1px] w-[95%]"
 									style={{ backgroundColor: colors.profileUpGradient }}
 								/>
 								<View className="flex-row justify-center self-start ml-3 mt-1 gap-x-3">
-									<Earth width={30} height={30}/>
+									<Earth width={30} height={30} />
 									<Typography className="mb-2" size="large1">
 										{athlete.coach}
 									</Typography>
 								</View>
 								<View className="flex-row justify-center self-start ml-3 gap-x-3">
-									<Cake width={30} height={30}/>
+									<Cake width={30} height={30} />
 									<Typography className="mb-2" size="large1">
 										{parseDate(athlete.birthdate)}
 									</Typography>
@@ -571,69 +646,131 @@ const AthleteInfoDialog: React.FC<{
 				</View>
 				<View className="m-3 gap-y-3 flex-[0.6]">
 					<View className="flex-row items-center mx-3 gap-x-3">
-						<View className="flex-row items-center justify-center py-2 px-3 gap-x-2" style={{ backgroundColor: "#f9f9f9ff", borderRadius: 10, borderColor: "#c0aa00", borderWidth: 3}}>
-							<Typography size="large1" type="gold">32</Typography>
-							<Star width={24} height={24} color="#c0aa00"/>
+						<View
+							className="flex-row items-center justify-center py-2 px-3 mr-2 gap-x-2"
+							style={{
+								backgroundColor: "#f9f9f9ff",
+								borderRadius: 10,
+								borderColor: "#c0aa00",
+								borderWidth: 3,
+							}}
+						>
+							<Typography size="large1" type="gold">
+								{athlete.cost}
+							</Typography>
+							<Star width={24} height={24} color="#c0aa00" />
 						</View>
-						<Star width={34} height={34} color={womenColors.captainDownGradient} className="ml-2"/>
-						<Typography size="large3">Punkty: +1058</Typography>
+						<StarBadge width={34} height={34} colorCircle="#d33030" colorStar="#fff"/>
+						<Typography size="large3" type="pointsRed">Punkty: +{pointsGathered}</Typography>
 					</View>
-					<View className="flex-col rounded-2xl mx-3 p-6 gap-y-2 shadow-common" style={[{ backgroundColor: colors.basicInfoColor}, shadow.common]}>
-						<Typography size="large2-s" className="mx-2 mb-1">Następne starty</Typography>
-						{disciplines !== undefined && disciplines.length > 0 ? 
-							disciplines.map((discipline) => 
-								<NextStartBoxItem key={discipline.name} athlete={athlete} discipline={discipline} onPress={() => {
-									setFunction(null);
-									router.push(`events/${discipline.eventId}/disciplines/${discipline.id}`)}} prediction="92%" />) :
-								<Typography size="large2">Zawodnik już nie ma startów</Typography>}
-						
+					<View
+						className="flex-col rounded-2xl mx-3 p-6 gap-y-2 shadow-common"
+						style={[{ backgroundColor: colors.basicInfoColor }, shadow.common]}
+					>
+						<Typography size="large2-s" className="mx-2 mb-1">
+							Następne starty
+						</Typography>
+						{disciplines !== undefined && disciplines.length > 0 ? (
+							disciplines.map((discipline) => (
+								<NextStartBoxItem
+									key={discipline.name}
+									athlete={athlete}
+									discipline={discipline}
+									onPress={() => {
+										setFunction(null);
+										router.push(
+											`events/${discipline.eventId}/disciplines/${discipline.id}`,
+										);
+									}}
+									prediction="92%"
+								/>
+							))
+						) : (
+							<Typography size="large2">Zawodnik już nie ma startów</Typography>
+						)}
 					</View>
-					<View className="flex-col rounded-2xl mx-3 p-6 gap-y-2 shadow-common" style={[{ backgroundColor: colors.basicInfoColor}, shadow.common]}>
-						<Typography size="large2-s" className="mx-2 mb-1">Poprzednie starty</Typography>
-						{disciplines !== undefined && disciplines.length > 0 ? 
-							disciplines.map((discipline) => 
-								<NextStartBoxItem key={discipline.name} athlete={athlete} discipline={discipline} onPress={() => {
-									setFunction(null);
-									router.push(`events/${discipline.eventId}/disciplines/${discipline.id}`)}} prediction="92%" />) :
-								<Typography size="large2">Zawodnik już nie ma startów</Typography>}
+					<View
+						className="flex-col rounded-2xl mx-3 p-6 gap-y-2 shadow-common"
+						style={[{ backgroundColor: colors.basicInfoColor }, shadow.common]}
+					>
+						<Typography size="large2-s" className="mx-2 mb-1">
+							Poprzednie starty
+						</Typography>
+						{disciplines !== undefined && disciplines.length > 0 ? (
+							disciplines.map((discipline) => (
+								<NextStartBoxItem
+									key={discipline.name}
+									athlete={athlete}
+									discipline={discipline}
+									onPress={() => {
+										setFunction(null);
+										router.push(
+											`events/${discipline.eventId}/disciplines/${discipline.id}`,
+										);
+									}}
+									prediction="92%"
+								/>
+							))
+						) : (
+							<Typography size="large2">Zawodnik już nie ma startów</Typography>
+						)}
 					</View>
 					<View className="flex-col mx-4 mt-1 gap-y-2">
 						{/* <Typography size="large2-s">Rekordy życiowe</Typography> */}
 						<View className="flex-row gap-x-4 mr-3 mb-1">
 							<Button
 								text="Rekordy życiowe"
-								variant={activeRecordsView !== "PBs" ? "white" : athlete.sex === "M" ? "M" : "F"}
+								variant={
+									activeRecordsView !== "PBs"
+										? "white"
+										: athlete.sex === "M"
+											? "M"
+											: "F"
+								}
 								textClassName="!text-xl"
 								className="w-[50%]"
-								onPress={()=>handleRecordsSwitch("PBs")}/>
+								onPress={() => handleRecordsSwitch("PBs")}
+							/>
 							<Button
 								text="Rekordy sezonu"
-								variant={activeRecordsView !== "SBs" ? "white" : athlete.sex === "M" ? "M" : "F"}
+								variant={
+									activeRecordsView !== "SBs"
+										? "white"
+										: athlete.sex === "M"
+											? "M"
+											: "F"
+								}
 								textClassName="!text-xl"
 								className="w-[50%]"
-								onPress={()=>handleRecordsSwitch("SBs")}/>
+								onPress={() => handleRecordsSwitch("SBs")}
+							/>
 						</View>
 						<View
 							className="h-[1px] w-[93%]"
 							style={{ backgroundColor: colors.profileUpGradient }}
 						/>
-						<Animated.View style={{ height: 100, opacity: fadeAnim }}/*className="h-[100px]"*/>
+						<Animated.View
+							style={{
+								height: 100,
+								opacity: fadeAnim,
+							}} /*className="h-[100px]"*/
+						>
 							{activeRecordsView === "PBs" ? (
-								personalRecords !== undefined && personalRecords.length > 0 ?
-									// personalRecords.slice(0, 4).map((personalRecord, index) => 
+								personalRecords !== undefined && personalRecords.length > 0 ? (
+									// personalRecords.slice(0, 4).map((personalRecord, index) =>
 									// 	<PersonalRecordsBoxItem key={personalRecord.id} personalRecord={personalRecord} showLine={index !== 3} />) :
 									// <></>
-									<PersonalRecordsBox personalRecords={personalRecords}/> : <></>
-								
+									<PersonalRecordsBox personalRecords={personalRecords} />
+								) : (
+									<></>
+								)
+							) : seasonBests !== undefined && seasonBests.length > 0 ? (
+								<PersonalRecordsBox personalRecords={seasonBests} />
 							) : (
-								seasonBests !== undefined && seasonBests.length > 0 ?
-									<PersonalRecordsBox personalRecords={seasonBests}/> : <Typography>Nie ma SBs</Typography>
+								<Typography>Nie ma SBs</Typography>
 							)}
 						</Animated.View>
 					</View>
-
-					
-					
 				</View>
 			</View>
 		</View>
@@ -673,81 +810,129 @@ const AthleteBasicInfo: React.FC<{
 	);
 };
 
-
 export const NextStartBoxItem: React.FC<{
-	athlete: Athlete,
-    discipline: Discipline,
-	prediction?: string,
+	athlete: Athlete;
+	discipline: Discipline;
+	prediction?: string;
 	onPress?: () => void;
 }> = ({ athlete, discipline, prediction, onPress }) => {
 	return (
 		<Pressable onPress={onPress}>
-			<View className="flex-row items-center px-4 gap-x-10" style={{ backgroundColor: "#f7f7f7", borderColor: "#b8b8b8", borderWidth: 2, borderRadius: 10 }}>
-				<Typography size="large-s" className="">{discipline.name}</Typography>
-				<Typography size="large" className="">12:45</Typography>
+			<View
+				className="flex-row items-center px-4 gap-x-10"
+				style={{
+					backgroundColor: "#f7f7f7",
+					borderColor: "#b8b8b8",
+					borderWidth: 2,
+					borderRadius: 10,
+				}}
+			>
+				<Typography size="large-s" className="">
+					{discipline.name}
+				</Typography>
+				<Typography size="large" className="">
+					12:45
+				</Typography>
 				<View className="m-2">
-					<GradientBox sex={athlete.sex} horizontal gradientType={GradientType.HONOURS}>
-						<Typography size="large-s" type="bright" className="mx-2 my-1">{prediction}</Typography>
+					<GradientBox
+						sex={athlete.sex}
+						horizontal
+						gradientType={GradientType.HONOURS}
+					>
+						<Typography size="large-s" type="bright" className="mx-2 my-1">
+							{prediction}
+						</Typography>
 					</GradientBox>
 				</View>
-				<ArrowRight className="ml-auto"/>
-				
+				<ArrowRight className="ml-auto" />
 			</View>
 		</Pressable>
 	);
-}
+};
 
 export const PreviousStartBoxItem: React.FC<{
-	athlete: Athlete,
-    discipline: Discipline,
-	prediction?: string,
+	athlete: Athlete;
+	discipline: Discipline;
+	prediction?: string;
 	onPress?: () => void;
 }> = ({ athlete, discipline, prediction, onPress }) => {
 	return (
 		<Pressable onPress={onPress}>
-			<View className="flex-row items-center px-4 gap-x-10" style={{ backgroundColor: "#f7f7f7", borderColor: "#b8b8b8", borderWidth: 2, borderRadius: 10 }}>
-				<Typography size="large1" className="">{discipline.name}</Typography>
-				<Typography size="large" className="">12:45</Typography>
+			<View
+				className="flex-row items-center px-4 gap-x-10"
+				style={{
+					backgroundColor: "#f7f7f7",
+					borderColor: "#b8b8b8",
+					borderWidth: 2,
+					borderRadius: 10,
+				}}
+			>
+				<Typography size="large1" className="">
+					{discipline.name}
+				</Typography>
+				<Typography size="large" className="">
+					12:45
+				</Typography>
 				<View className="m-2">
-					<GradientBox sex={athlete.sex} horizontal gradientType={GradientType.HONOURS} borderRad={8}>
-						<Typography size="large1" type="bright" className="mx-2 my-1">{prediction}</Typography>
+					<GradientBox
+						sex={athlete.sex}
+						horizontal
+						gradientType={GradientType.HONOURS}
+						borderRad={8}
+					>
+						<Typography size="large1" type="bright" className="mx-2 my-1">
+							{prediction}
+						</Typography>
 					</GradientBox>
 				</View>
-				<ArrowRight className="ml-auto"/>
-				
+				<ArrowRight className="ml-auto" />
 			</View>
 		</Pressable>
 	);
-}
+};
 
 export const PersonalRecordsBoxItem: React.FC<{
-	personalRecord: PersonalRecord | SeasonBest,
-	showLine?: boolean,
+	personalRecord: PersonalRecord | SeasonBest;
+	showLine?: boolean;
 }> = ({ personalRecord, showLine = true }) => {
 	return (
 		<View className="flex-column gap-y-1 mb-2">
 			<View className="flex-row items-center gap-x-5">
-				<Typography size="base-s" className="w-[20%]">{personalRecord.disciplineName}</Typography>
-				<Typography size="base" className="w-[25%]">{personalRecord.result.replace(/[\n\r]/g, " ")}</Typography>
-				<Typography size="medium" className="w-[27%]">{personalRecord.date}</Typography>
-				<Typography size="base" className="w-[28%]">{personalRecord.location}</Typography>	
+				<Typography size="base-s" className="w-[20%]">
+					{personalRecord.disciplineName}
+				</Typography>
+				<Typography size="base" className="w-[28%]">
+					{personalRecord.result.replace(/[\n\r]/g, " ")}
+				</Typography>
+				<Typography size="medium" className="w-[22%]">
+					{personalRecord.date}
+				</Typography>
+				<Typography size="base" className="w-[30%] text-end mr-8">
+					{personalRecord.location}
+				</Typography>
 			</View>
-			{showLine && <View
-				className="h-[1px] w-[95%]"
-				style={{ backgroundColor: "#b8b8b8" }}
-			/>}
+			{showLine && (
+				<View
+					className="h-[1px] w-[95%]"
+					style={{ backgroundColor: "#b8b8b8" }}
+				/>
+			)}
 		</View>
-	)
+	);
 };
 
-export const PersonalRecordsBox: React.FC<{ 
-	personalRecords: PersonalRecord[] | SeasonBest[]
-}> = ({ personalRecords }) =>{
+export const PersonalRecordsBox: React.FC<{
+	personalRecords: PersonalRecord[] | SeasonBest[];
+}> = ({ personalRecords }) => {
 	return (
 		<View className="flex-1">
 			<ScrollView className="flex-1">
-				{personalRecords.map((record) => (
-					<PersonalRecordsBoxItem key={record.id} personalRecord={record}/>
+				{personalRecords.sort(
+					(a, b) => {
+						if (a.date && b.date && a.date?.toLowerCase() > b.date?.toLowerCase()) return -1;
+						return 1;
+				}).map((record) => (
+					<PersonalRecordsBoxItem key={record.id} personalRecord={record} />
 				))}
 			</ScrollView>
 		</View>
@@ -762,7 +947,7 @@ function parseDate(date: string) {
 
 	switch (month) {
 		case "01":
-			month = " stycznia" ;
+			month = " stycznia ";
 			break;
 		case "02":
 			month = " lutego ";
