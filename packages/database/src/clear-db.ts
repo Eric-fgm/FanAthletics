@@ -9,7 +9,8 @@ const clearDatabase = async () => {
 		"team_member",
 		"athlete_discipline",
 		"personal_records",
-		"game_specification"
+		"game_specification",
+		"season_bests",
 	]) {
 		const dropQueries = [
 			`DROP TABLE IF EXISTS "public.${table}" CASCADE`,

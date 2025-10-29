@@ -1,63 +1,78 @@
-import { Star } from "lucide-react-native";
-import type React from "react";
-import { StyleSheet, View } from "react-native";
-import { Defs, LinearGradient, Path, Rect, Stop, Svg } from "react-native-svg";
 import { Typography } from "#/components";
+import type React from "react";
+import { View, StyleSheet } from "react-native";
+import { Svg, Defs, LinearGradient, Stop, Rect, Path } from "react-native-svg";
+import { Star } from "lucide-react-native";
+
+export enum GradientType {
+    PROFILE = 0, CAPTAIN = 1, HONOURS = 2
+}
 
 export const menColors = {
-	cardUpGradient: "#0B89A5",
-	cardDownGradient: "#8EEAFF",
-	captainAndHonoursUpGradient: "#077D8F",
-	captainAndHonoursDownGradient: "#60CAE2",
-	basicInfoColor: "#CCF6FF",
-};
-export const womenColors = {
-	cardUpGradient: "#FF5757",
-	cardDownGradient: "#FFB2B2",
-	captainAndHonoursUpGradient: "#6E2121",
-	captainAndHonoursDownGradient: "#DB3131",
-	basicInfoColor: "#FFC4C4",
-};
+    profileUpGradient: "#0B89A5",
+    profileDownGradient: "#8EEAFF",
+    honoursUpGradient: "#077D8F",
+    honoursDownGradient: "#60CAE2",
+    captainUpGradient: "#60CAE2",
+    captainDownGradient: "#077D8F",
+    basicInfoColor: "#CCF6FF"
+}
+export const womenColors ={
+    profileUpGradient: "#FF5757",
+    profileDownGradient: "#FFB2B2",
+    honoursUpGradient: "#6E2121",
+    honoursDownGradient: "#DB3131",
+    captainUpGradient: "#DB3131",
+    captainDownGradient: "#6E2121",
+    basicInfoColor: "#FFC4C4"
+}
 
 export type AthleteColors = typeof menColors;
 
-export const GradientBox: React.FC<{
-	sex: string;
-	vertical?: boolean;
-	horizontal?: boolean;
-	leftUpColor: string;
-	rightDownColor: string;
-	children?: React.ReactNode;
-}> = ({ sex, vertical, horizontal, leftUpColor, rightDownColor, children }) => {
-	return (
-		<View>
-			<Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-				<Defs>
-					<LinearGradient
-						id={`${sex}.grad`}
-						x1={0}
-						x2={horizontal ? 1 : 0}
-						y1={0}
-						y2={vertical ? 1 : 0}
-					>
-						<Stop offset={0} stopColor={leftUpColor} />
-						<Stop offset={1} stopColor={rightDownColor} />
-					</LinearGradient>
-				</Defs>
-				<Rect
-					x={0}
-					y={0}
-					width="100%"
-					height="100%"
-					rx={16}
-					ry={16}
-					fill={`url(#${sex}.grad)`}
-				/>
-			</Svg>
+type GradientBoxProps = {
+    sex: string;
+    vertical?: boolean;
+    horizontal?: boolean;
+    gradientType: GradientType;
+    borderRad?: number;
+    children?: React.ReactNode;
+}
 
-			<View>{children}</View>
-		</View>
-	);
+export const GradientBox: React.FC<GradientBoxProps> = (props) => {
+    const { sex, vertical, horizontal, gradientType, borderRad, children } = props;
+    const radius = props.borderRad ?? 16;
+    const colors = sex === "M" ? menColors : womenColors;
+    let leftUpColor: string;
+    let rightDownColor: string;
+    switch (gradientType) {
+        case GradientType.PROFILE:
+            leftUpColor = colors.profileUpGradient;
+            rightDownColor = colors.profileDownGradient;
+            break;
+        case GradientType.CAPTAIN:
+            leftUpColor = colors.captainUpGradient;
+            rightDownColor = colors.captainDownGradient;
+            break;
+        case GradientType.HONOURS:
+            leftUpColor = colors.honoursUpGradient;
+            rightDownColor = colors.honoursDownGradient;
+            break;
+    }
+    return (
+        <View>
+            <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                <Defs>
+                    <LinearGradient id={`${sex}.${gradientType}.grad`} x1={0} x2={horizontal ? 1 : 0} y1={0} y2={vertical ? 1 : 0}>
+                        <Stop offset={0} stopColor={leftUpColor}/>
+                        <Stop offset={1} stopColor={rightDownColor}/>
+                    </LinearGradient>
+                </Defs>
+                <Rect x={0} y={0} width="100%" height="100%" rx={radius} ry={radius} fill={`url(#${sex}.${gradientType}.grad)`}/>
+            </Svg>
+
+            <View>{children}</View>
+        </View>
+    );
 };
 
 export const AthleteCostBox: React.FC<{

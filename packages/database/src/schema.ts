@@ -129,6 +129,7 @@ export const athlete = pgTable("athlete", {
 	number: integer().notNull(),
 	firstName: varchar({ length: 255 }).notNull(),
 	lastName: varchar({ length: 255 }).notNull(),
+	birthdate: varchar({ length: 255 }),
 	cost: integer().notNull(),
 	coach: varchar({ length: 255 }).notNull(),
 	club: varchar({ length: 255 }),
@@ -145,9 +146,22 @@ export const personalRecords = pgTable("personal_records", {
 		.notNull(),
 	disciplineName: varchar({ length: 255 }).notNull(),
 	result: varchar({ length: 255 }).notNull(),
-	// date:
+	date: varchar({ length: 255 }),
+	location: varchar({ length: 255 }),
 	resultPoints: integer(),
 	isWorldRecord: boolean().default(false).notNull(),
+});
+
+export const seasonBests = pgTable("season_bests", {
+	id: text().primaryKey().default(sql`gen_random_uuid()`),
+	athleteId: text()
+		.references(() => athlete.id)
+		.notNull(),
+	disciplineName: varchar({ length: 255 }).notNull(),
+	result: varchar({ length: 255 }).notNull(),
+	date: varchar({ length: 255 }),
+	location: varchar({ length: 255 }),
+	resultPoints: integer(),
 });
 
 export const honours = pgTable("honours", {
