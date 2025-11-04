@@ -89,8 +89,12 @@ export const gameSpecification = pgTable("game_specification", {
 	eventId: text()
 		.references(() => event.id)
 		.notNull(),
+	numberOfTeamMembers: integer().default(8).notNull(),
 	budget: integer().default(300).notNull(),
-	maxExchanges: integer().default(8).notNull()
+	maxExchanges: integer().default(8).notNull(),
+	minAthleteCost: integer().default(50).notNull(),
+	maxAthleteCost: integer().default(100).notNull(),
+	sexParity: boolean().default(true).notNull(),
 })
 
 export const participant = pgTable("participant", {
@@ -134,7 +138,7 @@ export const athlete = pgTable("athlete", {
 	coach: varchar({ length: 255 }).notNull(),
 	club: varchar({ length: 255 }),
 	nationality: varchar({ length: 255 }).notNull(),
-	sex: varchar({ length: 1 }),
+	sex: varchar({ length: 1 }).notNull(),
 	createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });

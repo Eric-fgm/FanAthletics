@@ -80,7 +80,7 @@ export interface Athlete {
 	cost: number;
 	coach: string;
 	club: string | null;
-	sex: string;
+	sex: "M" | "K";
 	nationality: string;
 	createdAt: string;
 	updatedAt: string;
@@ -163,6 +163,10 @@ export interface UserTeam {
 export interface GameSpecification {
 	id: string;
 	eventId: string;
+	numberOfTeamMembers: number;
 	budget: number;
 	maxExchanges: number;
+	minAthleteCost: number;
+	maxAthleteCost: number;
+	sexParity: boolean;
 }

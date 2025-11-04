@@ -62,7 +62,7 @@ export default new Hono<{ Variables: { user: User } }>()
 						...athlete,
 						createdAt: athlete.createdAt.toISOString(),
 						updatedAt: athlete.updatedAt.toISOString(),
-						sex: athlete.sex ?? "",
+						sex: athlete.sex as "M" | "K",
 					}));
 
 				const userTeamData: UserTeam = {

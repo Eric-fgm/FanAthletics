@@ -28,6 +28,9 @@ export const useInvalidateParticipation = () => {
 				queryClient.invalidateQueries({
 					queryKey: ["game::participants", eventId],
 				}),
+				queryClient.invalidateQueries({
+					queryKey: ["game::specification", eventId],
+				}),
 			]);
 		},
 	};
@@ -173,7 +176,7 @@ export const useGameSpecificationQuery = (eventId?: string) => {
 
 	return useQuery({
 		queryFn: () =>
-			fetcher<GameSpecification | null>(
+			fetcher<GameSpecification>(
 				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${currentEventId}/game-specification`,
 			),
 		queryKey: ["game::specification", currentEventId],

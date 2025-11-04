@@ -34,6 +34,7 @@ import {
 	useAddTeamMemberMutation,
 	useDeleteTeamLeaderPrivilegeMutation,
 	useDeleteTeamMemberMutation,
+	useGameSpecificationQuery,
 	useInvalidateParticipation,
 	useMakeTeamLeaderMutation,
 	useParticipateMutation,
@@ -62,6 +63,7 @@ const Participation = () => {
 	const [isAthleteDialogVisible, setAthleteDialogVisible] = useState(false);
 	const { data: event, isLoading: isEventLoading } = useEventQuery();
 	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
+	const { data: gameSpecification, isLoading: isGSLoading } = useGameSpecificationQuery();
 	const { mutateAsync: addTeamMember, isPending: isAddTeamMemberPending } =
 		useAddTeamMemberMutation();
 	const {
@@ -74,16 +76,18 @@ const Participation = () => {
 	const { data: teamMembers = [] } = useTeamMembersQuery({
 		enabled: !!participation,
 	});
+
+	if (!event || !gameSpecification) return null;
+
+	const maxNumberOfAthletes = gameSpecification.numberOfTeamMembers;
 	const teamMembersSlots =
-		teamMembers.length < 8
+		teamMembers.length < maxNumberOfAthletes
 			? [
 					...teamMembers,
-					...(Array(8 - teamMembers.length).fill(null) as null[]),
+					...(Array(maxNumberOfAthletes - teamMembers.length).fill(null) as null[]),
 				]
 			: teamMembers;
 	const hasChoosenCaptain = teamMembers.some((member) => member.isCaptain);
-
-	if (!event) return null;
 
 	if (!participation) {
 		return (
@@ -139,14 +143,14 @@ const Participation = () => {
 			/>
 			{tab === "history" ? null : (
 				<>
-					{((teamMembers.length < 8 && teamMembers.length > 0) ||
+					{((teamMembers.length < maxNumberOfAthletes && teamMembers.length > 0) ||
 						!hasChoosenCaptain) && (
 						<View className="mt-4 -mb-4 px-4 lg:px-12 w-full">
 							<View className="flex-row items-center gap-2 bg-gray-100 px-4 rounded-xl w-full h-10">
 								<Info size={16} />
 								<Typography>
-									{teamMembers.length < 8
-										? "Nie wybrano wszystkich 8 zawodników"
+									{teamMembers.length < maxNumberOfAthletes
+										? `Nie wybrano wszystkich ${maxNumberOfAthletes} zawodników`
 										: "Nie wybrano lidera drużyny"}
 								</Typography>
 							</View>
@@ -244,10 +248,11 @@ const Participation = () => {
 						))}
 					</View>
 					<AthletesSearchDialog
-						disabledAtletes={teamMembers.map((member) => member.id)}
+						disabledAtletes={teamMembers.map((member) => {return {id: member.id, sex: member.sex}})}
 						budget={participation.budget}
 						isOpen={selectedMember !== null}
 						webOptions={{ variant: "wide" }}
+						gameSpecification={gameSpecification}
 						onClose={() => setSelectedMember(null)}
 						onSelect={async (athlete) => {
 							try {
@@ -334,11 +339,6 @@ const AthletePreview: React.FC<{
 	onEdit?: () => void;
 	onDelete?: () => void;
 }> = ({ athlete, isCaptain, pointsGathered, isLoading, onEdit, onDelete }) => {
-	console.log(
-		athlete.nationality,
-		countries[athlete.nationality],
-		`https://flagsapi.com/${countries[athlete.nationality].code}/flat/64.png`,
-	);
 	const {
 		mutateAsync: makeAthleteCaptain,
 		isPending: isMakeAthleteCaptainPending,
@@ -604,7 +604,7 @@ const AthleteInfoDialog: React.FC<{
 								<View className="flex-row justify-center self-start ml-3 gap-x-3">
 									<Cake width={30} height={30} />
 									<Typography className="mb-2" size="large1">
-										{parseDate(athlete.birthdate)}
+										{athlete.birthdate && parseDate(athlete.birthdate)}
 									</Typography>
 								</View>
 							</View>
