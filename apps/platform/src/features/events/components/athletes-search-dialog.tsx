@@ -8,7 +8,7 @@ import { CircleUser, Globe } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import { Image, Pressable, ScrollView, TextInput, View } from "react-native";
-import { countries } from "#/app/(protected)/(tabs)/events/[eventId]/participation/utils";
+import { countries, getFlagUrl } from "#/app/(protected)/(tabs)/events/[eventId]/participation/utils";
 import {
 	Button,
 	Dialog,
@@ -47,13 +47,20 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 
 	const nationalities = [
 		...new Set(athletes.map((athlete) => athlete.nationality)),
-	];
-	nationalities.push("Albania", "Bosnia and Herzegovina");
+	].sort((a, b) => {
+		if (countries[a] && countries[b] && countries[a].polishName.toLowerCase() < countries[b].polishName.toLowerCase())
+			return -1;
+		return 1;
+	});
 
 	const [currentSex, setCurrentSex] = useState("both");
 	const [currentDiscipline, setCurrentDiscipline] = useState<Discipline>();
-	const [minAthleteCost, setMinAthleteCost] = useState(gameSpecification.minAthleteCost);
-	const [maxAthleteCost, setMaxAthleteCost] = useState(gameSpecification.maxAthleteCost);
+	const [minAthleteCost, setMinAthleteCost] = useState(
+		gameSpecification.minAthleteCost,
+	);
+	const [maxAthleteCost, setMaxAthleteCost] = useState(
+		gameSpecification.maxAthleteCost,
+	);
 	const [inBudget, setInBudget] = useState(false);
 	const [currentNationality, setCurrentNationality] = useState<string>("");
 
@@ -168,7 +175,8 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 								onChange={(event) =>
 									setMinAthleteCost(
 										Math.min(
-											Number(event.nativeEvent.text) || gameSpecification.minAthleteCost,
+											Number(event.nativeEvent.text) ||
+												gameSpecification.minAthleteCost,
 											gameSpecification.maxAthleteCost,
 										),
 									)
@@ -182,7 +190,8 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 								onChange={(event) =>
 									setMaxAthleteCost(
 										Math.min(
-											Number(event.nativeEvent.text) || gameSpecification.maxAthleteCost,
+											Number(event.nativeEvent.text) ||
+												gameSpecification.maxAthleteCost,
 											gameSpecification.maxAthleteCost,
 										),
 									)
@@ -207,12 +216,12 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 								<Button
 									text={
 										currentNationality !== ""
-											? countries[currentNationality].polishName
+											? (countries[currentNationality] ? countries[currentNationality].polishName : currentNationality)
 											: "Wybierz narodowość"
 									}
 									imageUrl={
 										currentNationality !== ""
-											? `https://flagsapi.com/${countries[currentNationality].code}/flat/64.png`
+											? getFlagUrl(currentNationality)
 											: undefined
 									}
 									icon={currentNationality === "" ? Globe : undefined}
@@ -227,8 +236,8 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 							].concat(
 								nationalities.map((nationality) => {
 									return {
-										name: countries[nationality].polishName,
-										imageUrl: `https://flagsapi.com/${countries[nationality].code}/flat/64.png`,
+										name: countries[nationality] ? countries[nationality].polishName : nationality,
+										imageUrl: getFlagUrl(nationality),
 										onPress: () => setCurrentNationality(nationality),
 										className: "",
 									};
@@ -250,8 +259,14 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 						) : (
 							<ScrollView className="gap-y-2 px-6 pt-4 pb-2 border-gray-200 border-t max-h-[524px]">
 								{filteredAthletes.map((athlete) => {
-									const isDisabled = disabledAtletes.map((ath) => ath.id).includes(athlete.id)
-										|| !checkIfAthleteIsAffordable(athlete, budget, gameSpecification, disabledAtletes);
+									const isDisabled =
+										disabledAtletes.map((ath) => ath.id).includes(athlete.id) ||
+										!checkIfAthleteIsAffordable(
+											athlete,
+											budget,
+											gameSpecification,
+											disabledAtletes,
+										);
 									return (
 										<Pressable
 											key={athlete.id}
@@ -280,7 +295,9 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 													{athlete.coach}
 												</Typography>
 											</View>
-											<Typography className="ms-auto">{athlete.cost} XP</Typography>
+											<Typography className="ms-auto">
+												{athlete.cost} XP
+											</Typography>
 										</Pressable>
 									);
 								})}
@@ -306,14 +323,14 @@ function checkIfAthleteIsAffordable(
 	gameSpecification: GameSpecification,
 	currentTeam: AthleteIdAndSex[],
 ) {
-	if (athlete.cost > budget)
-		return false;
-	if (!gameSpecification.sexParity)
-		return true;
+	if (athlete.cost > budget) return false;
+	if (!gameSpecification.sexParity) return true;
 
 	const currentNumOfMen = currentTeam.filter((ath) => ath.sex === "M").length;
 	const currentNumOfWomen = currentTeam.filter((ath) => ath.sex === "K").length;
-	const maxNumOfAthletesOfOneSex = Math.floor(((gameSpecification.numberOfTeamMembers + 1) / 2));
+	const maxNumOfAthletesOfOneSex = Math.floor(
+		(gameSpecification.numberOfTeamMembers + 1) / 2,
+	);
 
 	if (athlete.sex === "M" && currentNumOfMen >= maxNumOfAthletesOfOneSex)
 		return false;

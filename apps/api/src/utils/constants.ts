@@ -39,7 +39,7 @@ export const domtel = {
 		Mkula: { name: "Pchnięcie kulą (M)", record: "23.56" },
 		Kkula: { name: "Pchnięcie kulą (K)", record: "22.63" },
 		Mo: { name: "Rzut oszczepem (M)", record: "98.48" },
-		Ko: { name: "Rzut oszczepem (M)", record: "72.28" },
+		Ko: { name: "Rzut oszczepem (K)", record: "72.28" },
 		Mdysk: { name: "Rzut dyskiem (M)", record: "75.56" },
 		Kdysk: { name: "Rzut dyskiem (K)", record: "76.80" },
 	},

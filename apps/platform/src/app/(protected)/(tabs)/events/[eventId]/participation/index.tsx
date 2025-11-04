@@ -49,6 +49,7 @@ import {
 	GradientType,
 	StarBadge,
 	countries,
+	getFlagUrl,
 	menColors,
 	womenColors,
 } from "./utils";
@@ -63,7 +64,8 @@ const Participation = () => {
 	const [isAthleteDialogVisible, setAthleteDialogVisible] = useState(false);
 	const { data: event, isLoading: isEventLoading } = useEventQuery();
 	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
-	const { data: gameSpecification, isLoading: isGSLoading } = useGameSpecificationQuery();
+	const { data: gameSpecification, isLoading: isGSLoading } =
+		useGameSpecificationQuery();
 	const { mutateAsync: addTeamMember, isPending: isAddTeamMemberPending } =
 		useAddTeamMemberMutation();
 	const {
@@ -84,7 +86,9 @@ const Participation = () => {
 		teamMembers.length < maxNumberOfAthletes
 			? [
 					...teamMembers,
-					...(Array(maxNumberOfAthletes - teamMembers.length).fill(null) as null[]),
+					...(Array(maxNumberOfAthletes - teamMembers.length).fill(
+						null,
+					) as null[]),
 				]
 			: teamMembers;
 	const hasChoosenCaptain = teamMembers.some((member) => member.isCaptain);
@@ -143,7 +147,8 @@ const Participation = () => {
 			/>
 			{tab === "history" ? null : (
 				<>
-					{((teamMembers.length < maxNumberOfAthletes && teamMembers.length > 0) ||
+					{((teamMembers.length < maxNumberOfAthletes &&
+						teamMembers.length > 0) ||
 						!hasChoosenCaptain) && (
 						<View className="mt-4 -mb-4 px-4 lg:px-12 w-full">
 							<View className="flex-row items-center gap-2 bg-gray-100 px-4 rounded-xl w-full h-10">
@@ -248,7 +253,9 @@ const Participation = () => {
 						))}
 					</View>
 					<AthletesSearchDialog
-						disabledAtletes={teamMembers.map((member) => {return {id: member.id, sex: member.sex}})}
+						disabledAtletes={teamMembers.map((member) => {
+							return { id: member.id, sex: member.sex };
+						})}
 						budget={participation.budget}
 						isOpen={selectedMember !== null}
 						webOptions={{ variant: "wide" }}
@@ -396,14 +403,25 @@ const AthletePreview: React.FC<{
 								>
 									<Typography>{athlete.cost} XP</Typography>
 								</View> */}
-								<GradientBox sex={athlete.sex} gradientType={GradientType.CAPTAIN} vertical>
+								<GradientBox
+									sex={athlete.sex}
+									gradientType={GradientType.CAPTAIN}
+									vertical
+								>
 									<View className="flex-row items-center py-3 px-4 gap-x-2">
-										<Typography size="large2-s" type="bright">+{pointsGathered}</Typography>
-										<StarBadge width={25} height={25} colorCircle="#fff" colorStar={colors.captainDownGradient}/>
+										<Typography size="large2-s" type="bright">
+											+{pointsGathered}
+										</Typography>
+										<StarBadge
+											width={25}
+											height={25}
+											colorCircle="#fff"
+											colorStar={colors.captainDownGradient}
+										/>
 									</View>
 								</GradientBox>
 								<View className="ml-auto">
-									<AthleteCostBox cost={athlete.cost}/>
+									<AthleteCostBox cost={athlete.cost} />
 								</View>
 							</View>
 							<AthleteBasicInfo athlete={athlete} colors={colors} />
@@ -585,7 +603,7 @@ const AthleteInfoDialog: React.FC<{
 									<Image
 										className="ms-auto h-full"
 										source={{
-											uri: `https://flagsapi.com/${countries[athlete.nationality].code}/flat/64.png`,
+											uri: getFlagUrl(athlete.nationality),
 										}}
 										style={{ width: 48, height: 32, borderRadius: 24 }}
 									/>
@@ -660,8 +678,15 @@ const AthleteInfoDialog: React.FC<{
 							</Typography>
 							<Star width={24} height={24} color="#c0aa00" />
 						</View>
-						<StarBadge width={34} height={34} colorCircle="#d33030" colorStar="#fff"/>
-						<Typography size="large3" type="pointsRed">Punkty: +{pointsGathered}</Typography>
+						<StarBadge
+							width={34}
+							height={34}
+							colorCircle="#d33030"
+							colorStar="#fff"
+						/>
+						<Typography size="large3" type="pointsRed">
+							Punkty: +{pointsGathered}
+						</Typography>
 					</View>
 					<View
 						className="flex-col rounded-2xl mx-3 p-6 gap-y-2 shadow-common"
@@ -785,7 +810,7 @@ const AthleteBasicInfo: React.FC<{
 		<View className="flex-column w-full">
 			<Image
 				source={{
-					uri: `https://flagsapi.com/${countries[athlete.nationality].code}/flat/64.png`,
+					uri: getFlagUrl(athlete.nationality),
 				}}
 				style={{ width: 48, height: 32, borderRadius: 24 }}
 				className="w-full h-full ms-3 mb-2"
@@ -927,13 +952,19 @@ export const PersonalRecordsBox: React.FC<{
 	return (
 		<View className="flex-1">
 			<ScrollView className="flex-1">
-				{personalRecords.sort(
-					(a, b) => {
-						if (a.date && b.date && a.date?.toLowerCase() > b.date?.toLowerCase()) return -1;
+				{personalRecords
+					.sort((a, b) => {
+						if (
+							a.date &&
+							b.date &&
+							a.date?.toLowerCase() > b.date?.toLowerCase()
+						)
+							return -1;
 						return 1;
-				}).map((record) => (
-					<PersonalRecordsBoxItem key={record.id} personalRecord={record} />
-				))}
+					})
+					.map((record) => (
+						<PersonalRecordsBoxItem key={record.id} personalRecord={record} />
+					))}
 			</ScrollView>
 		</View>
 	);
