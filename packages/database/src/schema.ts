@@ -95,7 +95,7 @@ export const gameSpecification = pgTable("game_specification", {
 	minAthleteCost: integer().default(50).notNull(),
 	maxAthleteCost: integer().default(100).notNull(),
 	sexParity: boolean().default(true).notNull(),
-})
+});
 
 export const participant = pgTable("participant", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),

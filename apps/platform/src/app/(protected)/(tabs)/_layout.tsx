@@ -59,6 +59,12 @@ const TabsLayout = () => {
 					// href: null,
 				}}
 			/>
+			<Tabs.Screen
+				name="events/[eventId]/timetable/index"
+				options={{
+					title: "Harmonogram",
+				}}
+			/>
 		</Tabs>
 	);
 };

@@ -18,6 +18,7 @@ const EventNavigation = () => {
 			exact: false,
 		},
 		{ name: "Zawodnicy", href: `/events/${eventId}/athletes`, exact: false },
+		{ name: "Harmonogram", href: `/events/${eventId}/timetable`, exact: false },
 	];
 
 	return <Tabs items={items} className="px-4 md:px-8 xl:px-24" />;

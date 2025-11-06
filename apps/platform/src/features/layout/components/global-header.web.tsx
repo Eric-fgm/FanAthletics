@@ -45,6 +45,10 @@ const GlobalHeader: React.FC = () => {
 								name: "Twoja druzyna",
 								onPress: () => router.push(`/events/${eventId}/participation`),
 							},
+							{
+								name: "Harmonogram",
+								onPress: () => router.push(`/events/${eventId}/timetable`),
+							},
 						]}
 					/>
 				</View>

@@ -24,19 +24,18 @@ export default new Hono().get("/", async (c) => {
 			tables.discipline,
 			operators.eq(tables.discipline.id, tables.competition.disciplineId),
 		);
-	
+
 	if (athleteId) {
-		query = query
-			.innerJoin(
-				tables.competitor,
-				operators.eq(tables.competitor.competitionId, tables.competition.id),
-			);
+		query = query.innerJoin(
+			tables.competitor,
+			operators.eq(tables.competitor.competitionId, tables.competition.id),
+		);
 	}
 
 	const competitions = await query
 		.where(operators.and(...filters))
-		.limit(limit)
-		.offset(offset);
+		// .limit(limit)
+		// .offset(offset);
 
 	const competitionsWithCompetitors = await Promise.all(
 		competitions.map(async ({ competition, discipline }) => ({

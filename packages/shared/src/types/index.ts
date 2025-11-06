@@ -103,7 +103,8 @@ export interface Competition {
 	id: string;
 	disciplineId: string;
 	discipline: Discipline;
-	seriesCount: number;
+	series: number;
+	round: number;
 	note: string | null;
 	trials: unknown;
 	startAt: Date;
