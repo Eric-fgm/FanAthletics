@@ -396,14 +396,25 @@ const AthletePreview: React.FC<{
 								>
 									<Typography>{athlete.cost} XP</Typography>
 								</View> */}
-								<GradientBox sex={athlete.sex} gradientType={GradientType.CAPTAIN} vertical>
+								<GradientBox
+									sex={athlete.sex}
+									gradientType={GradientType.CAPTAIN}
+									vertical
+								>
 									<View className="flex-row items-center py-3 px-4 gap-x-2">
-										<Typography size="large2-s" type="bright">+{pointsGathered}</Typography>
-										<StarBadge width={25} height={25} colorCircle="#fff" colorStar={colors.captainDownGradient}/>
+										<Typography size="large2-s" type="bright">
+											+{pointsGathered}
+										</Typography>
+										<StarBadge
+											width={25}
+											height={25}
+											colorCircle="#fff"
+											colorStar={colors.captainDownGradient}
+										/>
 									</View>
 								</GradientBox>
 								<View className="ml-auto">
-									<AthleteCostBox cost={athlete.cost}/>
+									<AthleteCostBox cost={athlete.cost} />
 								</View>
 							</View>
 							<AthleteBasicInfo athlete={athlete} colors={colors} />
@@ -660,8 +671,15 @@ const AthleteInfoDialog: React.FC<{
 							</Typography>
 							<Star width={24} height={24} color="#c0aa00" />
 						</View>
-						<StarBadge width={34} height={34} colorCircle="#d33030" colorStar="#fff"/>
-						<Typography size="large3" type="pointsRed">Punkty: +{pointsGathered}</Typography>
+						<StarBadge
+							width={34}
+							height={34}
+							colorCircle="#d33030"
+							colorStar="#fff"
+						/>
+						<Typography size="large3" type="pointsRed">
+							Punkty: +{pointsGathered}
+						</Typography>
 					</View>
 					<View
 						className="flex-col rounded-2xl mx-3 p-6 gap-y-2 shadow-common"
@@ -927,13 +945,19 @@ export const PersonalRecordsBox: React.FC<{
 	return (
 		<View className="flex-1">
 			<ScrollView className="flex-1">
-				{personalRecords.sort(
-					(a, b) => {
-						if (a.date && b.date && a.date?.toLowerCase() > b.date?.toLowerCase()) return -1;
+				{personalRecords
+					.sort((a, b) => {
+						if (
+							a.date &&
+							b.date &&
+							a.date?.toLowerCase() > b.date?.toLowerCase()
+						)
+							return -1;
 						return 1;
-				}).map((record) => (
-					<PersonalRecordsBoxItem key={record.id} personalRecord={record} />
-				))}
+					})
+					.map((record) => (
+						<PersonalRecordsBoxItem key={record.id} personalRecord={record} />
+					))}
 			</ScrollView>
 		</View>
 	);

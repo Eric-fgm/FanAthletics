@@ -2,9 +2,7 @@
 	"name": "@fan-athletics/ai",
 	"version": "1.0.0",
 	"type": "module",
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"main": "./dist/index.js",
 	"exports": {
 		".": {

@@ -47,7 +47,10 @@ const AthleteList: React.FC<AthleteListProps> & {
 					<View className="flex-row gap-4 pr-4 basis-[72%] xl:basis-1/3">
 						<View className="justify-center items-center bg-gray-100 rounded-full w-12 h-12">
 							{imageUrl ? (
-								<Image source={{ uri: imageUrl }} className="w-full h-full rounded-full" />
+								<Image
+									source={{ uri: imageUrl }}
+									className="w-full h-full rounded-full"
+								/>
 							) : (
 								<CircleUser size={20} className="text-gray-600" />
 							)}

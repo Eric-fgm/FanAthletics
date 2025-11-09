@@ -1,7 +1,16 @@
 import { Star } from "lucide-react-native";
 import type React from "react";
 import { StyleSheet, View } from "react-native";
-import { Defs, LinearGradient, Path, Rect, Stop, Svg, Circle, Polygon } from "react-native-svg";
+import {
+	Circle,
+	Defs,
+	LinearGradient,
+	Path,
+	Polygon,
+	Rect,
+	Stop,
+	Svg,
+} from "react-native-svg";
 import { Typography } from "#/components";
 
 export enum GradientType {
@@ -145,26 +154,26 @@ export const StarBadge: React.FC<{
 	height: number;
 	colorCircle: string;
 	colorStar: string;
-}> = ({width, height, colorCircle, colorStar}) => {
+}> = ({ width, height, colorCircle, colorStar }) => {
 	const starPoints = [
-    [50, 17],
-    [58, 42],
-    [82, 42],
-    [62, 56],
-    [70, 78],
-    [50, 63],
-    [30, 78],
-    [38, 56],
-    [18, 42],
-    [42, 42],
-  ]
-    .map(([x, y]) => `${x},${y}`)
-    .join(" ");
+		[50, 17],
+		[58, 42],
+		[82, 42],
+		[62, 56],
+		[70, 78],
+		[50, 63],
+		[30, 78],
+		[38, 56],
+		[18, 42],
+		[42, 42],
+	]
+		.map(([x, y]) => `${x},${y}`)
+		.join(" ");
 
 	return (
 		<Svg width={width} height={height} viewBox="0 0 100 100">
-			<Circle cx={50} cy={50} r={50} fill={colorCircle}/>
-			<Polygon points={starPoints} fill={colorStar}/>
+			<Circle cx={50} cy={50} r={50} fill={colorCircle} />
+			<Polygon points={starPoints} fill={colorStar} />
 		</Svg>
 	);
-}
+};

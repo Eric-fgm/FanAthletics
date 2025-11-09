@@ -24,13 +24,12 @@ export default new Hono().get("/", async (c) => {
 			tables.discipline,
 			operators.eq(tables.discipline.id, tables.competition.disciplineId),
 		);
-	
+
 	if (athleteId) {
-		query = query
-			.innerJoin(
-				tables.competitor,
-				operators.eq(tables.competitor.competitionId, tables.competition.id),
-			);
+		query = query.innerJoin(
+			tables.competitor,
+			operators.eq(tables.competitor.competitionId, tables.competition.id),
+		);
 	}
 
 	const competitions = await query

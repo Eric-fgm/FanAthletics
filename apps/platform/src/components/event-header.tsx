@@ -1,8 +1,8 @@
 import type { Event } from "@fan-athletics/shared/types";
+import { Trophy } from "lucide-react-native";
 import type React from "react";
 import { Image, ImageBackground, View } from "react-native";
 import Typography from "./typography";
-import { Trophy } from "lucide-react-native";
 
 const EventHeader: React.FC<{
 	event: Event | undefined;
@@ -42,13 +42,14 @@ const EventHeader: React.FC<{
 							className="items-center justify-center w-[100] h-[100] hidden sm:flex"
 							style={{ backgroundColor: "white", borderRadius: 8 }}
 						>
-							{event.icon ?
+							{event.icon ? (
 								<Image
 									source={{ uri: event.icon }}
 									style={{ width: "75%", height: "75%" }}
-								/> :
+								/>
+							) : (
 								<Trophy size="75%" />
-							}
+							)}
 						</View>
 						<Typography size="large5" type="bright" className="shrink">
 							{event.name}

@@ -40,7 +40,7 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 		(AthleteWithDisciplines | null)[]
 	>(Array(8).fill(null));
 	const [budgetLeft, setBudgetLeft] = useState<number>(
-		gameSpecification ? gameSpecification.budget : 0
+		gameSpecification ? gameSpecification.budget : 0,
 	);
 
 	return (
@@ -137,8 +137,7 @@ const TeamManageDialog: React.FC<TeamManageDialogProps> = ({ trigger }) => {
 								setSelectedAthletes(newSelectedAthletes);
 								setSelectedPlayerSlot(null);
 								setBudgetLeft(budgetLeft - athlete.cost);
-							}
-							else console.log("Too expensive to hire!");
+							} else console.log("Too expensive to hire!");
 						}}
 					/>
 				</>

@@ -90,8 +90,8 @@ export const gameSpecification = pgTable("game_specification", {
 		.references(() => event.id)
 		.notNull(),
 	budget: integer().default(300).notNull(),
-	maxExchanges: integer().default(8).notNull()
-})
+	maxExchanges: integer().default(8).notNull(),
+});
 
 export const participant = pgTable("participant", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),

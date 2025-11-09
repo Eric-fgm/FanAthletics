@@ -87,18 +87,19 @@ const AdminTools = () => {
 						: []),
 					...(event
 						? [
-							{
-								name: isCountPointsPending
-									? "Trwa obliczanie punktów..."
-									: "Oblicz punkty",
-								disabled: typeof eventId !== "string" || isCountPointsPending,
-								onPress: async () => {
-									console.log("Liczenie...");
-									await countPoints(eventId.toString());
-									await invalidateParticipation(eventId.toString());
+								{
+									name: isCountPointsPending
+										? "Trwa obliczanie punktów..."
+										: "Oblicz punkty",
+									disabled: typeof eventId !== "string" || isCountPointsPending,
+									onPress: async () => {
+										console.log("Liczenie...");
+										await countPoints(eventId.toString());
+										await invalidateParticipation(eventId.toString());
+									},
 								},
-							},
-						] : []),
+							]
+						: []),
 				]}
 				className="-mt-4"
 			/>

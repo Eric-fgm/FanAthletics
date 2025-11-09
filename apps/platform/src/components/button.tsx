@@ -28,7 +28,7 @@ const variantClassNamesMap = {
 	washed: "bg-gray-400",
 	assignCaptain: "bg-[#d33030]",
 	F: "bg-[#FFC4C4]",
-	M: "bg-[#CCF6FF]"
+	M: "bg-[#CCF6FF]",
 };
 
 const typeClassNameMap = {

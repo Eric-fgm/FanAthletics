@@ -34,11 +34,18 @@ export default new Hono<{
 
 		if (!event) return c.json({ message: "Such event does not exist!" }, 404);
 
-		if (event.status !== "available") return c.json({ message: "You cannot participate because this event is currently unavailable!"}, 400);
+		if (event.status !== "available")
+			return c.json(
+				{
+					message:
+						"You cannot participate because this event is currently unavailable!",
+				},
+				400,
+			);
 
 		const gameSpecification = await db.query.gameSpecification.findFirst({
-			where: (gs, { eq }) => eq(gs.eventId, event.id)
-		})
+			where: (gs, { eq }) => eq(gs.eventId, event.id),
+		});
 
 		await db.insert(tables.participant).values({
 			userId: user.id,
@@ -109,7 +116,7 @@ export default new Hono<{
 		const eventId = c.req.param("eventId");
 
 		const gameSpecification = await db.query.gameSpecification.findFirst({
-			where: ( game, { eq }) => eq(game.eventId, eventId),
+			where: (game, { eq }) => eq(game.eventId, eventId),
 		});
 
 		return c.json(gameSpecification ?? null);
@@ -425,7 +432,9 @@ export default new Hono<{
 			await db.query.discipline.findMany({
 				where: (discipline, { eq }) => eq(discipline.eventId, eventId),
 			})
-		).filter((dis) => !dis.name.endsWith("pk")).map((dis) => dis.id);
+		)
+			.filter((dis) => !dis.name.endsWith("pk"))
+			.map((dis) => dis.id);
 
 		const competitions = await db.query.competition.findMany({
 			where: (competition, { inArray }) =>
@@ -476,13 +485,11 @@ export default new Hono<{
 					ranking: string;
 				};
 				const pointsToAdd =
-					competitorResults.ranking === "" && competitor.place === 0		// Ma DNF, DQ albo DNS
+					competitorResults.ranking === "" && competitor.place === 0 // Ma DNF, DQ albo DNS
 						? 0
-						: (
-							competitorResults.ranking === ""
-							? Math.max(8 - competitor.place + 1, 0)		// Jest w finale
-							: Math.max(8 - Number.parseInt(competitorResults.ranking) + 1, 0)		// Konkurencja nie ma finałów
-						);
+						: competitorResults.ranking === ""
+							? Math.max(8 - competitor.place + 1, 0) // Jest w finale
+							: Math.max(8 - Number.parseInt(competitorResults.ranking) + 1, 0); // Konkurencja nie ma finałów
 				console.log(
 					competitorResults.ranking,
 					typeof competitorResults.ranking,
@@ -506,10 +513,16 @@ export default new Hono<{
 						})
 						.where(
 							operators.and(
-								operators.eq(tables.teamMember.participantId, member.participantId),
+								operators.eq(
+									tables.teamMember.participantId,
+									member.participantId,
+								),
 								operators.eq(tables.teamMember.athleteId, member.athleteId),
 								operators.eq(tables.teamMember.isCaptain, member.isCaptain),
-								operators.eq(tables.teamMember.pointsGathered, member.pointsGathered),
+								operators.eq(
+									tables.teamMember.pointsGathered,
+									member.pointsGathered,
+								),
 							),
 						);
 				}
