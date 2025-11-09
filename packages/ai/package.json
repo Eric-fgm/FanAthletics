@@ -1,0 +1,30 @@
+{
+	"name": "@fan-athletics/ai",
+	"version": "1.0.0",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"main": "./dist/index.js",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"type-check": "tsc --noEmit",
+		"clean": "rm -rf node_modules & rm -rf dist"
+	},
+	"dependencies": {
+		"@google/genai": "^1.29.0",
+		"zod": "^4.1.12",
+		"zod-to-json-schema": "^3.24.6"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.21",
+		"typescript": "5.8.3"
+	}
+}

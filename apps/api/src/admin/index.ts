@@ -1,3 +1,5 @@
+import path from "node:path";
+import { getAI, getFilesAI, getModelAI } from "@fan-athletics/ai";
 import { db, operators, tables } from "@fan-athletics/database";
 import type {
 	AthletePayload,
@@ -45,17 +47,16 @@ const eventsApp = new Hono()
 		}
 
 		// Domyślnie ustawiany jest budżet i maksymana liczba wymian.
-		await db.insert(tables.gameSpecification)
-			.values({
-				eventId: event.id,
-			})
+		await db.insert(tables.gameSpecification).values({
+			eventId: event.id,
+		});
 
 		if (event.domtelApp) {
 			const disciplines = await getDisciplines(event.domtelApp);
 			await saveDiscplines(event.id, disciplines);
 
 			const athletes = await getAthletes(event.domtelApp);
-			
+
 			await saveAthletes(event.id, athletes);
 
 			await processCompetitionsAndResults(event.domtelApp, event.id, false);
@@ -167,8 +168,43 @@ const athletesApp = new Hono().put("/:athleteId", async (c) => {
 	return c.json({ message: "Athlete successfully updated!" }, 200);
 });
 
+const aiApp = new Hono().post("/:eventId", async (c) => {
+	const payload = await c.req.json<{ budget: number }>();
+	const eventId = c.req.param("eventId");
+
+	const ai = getAI(process.env.GEMINI_API_KEY as string);
+	const files = getFilesAI(ai);
+	const model = getModelAI(ai);
+
+	const aiFilePathname = path.join(
+		__dirname,
+		"../temp",
+		`ai-${eventId}-data.txt`,
+	);
+
+	const uploadedFile = await files.upload(aiFilePathname);
+	const promptResult = await model.generate({
+		file: uploadedFile,
+		budget: payload.budget,
+	});
+
+	if (!promptResult.text) {
+		return c.json({ message: "AI generation error!" }, 500);
+	}
+
+	const athletesIds = JSON.parse(promptResult.text) as string[];
+
+	const athletes = await db.query.athlete.findMany({
+		where: (athlete, { eq, and, inArray }) =>
+			and(eq(athlete.eventId, eventId), inArray(athlete.id, athletesIds)),
+	});
+
+	return c.json(athletes, 200);
+});
+
 adminApp.route("/events", eventsApp);
 adminApp.route("/disciplines", disciplinesApp);
 adminApp.route("/athletes", athletesApp);
+adminApp.route("/ai", aiApp);
 
 export default adminApp;

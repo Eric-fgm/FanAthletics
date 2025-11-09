@@ -19,14 +19,7 @@ interface ScrapeResponse {
 
 app.post(
 	"/api/scrape",
-	(
-		req: Request<
-			{},
-			{},
-			ScrapeRequestBody
-		>,
-		res: Response,
-	) => {
+	(req: Request<unknown, unknown, ScrapeRequestBody>, res: Response) => {
 		const { url } = req.body;
 
 		if (!url) {
