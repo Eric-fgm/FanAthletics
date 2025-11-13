@@ -1,5 +1,6 @@
 import type { CompetitionWithCompetitors } from "@fan-athletics/shared/types";
 import { Link } from "expo-router";
+import { CircleUser } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import { Image, Pressable, View } from "react-native";
@@ -52,6 +53,7 @@ export const Timetable: React.FC<{
 						setCurrentDay(value);
 					}}
 					className="w-full justify-between mb-3"
+					itemsWidthEqual={true}
 				/>
 				{currentDay !== undefined && (
 					<CompetitionsList
@@ -59,6 +61,7 @@ export const Timetable: React.FC<{
 							(c) => c.startAt.toISOString().substring(0, 10) === currentDay,
 						)}
 						onCompetitionSelect={setSelectedCompetition}
+						selectedCompetition={selectedCompetition}
 					/>
 				)}
 			</View>
@@ -74,7 +77,8 @@ export const Timetable: React.FC<{
 const CompetitionsList: React.FC<{
 	competitions: CompetitionWithCompetitors[];
 	onCompetitionSelect: (competition: CompetitionWithCompetitors) => void;
-}> = ({ competitions, onCompetitionSelect }) => {
+	selectedCompetition: CompetitionWithCompetitors | null;
+}> = ({ competitions, onCompetitionSelect, selectedCompetition }) => {
 	const [selectedCompetitionBar, setSelectedCompetitionBar] = useState<
 		string | null
 	>(null);
@@ -122,6 +126,7 @@ const CompetitionsList: React.FC<{
 						}}
 						onCompetitionSelect={onCompetitionSelect}
 						currentlySelectedBar={selectedCompetitionBar}
+						currentlySelectedCompetition={selectedCompetition}
 					/>
 				))}
 		</View>
@@ -133,27 +138,51 @@ const CompetitionBar: React.FC<{
 	onPress: () => void;
 	onCompetitionSelect: (competition: CompetitionWithCompetitors) => void;
 	currentlySelectedBar: string | null;
-}> = ({ competitions, onPress, onCompetitionSelect, currentlySelectedBar }) => {
+	currentlySelectedCompetition: CompetitionWithCompetitors | null;
+}> = ({
+	competitions,
+	onPress,
+	onCompetitionSelect,
+	currentlySelectedBar,
+	currentlySelectedCompetition,
+}) => {
 	const hour = new Date(competitions[0].startAt)
 		.toISOString()
 		.substring(11, 16);
 	const key = `${competitions[0].disciplineId}-${competitions[0].round}`;
+	const [isHovered, setIsHovered] = useState<boolean>(false);
+	const colors = {
+		normal: "#973232",
+		hover: "#FF5100",
+	};
+	const isSelected = currentlySelectedBar === key;
+	const barInfoColor = isSelected || isHovered ? colors.hover : colors.normal;
 
 	return (
 		<View>
-			<Pressable onPress={onPress}>
-				<View className="flex-row w-full rounded-full justify-center bg-[#EFEFEF] border border-[#973232]">
+			<Pressable
+				onPress={onPress}
+				onHoverIn={() => setIsHovered(true)}
+				onHoverOut={() => setIsHovered(false)}
+			>
+				<View
+					className="flex-row w-full rounded-full justify-center bg-[#EFEFEF] border"
+					style={{ borderColor: barInfoColor }}
+				>
 					<Typography className="ms-2">{hour}</Typography>
-					<View className="px-3 ms-auto rounded-full bg-[#973232] w-[70%]">
+					<View
+						className="px-3 ms-auto w-[70%] rounded-full"
+						style={{ backgroundColor: barInfoColor }}
+					>
 						<Typography type="bright" className="ms-auto">
 							{competitions[0].discipline.name}{" "}
-							{roundLabels[competitions[0].round]}
+							{roundLabels[competitions[0].round].short}
 						</Typography>
 					</View>
 				</View>
 			</Pressable>
 			{currentlySelectedBar === key && competitions.length > 1 && (
-				<View className="p-2 rounded-full gap-y-1">
+				<View className="py-2 rounded-full gap-y-1">
 					{competitions
 						.sort((a, b) => {
 							if (a.series < b.series) return -1;
@@ -162,8 +191,20 @@ const CompetitionBar: React.FC<{
 						.map(
 							(c) =>
 								c.competitors.length > 0 && ( //Trzeba na backendzie zrobić jakieś poprawki, bo finały A się kilka razy pobierają
-									<Pressable onPress={() => onCompetitionSelect(c)}>
-										<View className="p-1 border bg-[#EFEFEF]">
+									<Pressable
+										onPress={() => onCompetitionSelect(c)}
+										className="w-[70%] ms-auto"
+									>
+										<View
+											className="px-2 border rounded-full"
+											style={{
+												backgroundColor:
+													currentlySelectedCompetition &&
+													currentlySelectedCompetition.id === c.id
+														? "#9f9f9fff"
+														: "#EFEFEF",
+											}}
+										>
 											<Typography>{convertSeriesName(c.note)}</Typography>
 										</View>
 									</Pressable>
@@ -182,15 +223,32 @@ const ResultsTable: React.FC<{
 	if (!event) return null;
 
 	return (
+		// Pasowałoby to przerobić na tabelkę
 		<View className="w-full ms-5">
-			<GradientBox sex="M" gradientType={GradientType.CAPTAIN}>
+			<Typography size="large4" className="mb-3">
+				{competition.discipline.name} -{" "}
+				{convertSeriesName(competition.note, competition.round)}
+			</Typography>
+			<GradientBox sex="K" gradientType={GradientType.CAPTAIN} horizontal>
 				<View className="flex-row gap-x-4 my-2 mx-3">
-					<Typography className="w-[5%]">Miejsce</Typography>
-					<Typography className="w-[5%]">Numer</Typography>
-					<Typography className="w-[25%]">Zawodnik</Typography>
-					<Typography className="w-[25%]">Klub</Typography>
-					<Typography className="w-[20%]">Narodowość</Typography>
-					<Typography className="w-[10%]">Wynik</Typography>
+					<Typography size="base" type="bright" className="w-[7%]">
+						Miejsce
+					</Typography>
+					<Typography size="base" type="bright" className="w-[7%]">
+						Numer
+					</Typography>
+					<Typography size="base" type="bright" className="w-[25%]">
+						Zawodnik
+					</Typography>
+					<Typography size="base" type="bright" className="w-[25%]">
+						Klub
+					</Typography>
+					<Typography size="base" type="bright" className="w-[20%]">
+						Narodowość
+					</Typography>
+					<Typography size="base" type="bright" className="w-[10%]">
+						Wynik
+					</Typography>
 				</View>
 			</GradientBox>
 			<View className="mt-3">
@@ -205,17 +263,27 @@ const ResultsTable: React.FC<{
 							className="flex-row gap-x-4 py-2 px-3 items-center"
 							style={{ backgroundColor: index % 2 === 0 ? "white" : "#EFEFEF" }}
 						>
-							<Typography className="w-[5%]">
+							<Typography className="w-[7%]">
 								{competitor.place !== 9999 && competitor.place}
 							</Typography>
-							<Typography className="w-[5%]">{competitor.number}</Typography>
+							<Typography className="w-[7%]">{competitor.number}</Typography>
 							<Link
 								href={`/events/${event.id}/athletes/${competitor.id}`}
 								className="w-[25%]"
 							>
-								<Typography>
-									{competitor.firstName} {competitor.lastName}
-								</Typography>
+								<View className="flex-row items-center gap-x-2">
+									{competitor.imageUrl ? (
+										<Image
+											source={{ uri: competitor.imageUrl }}
+											style={{ width: 32, height: 32 }}
+										/>
+									) : (
+										<CircleUser size={32} />
+									)}
+									<Typography>
+										{competitor.firstName} {competitor.lastName}
+									</Typography>
+								</View>
 							</Link>
 							<Typography className="w-[25%]">{competitor.club}</Typography>
 							<View className="flex-row w-[20%]">
@@ -234,14 +302,18 @@ const ResultsTable: React.FC<{
 	);
 };
 
-function convertSeriesName(seriesName: string | null) {
-	if (!seriesName) return null;
+function convertSeriesName(
+	seriesName: string | null,
+	round: number | null = null,
+) {
+	console.log(seriesName, round, round && roundLabels[round]);
+	if (!seriesName || seriesName.startsWith("FINAŁ")) return "Finał";
 	if (seriesName.startsWith("Finał")) return seriesName;
-	return `Seria ${seriesName.substring(seriesName.lastIndexOf(" ") + 1)}`;
+	return `${round ? `${roundLabels[round].long} s` : "S"}eria ${seriesName.substring(seriesName.lastIndexOf(" ") + 1)}`;
 }
 
-const roundLabels: Record<number, string> = {
-	1: "EL",
-	2: "PREELIM",
-	3: "F",
+const roundLabels: Record<number, Record<string, string>> = {
+	1: { short: "EL", long: "Eliminacje" },
+	2: { short: "PREELIM", long: "Preeliminacje" },
+	3: { short: "F", long: "Finał" },
 };
