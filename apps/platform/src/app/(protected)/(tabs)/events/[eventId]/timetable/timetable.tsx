@@ -3,7 +3,7 @@ import { Link } from "expo-router";
 import { CircleUser } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
-import { Image, Pressable, View } from "react-native";
+import { Image, Pressable, ScrollView, View } from "react-native";
 import { Switch, Typography } from "#/components";
 import { useEventQuery } from "#/features/events";
 import { GradientBox, GradientType, getFlagUrl } from "../participation/utils";
@@ -11,7 +11,6 @@ import { GradientBox, GradientType, getFlagUrl } from "../participation/utils";
 export const Timetable: React.FC<{
 	competitions: CompetitionWithCompetitors[];
 }> = ({ competitions }) => {
-	const [currentDay, setCurrentDay] = useState<string | undefined>(undefined);
 	const [selectedCompetition, setSelectedCompetition] =
 		useState<CompetitionWithCompetitors | null>(null);
 
@@ -30,6 +29,8 @@ export const Timetable: React.FC<{
 		if (a < b) return -1;
 		return 1;
 	});
+
+	const [currentDay, setCurrentDay] = useState<string>(days[0]);
 	console.log(
 		"Comp: ",
 		competitions[0],
@@ -55,15 +56,13 @@ export const Timetable: React.FC<{
 					className="w-full justify-between mb-3"
 					itemsWidthEqual={true}
 				/>
-				{currentDay !== undefined && (
-					<CompetitionsList
-						competitions={competitions.filter(
-							(c) => c.startAt.toISOString().substring(0, 10) === currentDay,
-						)}
-						onCompetitionSelect={setSelectedCompetition}
-						selectedCompetition={selectedCompetition}
-					/>
-				)}
+				<CompetitionsList
+					competitions={competitions.filter(
+						(c) => c.startAt.toISOString().substring(0, 10) === currentDay,
+					)}
+					onCompetitionSelect={setSelectedCompetition}
+					selectedCompetition={selectedCompetition}
+				/>
 			</View>
 			{selectedCompetition && (
 				<View className="w-[60%]">
@@ -100,36 +99,38 @@ const CompetitionsList: React.FC<{
 	console.log(competitionsConsolidated);
 
 	return (
-		<View className="w-full gap-y-1">
-			{Array.from(competitionsConsolidated)
-				.map(([key, competitions]) => {
-					return { key: key, competitions: competitions };
-				})
-				.sort((a, b) => {
-					if (
-						a.competitions[0].startAt.toISOString() <
-						b.competitions[0].startAt.toISOString()
-					)
-						return -1;
-					return 1;
-				})
-				.map((compCons) => (
-					<CompetitionBar
-						key={compCons.key}
-						competitions={compCons.competitions}
-						onPress={() => {
-							if (compCons.competitions.length === 1)
-								onCompetitionSelect(compCons.competitions[0]);
-							if (selectedCompetitionBar !== compCons.key)
-								setSelectedCompetitionBar(compCons.key);
-							else setSelectedCompetitionBar(null);
-						}}
-						onCompetitionSelect={onCompetitionSelect}
-						currentlySelectedBar={selectedCompetitionBar}
-						currentlySelectedCompetition={selectedCompetition}
-					/>
-				))}
-		</View>
+		<ScrollView className="w-full h-[524px]">
+			<View className="gap-y-1">
+				{Array.from(competitionsConsolidated)
+					.map(([key, competitions]) => {
+						return { key: key, competitions: competitions };
+					})
+					.sort((a, b) => {
+						if (
+							a.competitions[0].startAt.toISOString() <
+							b.competitions[0].startAt.toISOString()
+						)
+							return -1;
+						return 1;
+					})
+					.map((compCons) => (
+						<CompetitionBar
+							key={compCons.key}
+							competitions={compCons.competitions}
+							onPress={() => {
+								if (compCons.competitions.length === 1)
+									onCompetitionSelect(compCons.competitions[0]);
+								if (selectedCompetitionBar !== compCons.key)
+									setSelectedCompetitionBar(compCons.key);
+								else setSelectedCompetitionBar(null);
+							}}
+							onCompetitionSelect={onCompetitionSelect}
+							currentlySelectedBar={selectedCompetitionBar}
+							currentlySelectedCompetition={selectedCompetition}
+						/>
+					))}
+			</View>
+		</ScrollView>
 	);
 };
 
@@ -157,6 +158,7 @@ const CompetitionBar: React.FC<{
 	};
 	const isSelected = currentlySelectedBar === key;
 	const barInfoColor = isSelected || isHovered ? colors.hover : colors.normal;
+	const competitionSex = getCompetitionSexOrName(competitions[0]);
 
 	return (
 		<View>
@@ -166,23 +168,38 @@ const CompetitionBar: React.FC<{
 				onHoverOut={() => setIsHovered(false)}
 			>
 				<View
-					className="flex-row w-full rounded-full justify-center bg-[#EFEFEF] border"
+					className="flex-row w-full rounded-xl justify-center bg-[#EFEFEF] border"
 					style={{ borderColor: barInfoColor }}
 				>
-					<Typography className="ms-2">{hour}</Typography>
+					<View className="ms-2 my-1">
+						<Typography size="base">{hour}</Typography>
+						{/* <View className="w-[75%] m-auto rounded-md bg-gray-400 items-center"> */}
+						<Typography size="small">{competitionSex}</Typography>
+						{/* </View> */}
+					</View>
+
 					<View
-						className="px-3 ms-auto w-[70%] rounded-full"
+						className="px-3 ms-auto py-1 w-[70%] rounded-xl"
 						style={{ backgroundColor: barInfoColor }}
 					>
-						<Typography type="bright" className="ms-auto">
-							{competitions[0].discipline.name}{" "}
-							{roundLabels[competitions[0].round].short}
+						<Typography type="bright" className="ms-auto mb-1">
+							{getCompetitionSexOrName(competitions[0], false)}
 						</Typography>
+						<View
+							className="ms-auto px-2 rounded-md bg-red-400 items-center"
+							style={{
+								backgroundColor: competitions[0].round === 3 ? "red" : "",
+							}}
+						>
+							<Typography size="small" type="bright">
+								{roundLabels[competitions[0].round].long}
+							</Typography>
+						</View>
 					</View>
 				</View>
 			</Pressable>
 			{currentlySelectedBar === key && competitions.length > 1 && (
-				<View className="py-2 rounded-full gap-y-1">
+				<View className="py-2	 gap-y-1">
 					{competitions
 						.sort((a, b) => {
 							if (a.series < b.series) return -1;
@@ -196,7 +213,7 @@ const CompetitionBar: React.FC<{
 										className="w-[70%] ms-auto"
 									>
 										<View
-											className="px-2 border rounded-full"
+											className="px-2 py-1 border rounded-lg"
 											style={{
 												backgroundColor:
 													currentlySelectedCompetition &&
@@ -310,6 +327,22 @@ function convertSeriesName(
 	if (!seriesName || seriesName.startsWith("FINAŁ")) return "Finał";
 	if (seriesName.startsWith("Finał")) return seriesName;
 	return `${round ? `${roundLabels[round].long} s` : "S"}eria ${seriesName.substring(seriesName.lastIndexOf(" ") + 1)}`;
+}
+
+function getCompetitionSexOrName(
+	competition: CompetitionWithCompetitors,
+	sex = true,
+) {
+	const name = competition.discipline.name;
+	if (sex) {
+		if (name[0] === "M" || name[0] === "K")
+			return name[0] === "M" ? "Mężczyźni" : "Kobiety";
+		return name.substring(name.length - 2, name.length - 1) === "M"
+			? "Mężczyźni"
+			: "Kobiety";
+	}
+	if (name.startsWith("M") || name.startsWith("K")) return name.substring(1);
+	return name.substring(0, name.length - 4);
 }
 
 const roundLabels: Record<number, Record<string, string>> = {

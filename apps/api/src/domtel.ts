@@ -246,10 +246,18 @@ export const processCompetitionsAndResults = async (
 	await Promise.all(
 		curriculums.map(async ({ Konkurencja, runda, seriaMax, data }) => {
 			try {
-				console.log(Konkurencja);
+				console.log(
+					Konkurencja,
+					Konkurencja.substring(0, Konkurencja.length - 1),
+				);
 				const round = Number.parseInt(runda, 10);
 				const metadata = domtel.disciplines[
-					Konkurencja as keyof (typeof domtel)["disciplines"]
+					Konkurencja.endsWith("j")
+						? (Konkurencja.substring(
+								0,
+								Konkurencja.length - 1,
+							) as keyof (typeof domtel)["disciplines"])
+						: (Konkurencja as keyof (typeof domtel)["disciplines"])
 				] ?? {
 					name: Konkurencja,
 					record: "-",
@@ -378,8 +386,14 @@ export const saveDiscplines = async (
 ) => {
 	await Promise.all(
 		disciplines.map(async (discipline) => {
+			console.log("Discipline: ", discipline);
 			const metadata = domtel.disciplines[
-				discipline as keyof (typeof domtel)["disciplines"]
+				discipline.endsWith("j")
+					? (discipline.substring(
+							0,
+							discipline.length - 1,
+						) as keyof (typeof domtel)["disciplines"])
+					: (discipline as keyof (typeof domtel)["disciplines"])
 			] ?? {
 				name: discipline,
 				record: "-",
@@ -448,7 +462,10 @@ export const saveAthletes = async (
 					number: Number.parseInt(athlete.number, 10),
 					coach: athlete.club,
 					club: athlete.club,
-					nationality: athlete.club.toUpperCase() === athlete.club ? athlete.club : "POLAND",
+					nationality:
+						athlete.club.toUpperCase() === athlete.club
+							? athlete.club
+							: "POLAND",
 					sex: "",
 					imageUrl: "https://starter.pzla.pl/foto/277503.jpg?m=20230118093122",
 					cost: 100,
