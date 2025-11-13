@@ -1,12 +1,14 @@
 import type {
+	Athlete,
 	AthleteWithDisciplines,
 	Discipline,
+	GameSpecification,
 } from "@fan-athletics/shared/types";
 import { CircleUser, Globe } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import { Image, Pressable, ScrollView, TextInput, View } from "react-native";
-import { countries } from "#/app/(protected)/(tabs)/events/[eventId]/participation/utils";
+import { countries, getFlagUrl } from "#/app/(protected)/(tabs)/events/[eventId]/participation/utils";
 import {
 	Button,
 	Dialog,
@@ -22,18 +24,19 @@ import {
 
 interface AthletesSearchDialogProps
 	extends React.ComponentProps<typeof Dialog> {
-	disabledAtletes?: string[];
+	disabledAtletes?: AthleteIdAndSex[];
 	budget: number;
+	gameSpecification: GameSpecification;
 	onSelect?: (athlete: AthleteWithDisciplines) => void;
 }
 
 const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 	disabledAtletes = [],
 	budget,
+	gameSpecification,
 	onSelect,
 	...props
 }) => {
-	const MAX_ATHLETE_COST = 200; // Pasuje to przenieść gdzieś albo ustawiać w parametrach wydarzenia i tutaj przekazywać.
 	const [searchValue, setSearchValue] = useState("");
 	const { data: athletes = [], isLoading } = useEventAthletesQuery();
 	const { data: disciplines = [] } = useEventDiscpilinesQuery();
@@ -44,13 +47,20 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 
 	const nationalities = [
 		...new Set(athletes.map((athlete) => athlete.nationality)),
-	];
-	nationalities.push("Albania", "Bosnia and Herzegovina");
+	].sort((a, b) => {
+		if (countries[a] && countries[b] && countries[a].polishName.toLowerCase() < countries[b].polishName.toLowerCase())
+			return -1;
+		return 1;
+	});
 
 	const [currentSex, setCurrentSex] = useState("both");
 	const [currentDiscipline, setCurrentDiscipline] = useState<Discipline>();
-	const [minAthleteCost, setMinAthleteCost] = useState(0);
-	const [maxAthleteCost, setMaxAthleteCost] = useState(MAX_ATHLETE_COST);
+	const [minAthleteCost, setMinAthleteCost] = useState(
+		gameSpecification.minAthleteCost,
+	);
+	const [maxAthleteCost, setMaxAthleteCost] = useState(
+		gameSpecification.maxAthleteCost,
+	);
 	const [inBudget, setInBudget] = useState(false);
 	const [currentNationality, setCurrentNationality] = useState<string>("");
 
@@ -82,8 +92,8 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 		setSearchValue("");
 		setCurrentSex("both");
 		setCurrentDiscipline(undefined);
-		setMinAthleteCost(0);
-		setMaxAthleteCost(MAX_ATHLETE_COST);
+		setMinAthleteCost(gameSpecification.minAthleteCost);
+		setMaxAthleteCost(gameSpecification.maxAthleteCost);
 		setInBudget(false);
 		setCurrentNationality("");
 	}
@@ -165,8 +175,9 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 								onChange={(event) =>
 									setMinAthleteCost(
 										Math.min(
-											Number(event.nativeEvent.text) || 0,
-											MAX_ATHLETE_COST,
+											Number(event.nativeEvent.text) ||
+												gameSpecification.minAthleteCost,
+											gameSpecification.maxAthleteCost,
 										),
 									)
 								}
@@ -179,8 +190,9 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 								onChange={(event) =>
 									setMaxAthleteCost(
 										Math.min(
-											Number(event.nativeEvent.text) || MAX_ATHLETE_COST,
-											MAX_ATHLETE_COST,
+											Number(event.nativeEvent.text) ||
+												gameSpecification.maxAthleteCost,
+											gameSpecification.maxAthleteCost,
 										),
 									)
 								}
@@ -204,12 +216,12 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 								<Button
 									text={
 										currentNationality !== ""
-											? countries[currentNationality].polishName
+											? (countries[currentNationality] ? countries[currentNationality].polishName : currentNationality)
 											: "Wybierz narodowość"
 									}
 									imageUrl={
 										currentNationality !== ""
-											? `https://flagsapi.com/${countries[currentNationality].code}/flat/64.png`
+											? getFlagUrl(currentNationality)
 											: undefined
 									}
 									icon={currentNationality === "" ? Globe : undefined}
@@ -224,8 +236,8 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 							].concat(
 								nationalities.map((nationality) => {
 									return {
-										name: countries[nationality].polishName,
-										imageUrl: `https://flagsapi.com/${countries[nationality].code}/flat/64.png`,
+										name: countries[nationality] ? countries[nationality].polishName : nationality,
+										imageUrl: getFlagUrl(nationality),
 										onPress: () => setCurrentNationality(nationality),
 										className: "",
 									};
@@ -247,7 +259,14 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 						) : (
 							<ScrollView className="gap-y-2 px-6 pt-4 pb-2 border-gray-200 border-t max-h-[524px]">
 								{filteredAthletes.map((athlete) => {
-									const isDisabled = disabledAtletes.includes(athlete.id);
+									const isDisabled =
+										disabledAtletes.map((ath) => ath.id).includes(athlete.id) ||
+										!checkIfAthleteIsAffordable(
+											athlete,
+											budget,
+											gameSpecification,
+											disabledAtletes,
+										);
 									return (
 										<Pressable
 											key={athlete.id}
@@ -292,3 +311,30 @@ const AthletesSearchDialog: React.FC<AthletesSearchDialogProps> = ({
 };
 
 export default AthletesSearchDialog;
+
+export interface AthleteIdAndSex {
+	id: string;
+	sex: "M" | "K";
+}
+
+function checkIfAthleteIsAffordable(
+	athlete: Athlete,
+	budget: number,
+	gameSpecification: GameSpecification,
+	currentTeam: AthleteIdAndSex[],
+) {
+	if (athlete.cost > budget) return false;
+	if (!gameSpecification.sexParity) return true;
+
+	const currentNumOfMen = currentTeam.filter((ath) => ath.sex === "M").length;
+	const currentNumOfWomen = currentTeam.filter((ath) => ath.sex === "K").length;
+	const maxNumOfAthletesOfOneSex = Math.floor(
+		(gameSpecification.numberOfTeamMembers + 1) / 2,
+	);
+
+	if (athlete.sex === "M" && currentNumOfMen >= maxNumOfAthletesOfOneSex)
+		return false;
+	if (athlete.sex === "K" && currentNumOfWomen >= maxNumOfAthletesOfOneSex)
+		return false;
+	return true;
+}

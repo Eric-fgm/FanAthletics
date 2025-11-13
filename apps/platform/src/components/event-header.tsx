@@ -11,12 +11,7 @@ const EventHeader: React.FC<{
 
 	if (event === undefined) return null;
 
-	let eventDate = `${event.startAt.substring(8, 10)} ${months[event.startAt.substring(5, 7)]} ${event.startAt.substring(0, 4)}`;
-	eventDate +=
-		event.startAt.substring(0, 10) !== event.endAt.substring(0, 10)
-			? ` - ${event.endAt.substring(8, 10)} ${months[event.endAt.substring(5, 7)]} ${event.endAt.substring(0, 4)}`
-			: "";
-	// Trzeba poprawić te daty przy pobieraniu danych!!!
+	const eventDate = eventDateInfo(event.startAt, event.endAt);
 
 	return (
 		<View className="p-7 mb-3">
@@ -91,3 +86,22 @@ const months: Record<string, string> = {
 	"11": "listopada",
 	"12": "grudnia",
 };
+
+function eventDateInfo(startDate: string, endDate: string) {
+	function writeFullDate(date: string, withoutYear = false, withoutMonthAndYear = false) {
+		if (withoutYear)
+			return `${date.substring(8, 10)} ${months[date.substring(5, 7)]}`;
+		if (withoutMonthAndYear)
+			return date.substring(8, 10);
+		return `${date.substring(8, 10)} ${months[date.substring(5, 7)]} ${date.substring(0, 4)}`;
+	}
+
+	if (startDate === endDate)
+		return writeFullDate(startDate);
+
+	if (startDate.substring(0, 4) !== endDate.substring(0, 4))
+		return `${writeFullDate(startDate)} - ${writeFullDate(endDate)}`;
+	if (startDate.substring(5, 7) !== endDate.substring(5, 7))
+		return `${writeFullDate(startDate, true)} - ${writeFullDate(endDate)}`;
+	return `${writeFullDate(startDate, false, true)} - ${writeFullDate(endDate)}`;
+}

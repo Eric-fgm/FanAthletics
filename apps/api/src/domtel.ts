@@ -448,7 +448,7 @@ export const saveAthletes = async (
 					number: Number.parseInt(athlete.number, 10),
 					coach: athlete.club,
 					club: athlete.club,
-					nationality: "Poland",
+					nationality: athlete.club.toUpperCase() === athlete.club ? athlete.club : "POLAND",
 					sex: "",
 					imageUrl: "https://starter.pzla.pl/foto/277503.jpg?m=20230118093122",
 					cost: 100,

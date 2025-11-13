@@ -119,7 +119,22 @@ export default new Hono<{
 			where: (game, { eq }) => eq(game.eventId, eventId),
 		});
 
-		return c.json(gameSpecification ?? null);
+		if (!gameSpecification) {
+			const [defaultGameSpecification] = await db.insert(tables.gameSpecification)
+				.values({
+					eventId: eventId,
+					numberOfTeamMembers: 8,
+					budget: 500,
+					maxExchanges: 8,
+					minAthleteCost: 50,
+					maxAthleteCost: 100,
+					sexParity: true,
+				})
+				.returning();
+			
+			return c.json(defaultGameSpecification);
+		}
+		return c.json(gameSpecification);
 	})
 	.use(async (c, next) => {
 		const user = c.get("user");

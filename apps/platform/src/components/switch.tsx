@@ -5,6 +5,7 @@ interface SwitchProps {
 	items: { name: string; value: string }[];
 	value?: string;
 	className?: string;
+	itemsWidthEqual?: boolean;
 	onChange?: (value: string) => void;
 }
 
@@ -12,6 +13,7 @@ const Switch: React.FC<SwitchProps> = ({
 	value,
 	items = [],
 	className = "",
+	itemsWidthEqual = false,
 	onChange,
 }) => {
 	return (
@@ -19,7 +21,7 @@ const Switch: React.FC<SwitchProps> = ({
 			{items.map((item) => (
 				<Pressable
 					key={item.value}
-					className={`rounded-full px-4 py-2 ${item.value === value ? "bg-gray-100" : "hover:bg-gray-100"}`}
+					className={`${itemsWidthEqual === true && "flex-1 items-center"} rounded-full px-4 py-2 ${item.value === value ? "bg-gray-100" : "hover:bg-gray-100"}`}
 					onPress={() => onChange?.(item.value)}
 				>
 					<Typography>{item.name}</Typography>

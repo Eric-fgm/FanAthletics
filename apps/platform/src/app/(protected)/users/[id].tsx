@@ -64,10 +64,24 @@ export default function UserProfile() {
 				/>
 			)}
 			<View className="w-full p-7 mt-3">
-				<Typography size="large3" className="ms-3">
-					{isMyProfile ? "Moje drużyny" : `Drużyny użytkownika ${user.name}`}
-				</Typography>
-				<TeamList teams={userTeams ?? []} isMyProfile={isMyProfile} />
+				{userTeams ? (
+					<View>
+						<Typography size="large3" className="ms-3">
+							{isMyProfile
+								? "Moje drużyny"
+								: `Drużyny użytkownika ${user.name}`}
+						</Typography>
+						<TeamList teams={userTeams ?? []} isMyProfile={isMyProfile} />
+					</View>
+				) : (
+					<View className="w-full items-center justify-center">
+						<Typography size="large3" type="washed">
+							{isMyProfile
+								? "Nie stworzyłeś jeszcze żadnej drużyny."
+								: `Użytkownik ${user.name} nie stworzył jeszcze żadnej drużyny`}
+						</Typography>
+					</View>
+				)}
 			</View>
 		</ScrollArea>
 	);
