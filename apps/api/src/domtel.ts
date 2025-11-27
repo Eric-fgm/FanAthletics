@@ -9,6 +9,13 @@ type Schedule = Record<
 	}
 >;
 
+type EventNameData = {
+	Nazwa_Imprezy: string;
+	Miasto: string;
+	Refresh: string;
+	foto: string;
+};
+
 type Curriculum = Record<
 	string,
 	{
@@ -98,6 +105,23 @@ const getSchedule = async (app: string) => {
 
 	return Object.values(schedule).map(({ Data }) => Data);
 };
+
+const getEventNameData = async (app: string) => {
+	const response = await fetch(
+		`https://${app}.domtel-sport.pl/api/nazwa.php`,
+	);
+
+	if (!response.ok) {
+		throw new Error("Error while fetching event name data");
+	}
+
+	const eventNameData = (await response.json()) as EventNameData;
+
+	return {
+		name: eventNameData.Nazwa_Imprezy,
+		city: eventNameData.Miasto,
+	};
+}
 
 const getCurriculum = async (
 	app: string,
@@ -224,6 +248,7 @@ export const processCompetitionsAndResults = async (
 	withResults = true,
 ) => {
 	const schedule = await getSchedule(app);
+	const eventNameData = await getEventNameData(app);
 	if (!withResults && Array.isArray(schedule) && schedule.length > 0) {
 		const startDate = schedule[0];
 		const endDate = schedule[schedule.length - 1];
@@ -243,111 +268,114 @@ export const processCompetitionsAndResults = async (
 		)
 	).flat();
 
-	await Promise.all(curriculums.map(async ({ Konkurencja, runda, seriaMax, data }) => {
-		try {
-			console.log(Konkurencja);
-			const round = Number.parseInt(runda, 10);
-			const metadata = domtel.disciplines[
-				Konkurencja as keyof (typeof domtel)["disciplines"]
-			] ?? {
-				name: Konkurencja,
-				record: "-",
-			};
+	await Promise.all(
+		curriculums.map(async ({ Konkurencja, runda, seriaMax, data }) => {
+			try {
+				console.log(Konkurencja);
+				const round = Number.parseInt(runda, 10);
+				const metadata = domtel.disciplines[
+					Konkurencja as keyof (typeof domtel)["disciplines"]
+				] ?? {
+					name: Konkurencja,
+					record: "-",
+				};
 
-			const discipline = await db.query.discipline.findFirst({
-				where: (table, { and, eq }) =>
-					and(eq(table.name, metadata.name), eq(table.eventId, eventId)),
-			});
+				const discipline = await db.query.discipline.findFirst({
+					where: (table, { and, eq }) =>
+						and(eq(table.name, metadata.name), eq(table.eventId, eventId)),
+				});
 
-			if (discipline) {
-				for (
-					let series = seriaMax === "0" && round === 3 ? 0 : 1;
-					series <= Number.parseInt(seriaMax, 10);
-					series++
-				) {
-					console.log(series, discipline.name, seriaMax, round);
-					const { details, results } = await getCompetitionsWithResults(
-						app,
-						Konkurencja,
-						round,
-						series,
-					);
+				if (discipline) {
+					for (
+						let series = seriaMax === "0" && round === 3 ? 0 : 1;
+						series <= Number.parseInt(seriaMax, 10);
+						series++
+					) {
+						console.log(series, discipline.name, seriaMax, round);
+						const { details, results } = await getCompetitionsWithResults(
+							app,
+							Konkurencja,
+							round,
+							series,
+						);
 
-					const competition = await upsertCompetition(
-						discipline.id,
-						round,
-						series,
-						details,
-					);
+						const competition = await upsertCompetition(
+							discipline.id,
+							round,
+							series,
+							details,
+						);
 
-					if (!withResults && !Konkurencja.includes("x")) {
-						try {
-							const athletesData = (await scrapeUrl(
-								app,
-								series,
-								round,
-								data,
-								Konkurencja,
-							)) as AthletesRecord;
+						if (!withResults && !Konkurencja.includes("x")) {
+							console.log("KONK: ", Konkurencja);
+							try {
+								const athletesData = (await scrapeUrl(
+									app,
+									series,
+									round,
+									data,
+									Konkurencja,
+								)) as AthletesRecord;
 
-							await savePersonalRecords(athletesData, eventId);
-						} catch (err) {
-							console.log(err);
+								await savePersonalRecords(athletesData, eventId);
+							} catch (err) {
+								console.log(err);
+							}
 						}
-					}
 
-					await Promise.all(
-						results.map(async (result) => {
-							const athlete = await db.query.athlete.findFirst({
-								where: (table, { and, eq }) =>
-									and(
-										eq(table.eventId, eventId),
-										eq(table.number, Number.parseInt(result.NrStart, 10)),
-									),
-							});
-							if (athlete) {
-								if (withResults) {
+						await Promise.all(
+							results.map(async (result) => {
+								const athlete = await db.query.athlete.findFirst({
+									where: (table, { and, eq }) =>
+										and(
+											eq(table.eventId, eventId),
+											eq(table.number, Number.parseInt(result.NrStart, 10)),
+										),
+								});
+								if (athlete) {
+									if (withResults) {
+										await db
+											.insert(tables.competitor)
+											.values({
+												athleteId: athlete.id,
+												competitionId: competition.id,
+												place:
+													result.Miejsce !== "0"
+														? Number.parseInt(result.Miejsce, 10)
+														: 9999,
+												results: {
+													score: result.Wynik,
+													ranking: result.Ranking,
+												},
+											})
+											.onConflictDoNothing();
+									}
 									await db
-										.insert(tables.competitor)
+										.insert(tables.athleteDiscipline)
 										.values({
 											athleteId: athlete.id,
-											competitionId: competition.id,
-											place:
-												result.Miejsce !== "0"
-													? Number.parseInt(result.Miejsce, 10)
-													: 9999,
-											results: {
-												score: result.Wynik,
-												ranking: result.Ranking,
-											},
+											disciplineId: discipline.id,
 										})
 										.onConflictDoNothing();
-								}
-								await db
-									.insert(tables.athleteDiscipline)
-									.values({
-										athleteId: athlete.id,
-										disciplineId: discipline.id,
-									})
-									.onConflictDoNothing();
 
-								if (athlete.sex !== "M" && athlete.sex !== "K") {
-									await db
-										.update(tables.athlete)
-										.set({
-											sex: Konkurencja[0],
-										})
-										.where(operators.eq(tables.athlete.id, athlete.id));
+									if (athlete.sex !== "M" && athlete.sex !== "K") {
+										await db
+											.update(tables.athlete)
+											.set({
+												sex: Konkurencja[0],
+											})
+											.where(operators.eq(tables.athlete.id, athlete.id));
+									}
 								}
-							}
-						}),
-					);
+							}),
+						);
+					}
 				}
+			} catch (e) {
+				console.log(e);
 			}
-		} catch (e) {
-			console.log(e);
-		}
-	}));
+		}),
+	);
 };
 
 export const getDisciplines = async (app: string) => {
@@ -449,7 +477,7 @@ export const saveAthletes = async (
 					nationality: "Poland",
 					sex: "",
 					imageUrl: "https://starter.pzla.pl/foto/277503.jpg?m=20230118093122",
-					cost: 100,
+					cost: Math.floor(Math.random()*50)+50,
 					updatedAt: nowDate,
 					createdAt: nowDate,
 				};
@@ -462,12 +490,17 @@ const savePersonalRecords = async (
 	athletesData: AthletesRecord,
 	eventId: string,
 ) => {
+	console.log('save');
 	for (const [key, value] of Object.entries(athletesData)) {
+		console.log("key: ", Number.parseInt(key));
+		console.log("value: ", value);
 		const foundAthlete = await db.query.athlete.findFirst({
 			where: (table, { and, eq }) =>
 				and(eq(table.eventId, eventId), eq(table.number, Number.parseInt(key))),
 		});
+		console.log("LALA");
 		if (foundAthlete !== undefined) {
+			console.log("TUUUU", foundAthlete.firstName + foundAthlete.lastName);
 			await db
 				.update(tables.athlete)
 				.set({
@@ -478,6 +511,7 @@ const savePersonalRecords = async (
 		}
 
 		if (foundAthlete && athletesData[key] !== undefined) {
+			console.log("TUtaj", foundAthlete.firstName + foundAthlete.lastName);
 			for (const [discipline, recordData] of Object.entries(
 				athletesData[key].profile_data.pbs,
 			)) {
@@ -495,6 +529,7 @@ const savePersonalRecords = async (
 							result: recordData.result,
 							date: recordData.date,
 							location: recordData.location,
+							resultPoints: recordData.points,
 						})
 						.where(
 							operators.and(
@@ -509,6 +544,7 @@ const savePersonalRecords = async (
 						result: recordData.result,
 						date: recordData.date,
 						location: recordData.location,
+						resultPoints: recordData.points,
 					});
 				}
 			}
@@ -529,6 +565,7 @@ const savePersonalRecords = async (
 							result: recordData.result,
 							date: recordData.date,
 							location: recordData.location,
+							resultPoints: recordData.points,
 						})
 						.where(
 							operators.and(
@@ -543,6 +580,7 @@ const savePersonalRecords = async (
 						result: recordData.result,
 						date: recordData.date,
 						location: recordData.location,
+						resultPoints: recordData.points,
 					});
 				}
 			}
@@ -562,7 +600,7 @@ const scrapeUrl = async (
 	const res = await fetch(`${process.env.SCRAPER_URL}/api/scrape`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ url }),
+		body: JSON.stringify({ url: url, sex: discipline[0] }),
 	});
 
 	const data = await res.json();
@@ -582,6 +620,7 @@ type AthletesRecord = Record<
 					result: string;
 					date: string;
 					location: string;
+					points: number;
 				}
 			>;
 			sbs: Record<
@@ -590,6 +629,7 @@ type AthletesRecord = Record<
 					result: string;
 					date: string;
 					location: string;
+					points: number;
 				}
 			>;
 		};

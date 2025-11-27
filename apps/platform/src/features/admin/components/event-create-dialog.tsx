@@ -17,6 +17,7 @@ interface FormValues {
 	image: string;
 	icon: string;
 	domtelApp: string;
+	domtelPhotos: boolean;
 }
 
 interface EventCreateDialogProps {
@@ -34,10 +35,12 @@ const EventCreateDialog: React.FC<EventCreateDialogProps> = (props) => {
 		control,
 		reset,
 		handleSubmit,
+		watch
 	} = useForm<FormValues>({
-		values: { name: "", organization: "", image: "", icon: "", domtelApp: "" },
+		values: { name: "", organization: "", image: "", icon: "", domtelApp: "", domtelPhotos: true },
 		shouldUnregister: true,
 	});
+	const domtelPhotosValue = watch("domtelPhotos");
 
 	return (
 		<Dialog {...props}>
@@ -82,14 +85,28 @@ const EventCreateDialog: React.FC<EventCreateDialogProps> = (props) => {
 							</Text>
 						</View>
 						{withDomtel && (
-							<FormField
-								name="domtelApp"
-								label="Domtel"
-								control={control}
-								rules={{ required: "To pole jest wymagane" }}
-							>
-								<Input placeholder="Domena Domtel" />
-							</FormField>
+							<View>
+								<FormField
+									name="domtelApp"
+									label="Domtel"
+									control={control}
+									rules={{ required: "To pole jest wymagane" }}
+								>
+									<Input placeholder="Domena Domtel" />
+								</FormField>
+								<View className="flex-row justify-between items-center mt-5">
+									<Typography>Czy zdjęcia zawodników są widoczne w panelu wyników serwisu Domtel?</Typography>
+									<FormField
+										name="domtelPhotos"
+										control={control}
+									>
+										<Toggle/>
+									</FormField>
+								</View>
+								{!domtelPhotosValue && (
+									<Typography>Pobieranie potrwa dłużej!</Typography>
+								)}
+							</View>
 						)}
 					</View>
 					<View className="gap-4 grid grid-cols-2 px-5 py-6">

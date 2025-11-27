@@ -1,13 +1,13 @@
+import type { Athlete, Discipline } from "@fan-athletics/shared/types";
 import { Portal } from "@gorhom/portal";
 import { Link, usePathname } from "expo-router";
 import { Search } from "lucide-react-native";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { Pressable, View, Image } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { Avatar, Input, Typography } from "#/components";
-import { useSearchQuery } from "../services";
 import { useEventQuery } from "#/features/events";
-import type { Athlete, Discipline } from "@fan-athletics/shared/types";
+import { useSearchQuery } from "../services";
 
 interface SearchBarProps extends React.ComponentProps<typeof View> {}
 
@@ -71,7 +71,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ className = "", ...props }) => {
 											Dyscypliny
 										</Typography>
 										{searchResult.disciplines.map((discipline) => (
-											<DisciplineSearchItem key={discipline.id} discipline={discipline}/>
+											<DisciplineSearchItem
+												key={discipline.id}
+												discipline={discipline}
+											/>
 										))}
 									</View>
 								)}
@@ -110,13 +113,15 @@ const AthleteSearchItem: React.FC<{
 				/>
 			</View>
 		</Link>
-	)
-}
+	);
+};
 
 const DisciplineSearchItem: React.FC<{
 	discipline: Discipline;
 }> = ({ discipline }) => {
-	const { data: disciplineEvent, isLoading } = useEventQuery(discipline.eventId);
+	const { data: disciplineEvent, isLoading } = useEventQuery(
+		discipline.eventId,
+	);
 	return (
 		<Link
 			key={discipline.id}
@@ -126,9 +131,7 @@ const DisciplineSearchItem: React.FC<{
 			<Avatar name={discipline.name} />
 			<View className="gap-0.5">
 				<Typography size="base">{discipline.name}</Typography>
-				<Typography type="washed">
-					{discipline.organization}
-				</Typography>
+				<Typography type="washed">{discipline.organization}</Typography>
 			</View>
 			<View className="ms-auto items-center bg-white p-1 rounded-md">
 				<Image
@@ -137,5 +140,5 @@ const DisciplineSearchItem: React.FC<{
 				/>
 			</View>
 		</Link>
-	)
-}
+	);
+};

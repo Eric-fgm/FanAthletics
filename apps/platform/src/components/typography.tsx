@@ -57,7 +57,7 @@ const typeClassNamesMap = {
 	inherit: "text-inherit",
 	danger: "text-red-600",
 	gold: "text-[#c0aa00]",
-	pointsRed: "text-[#d33030]"
+	pointsRed: "text-[#d33030]",
 };
 
 const Typography: React.FC<TypographyProps> = ({

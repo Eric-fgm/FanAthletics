@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	integer,
+	real,
 	json,
 	pgTable,
 	primaryKey,
@@ -75,6 +76,7 @@ export const event = pgTable("event", {
 	name: varchar({ length: 255 }).notNull(),
 	organization: varchar({ length: 255 }).notNull(),
 	domtelApp: varchar({ length: 255 }),
+	domtelPhotos: boolean(),
 	image: varchar({ length: 255 }).notNull(),
 	icon: varchar({ length: 255 }).notNull(),
 	status: varchar({ length: 255 }).notNull().default("idle"),
@@ -89,9 +91,9 @@ export const gameSpecification = pgTable("game_specification", {
 	eventId: text()
 		.references(() => event.id)
 		.notNull(),
-	budget: integer().default(300).notNull(),
-	maxExchanges: integer().default(8).notNull()
-})
+	budget: integer().default(700).notNull(),
+	maxExchanges: integer().default(8).notNull(),
+});
 
 export const participant = pgTable("participant", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),
@@ -243,6 +245,7 @@ export const competitor = pgTable(
 		athleteId: text()
 			.references(() => athlete.id)
 			.notNull(),
+		winPrediction: real().notNull(),
 		place: integer().notNull(),
 		results: json().notNull(),
 	},
