@@ -534,8 +534,16 @@ export default new Hono<{
 									tables.teamMember.participantId,
 									member.participantId,
 								),
+								operators.eq(
+									tables.teamMember.participantId,
+									member.participantId,
+								),
 								operators.eq(tables.teamMember.athleteId, member.athleteId),
 								operators.eq(tables.teamMember.isCaptain, member.isCaptain),
+								operators.eq(
+									tables.teamMember.pointsGathered,
+									member.pointsGathered,
+								),
 								operators.eq(
 									tables.teamMember.pointsGathered,
 									member.pointsGathered,

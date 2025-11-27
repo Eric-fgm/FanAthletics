@@ -47,6 +47,7 @@ import {
 	AthleteCostBox,
 	GradientBox,
 	GradientType,
+	RightTriangle,
 	StarBadge,
 	countries,
 	getFlagUrl,
@@ -200,36 +201,67 @@ const Participation = () => {
 						<Typography size="large2">Zespół</Typography>
 					</View>
 					<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 lg:px-12">
-						{teamMembersSlots.map((member, index) => (
+						{teamMembersSlots.sort((a, b) => {
+							if (a && b) {
+								if (a.sex < b.sex) return -1;
+								return 1;
+							}
+							if (a)
+								return -1;
+							return 1;
+						}).map((member, index) => (
 							<React.Fragment key={member?.id ?? index}>
 								{member ? (
 									member.isCaptain ? (
-										<View
-											className="rounded-2xl"
-											style={{
-												shadowOpacity: 0.25,
-												shadowColor: "black",
-												shadowRadius: 10,
-												shadowOffset: { width: 4, height: 4 },
-												elevation: 8,
-											}}
-										>
-											<GradientBox
-												sex={member.sex}
-												vertical
-												gradientType={GradientType.CAPTAIN}
+										<View>
+											<View className="w-auto flex-row" style={{ alignSelf: "flex-start", zIndex: 2, marginBottom: -20 }}>
+												<GradientBox sex={member.sex} gradientType={GradientType.POINTS} vertical borderRad={10}>
+													<View className="flex-row items-center py-3 pl-4 pr-1 gap-x-2" style={{ borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
+														<Typography size="large2-s" type="bright">
+																{/* +{member.pointsGathered} */}
+																+{Math.floor(Math.random()*100)+1000}
+														</Typography>
+														<StarBadge
+																width={25}
+																height={25}
+																colorCircle="#fff"
+																colorStar="black"
+														/>
+													</View>
+												</GradientBox>
+												<View style={{ marginTop: 4, marginLeft: -2 }}>
+													<RightTriangle width={40} height={48} colorTop={menColors.captainDownGradient} colorBottom={menColors.captainUpGradient}/>
+												</View>
+											</View>
+											<View
+												className="rounded-2xl"
+												style={{
+													shadowOpacity: 0.25,
+													shadowColor: "black",
+													shadowRadius: 10,
+													shadowOffset: { width: 4, height: 4 },
+													elevation: 8,
+													zIndex: 1,
+												}}
 											>
-												<AthletePreview
-													isLoading={
-														isAddTeamMemberPending || isDeleteTeamMemberPending
-													}
-													onEdit={() => setSelectedMember(member)}
-													onDelete={() => setMemberToDelete(member)}
-													athlete={member}
-													isCaptain={member.isCaptain}
-													pointsGathered={member.pointsGathered}
-												/>
-											</GradientBox>
+												<GradientBox
+													sex={member.sex}
+													vertical
+													gradientType={GradientType.CAPTAIN}
+													borderRad={16}
+												>
+													<AthletePreview
+														isLoading={
+															isAddTeamMemberPending || isDeleteTeamMemberPending
+														}
+														onEdit={() => setSelectedMember(member)}
+														onDelete={() => setMemberToDelete(member)}
+														athlete={member}
+														isCaptain={member.isCaptain}
+														pointsGathered={member.pointsGathered}
+													/>
+												</GradientBox>
+											</View>
 										</View>
 									) : (
 										<AthletePreview
@@ -363,116 +395,124 @@ const AthletePreview: React.FC<{
 
 	return (
 		// <View className="items-center border border-gray-200 rounded-2xl h-[432px]" style={{backgroundColor: "#ffffffff"}}>
-		<View className="p-5 rounded-2xl">
-			<Pressable
-				onPress={() => {
-					console.log("Kliknięto: ", athlete);
-					setDetailedMember(athlete);
-				}}
-			>
-				<View
-					className="items-center border border-gray-200 rounded-2xl h-[432px]"
-					style={{ backgroundColor: "#ffffffff" }}
-				>
-					{athlete.imageUrl ? (
-						// <View className="items-center rounded-xl">
-						// 	{/* <Typography>{athlete.imageUrl}</Typography> */}
-						// 	<Image source={{ uri: athlete.imageUrl }} style={{ width: 200, height: 200 }} className="rounded-2xl"/>
-						// </View>
-						<ImageBackground
-							source={{ uri: athlete.imageUrl }}
-							imageStyle={{ borderRadius: 16 }}
-							// className="rounded-2xl"
-							style={{
-								width: "100%",
-								height: "100%",
-								justifyContent: "space-between",
-								alignItems: "center",
-								borderRadius: 16,
-								shadowOpacity: !isCaptain ? 0.25 : undefined,
-								shadowColor: !isCaptain ? "black" : undefined,
-								shadowRadius: !isCaptain ? 10 : undefined,
-								shadowOffset: !isCaptain ? { width: 4, height: 4 } : undefined,
-								elevation: !isCaptain ? 8 : 0,
-							}}
-						>
-							<View className="flex-row w-full">
-								{/* <View
-									className="p-2 rounded-2xl"
-									style={{ backgroundColor: "yellow" }}
-								>
-									<Typography>{athlete.cost} XP</Typography>
-								</View> */}
-								<GradientBox
-									sex={athlete.sex}
-									gradientType={GradientType.CAPTAIN}
-									vertical
-								>
-									<View className="flex-row items-center py-3 px-4 gap-x-2">
-										<Typography size="large2-s" type="bright">
-											+{pointsGathered}
-										</Typography>
-										<StarBadge
-											width={25}
-											height={25}
-											colorCircle="#fff"
-											colorStar={colors.captainDownGradient}
-										/>
-									</View>
-								</GradientBox>
-								<View className="ml-auto">
-									<AthleteCostBox cost={athlete.cost} />
-								</View>
+		<View>
+			<View className="p-5 rounded-2xl">
+				{!isCaptain ? (
+					<View className="w-auto flex-row" style={{ alignSelf: "flex-start", marginTop: -20, marginBottom: -28, zIndex: 1 }}>
+						<GradientBox sex={athlete.sex} gradientType={GradientType.POINTS} vertical borderRad={10}>
+							<View className="flex-row items-center pt-3 pb-10 pl-4 pr-1 gap-x-2">
+								<Typography size="large2-s" type="bright">
+									{/* +{pointsGathered} */}
+									+{Math.floor(Math.random()*100)+1000}
+								</Typography>
+								<StarBadge
+									width={25}
+									height={25}
+									colorCircle="#fff"
+									colorStar={colors.captainUpGradient}
+								/>
 							</View>
-							<AthleteBasicInfo athlete={athlete} colors={colors} />
-						</ImageBackground>
-					) : (
-						<View className="justify-center items-center rounded-full w-16 h-16">
-							<UserRound size={100} className="text-gray-600" />
-							<AthleteBasicInfo athlete={athlete} colors={colors} />
+						</GradientBox>
+						<View style={{ marginTop: 4, marginLeft: -2 }}>
+							<RightTriangle width={55} height={66} colorTop={menColors.captainDownGradient} colorBottom={menColors.captainUpGradient}/>
+						</View>
+					</View>
+					) : <></>
+				}
+				<Pressable
+					onPress={() => {
+						console.log("Kliknięto: ", athlete);
+						setDetailedMember(athlete);
+					}}
+					style={{ zIndex: 2 }}
+				>
+					<View
+						className="items-center rounded-2xl h-[432px]"
+						style={{ backgroundColor: "#ffffffff" }}
+					>
+						{athlete.imageUrl ? (
+							// <View className="items-center rounded-xl">
+							// 	{/* <Typography>{athlete.imageUrl}</Typography> */}
+							// 	<Image source={{ uri: athlete.imageUrl }} style={{ width: 200, height: 200 }} className="rounded-2xl"/>
+							// </View>
+							<ImageBackground
+								source={{ uri: athlete.imageUrl }}
+								imageStyle={{ borderRadius: 16 }}
+								// className="rounded-2xl"
+								style={{
+									width: "100%",
+									height: "100%",
+									justifyContent: "space-between",
+									alignItems: "center",
+									borderRadius: 16,
+									shadowOpacity: !isCaptain ? 0.25 : undefined,
+									shadowColor: !isCaptain ? "black" : undefined,
+									shadowRadius: !isCaptain ? 10 : undefined,
+									shadowOffset: !isCaptain ? { width: 4, height: 4 } : undefined,
+									elevation: !isCaptain ? 8 : 0,
+								}}
+							>
+								<View className="flex-row w-full">
+									{/* <View
+										className="p-2 rounded-2xl"
+										style={{ backgroundColor: "yellow" }}
+									>
+										<Typography>{athlete.cost} XP</Typography>
+									</View> */}
+									<View className="ml-auto">
+										<AthleteCostBox cost={athlete.cost} />
+									</View>
+								</View>
+								<AthleteBasicInfo athlete={athlete} colors={colors} />
+							</ImageBackground>
+						) : (
+							<View className="justify-center items-center rounded-full w-16 h-16">
+								<UserRound size={100} className="text-gray-600" />
+								<AthleteBasicInfo athlete={athlete} colors={colors} />
+							</View>
+						)}
+					</View>
+					{isCaptain && (
+						<View className="items-center mt-3">
+							<Typography size="large" type="bright" className="mb-2">
+								Kapitan drużyny
+							</Typography>
+							<Typography size="base" type="bright">
+								Zbiera podwójne punkty
+							</Typography>
 						</View>
 					)}
-				</View>
-				{isCaptain && (
-					<View className="items-center mt-3">
-						<Typography size="large" type="bright" className="mb-2">
-							Kapitan drużyny
-						</Typography>
-						<Typography size="base" type="bright">
-							Zbiera podwójne punkty
-						</Typography>
-					</View>
-				)}
-			</Pressable>
+				</Pressable>
 
-			<Dialog
-				webOptions={{ variant: "wide" }}
-				isOpen={detailedMember !== null}
-				onClose={() => setDetailedMember(null)}
-			>
-				<AthleteInfoDialog
-					athlete={detailedMember}
-					isCaptain={isCaptain}
-					onCaptainPressed={async () => {
-						if (detailedMember && typeof detailedMember === "object") {
-							await makeAthleteCaptain(detailedMember.id);
-							await invalidateParticipation(detailedMember.eventId);
-						}
-						setDetailedMember(null);
-					}}
-					onCaptainDeletePressed={async () => {
-						if (detailedMember && typeof detailedMember === "object") {
-							await deleteCaptainPrivilege(detailedMember.id);
-							await invalidateParticipation(detailedMember.eventId);
-						}
-						setDetailedMember(null);
-					}}
-					onEdit={onEdit}
-					onDelete={onDelete}
-					setFunction={setDetailedMember}
-					pointsGathered={pointsGathered}
-				/>
-			</Dialog>
+				<Dialog
+					webOptions={{ variant: "wide" }}
+					isOpen={detailedMember !== null}
+					onClose={() => setDetailedMember(null)}
+				>
+					<AthleteInfoDialog
+						athlete={detailedMember}
+						isCaptain={isCaptain}
+						onCaptainPressed={async () => {
+							if (detailedMember && typeof detailedMember === "object") {
+								await makeAthleteCaptain(detailedMember.id);
+								await invalidateParticipation(detailedMember.eventId);
+							}
+							setDetailedMember(null);
+						}}
+						onCaptainDeletePressed={async () => {
+							if (detailedMember && typeof detailedMember === "object") {
+								await deleteCaptainPrivilege(detailedMember.id);
+								await invalidateParticipation(detailedMember.eventId);
+							}
+							setDetailedMember(null);
+						}}
+						onEdit={onEdit}
+						onDelete={onDelete}
+						setFunction={setDetailedMember}
+						pointsGathered={pointsGathered}
+					/>
+				</Dialog>
+			</View>
 		</View>
 	);
 };
@@ -549,6 +589,7 @@ const AthleteInfoDialog: React.FC<{
 							sex={athlete.sex}
 							vertical
 							gradientType={GradientType.PROFILE}
+							borderRad={16}
 						>
 							<View className="m-5 items-center gap-y-3">
 								{athlete.imageUrl ? (
@@ -774,7 +815,7 @@ const AthleteInfoDialog: React.FC<{
 							className="h-[1px] w-[93%]"
 							style={{ backgroundColor: colors.profileUpGradient }}
 						/>
-						<Animated.View
+						<Animated.View className="h-full"
 							style={{
 								height: 100,
 								opacity: fadeAnim,
@@ -863,6 +904,7 @@ export const NextStartBoxItem: React.FC<{
 						sex={athlete.sex}
 						horizontal
 						gradientType={GradientType.HONOURS}
+						borderRad={8}
 					>
 						<Typography size="large-s" type="bright" className="mx-2 my-1">
 							{prediction}
@@ -932,9 +974,16 @@ export const PersonalRecordsBoxItem: React.FC<{
 				<Typography size="medium" className="w-[22%]">
 					{personalRecord.date}
 				</Typography>
-				<Typography size="base" className="w-[30%] text-end mr-8">
+				<Typography size="base" className="w-[20%]">
 					{personalRecord.location}
 				</Typography>
+				{personalRecord.resultPoints && personalRecord.resultPoints > 0 ? (
+					<Typography size="base" className="w-[10%] text-end mr-8">
+						{personalRecord.resultPoints}
+					</Typography>
+					) : (
+						<Typography className="w-[10%] text-end mr-8"></Typography>
+					)}
 			</View>
 			{showLine && (
 				<View
@@ -955,10 +1004,11 @@ export const PersonalRecordsBox: React.FC<{
 				{personalRecords
 					.sort((a, b) => {
 						if (
-							a.date &&
-							b.date &&
-							a.date?.toLowerCase() > b.date?.toLowerCase()
+							a.resultPoints &&
+							b.resultPoints
 						)
+							return b.resultPoints - a.resultPoints;
+						if (a.resultPoints)
 							return -1;
 						return 1;
 					})

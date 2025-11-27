@@ -18,6 +18,7 @@ export type EventPayload = {
 	image: string;
 	icon: string;
 	domtelApp?: string;
+	domtelPhotos?: boolean;
 };
 
 export interface User {
@@ -167,6 +168,10 @@ export interface UserTeam {
 	athletes: Athlete[];
 }
 
+export interface AthleteWithCaptain extends Athlete {
+	isCaptain: boolean;
+}
+
 export interface GameSpecification {
 	id: string;
 	eventId: string;
@@ -177,3 +182,4 @@ export interface GameSpecification {
 	maxAthleteCost: number;
 	sexParity: boolean;
 }
+

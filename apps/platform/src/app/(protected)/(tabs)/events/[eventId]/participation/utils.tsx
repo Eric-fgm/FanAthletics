@@ -17,6 +17,7 @@ export enum GradientType {
 	PROFILE = 0,
 	CAPTAIN = 1,
 	HONOURS = 2,
+	POINTS = 3,
 }
 
 export const menColors = {
@@ -26,6 +27,7 @@ export const menColors = {
 	honoursDownGradient: "#60CAE2",
 	captainUpGradient: "#60CAE2",
 	captainDownGradient: "#077D8F",
+	pointsUpGradient: "#0A96ACFF",
 	basicInfoColor: "#CCF6FF",
 };
 export const womenColors = {
@@ -35,6 +37,7 @@ export const womenColors = {
 	honoursDownGradient: "#DB3131",
 	captainUpGradient: "#DB3131",
 	captainDownGradient: "#6E2121",
+	pointsUpGradient: "#B70000",
 	basicInfoColor: "#FFC4C4",
 };
 
@@ -52,7 +55,7 @@ type GradientBoxProps = {
 export const GradientBox: React.FC<GradientBoxProps> = (props) => {
 	const { sex, vertical, horizontal, gradientType, borderRad, children } =
 		props;
-	const radius = props.borderRad ?? 16;
+	const radius = props.borderRad;
 	const colors = sex === "M" ? menColors : womenColors;
 	let leftUpColor: string;
 	let rightDownColor: string;
@@ -68,6 +71,10 @@ export const GradientBox: React.FC<GradientBoxProps> = (props) => {
 		case GradientType.HONOURS:
 			leftUpColor = colors.honoursUpGradient;
 			rightDownColor = colors.honoursDownGradient;
+			break;
+		case GradientType.POINTS:
+			leftUpColor = colors.pointsUpGradient;
+			rightDownColor = colors.captainUpGradient;
 			break;
 	}
 	return (
@@ -111,7 +118,7 @@ export const AthleteCostBox: React.FC<{
 				<Path
 					d="M 15 0 H 91 C 110 0 110 20 110 20 V 40 C 110 50 100 50 100 50 H 46 C 37 50 32 42 32 42 L 8 10 C 0 0 15 0 15 0"
 					stroke="#C0AA00"
-					strokeWidth={2}
+					strokeWidth={3}
 					fill="#F9F9F9"
 				/>
 			</Svg>
@@ -337,4 +344,32 @@ export const getFlagUrl = (nationality: string) => {
 	if (!Object.keys(countries).includes(nationality))
 		return "";
 	return `https://flagsapi.com/${countries[nationality].code}/flat/64.png`;
-}
+};
+
+export const RightTriangle: React.FC<{
+	width: number;
+	height: number;
+	colorTop: string;
+	colorBottom: string;
+	rotate?: number;
+}> = ({ width, height, colorTop, colorBottom, rotate = 0 }) => {
+	return (
+		<Svg
+			width={width}
+			height={height}
+			viewBox={`0 0 ${width} ${height}`}
+			style={{ transform: [{ rotate: `${rotate}deg` }] }}
+		>
+			<Defs>
+				<LinearGradient id="triangleGradient" x1="0" y1="0" x2="0" y2="1">
+					<Stop offset="0%" stopColor={colorTop} />
+          			<Stop offset="100%" stopColor={colorBottom} />
+				</LinearGradient>
+			</Defs>
+
+			<Polygon
+				points={`0,0 0,${height} ${width},${height}`}
+				fill="url(#triangleGradient)"/>
+		</Svg>
+	)
+} 

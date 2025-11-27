@@ -9,6 +9,13 @@ type Schedule = Record<
 	}
 >;
 
+type EventNameData = {
+	Nazwa_Imprezy: string;
+	Miasto: string;
+	Refresh: string;
+	foto: string;
+};
+
 type Curriculum = Record<
 	string,
 	{
@@ -98,6 +105,23 @@ const getSchedule = async (app: string) => {
 
 	return Object.values(schedule).map(({ Data }) => Data);
 };
+
+const getEventNameData = async (app: string) => {
+	const response = await fetch(
+		`https://${app}.domtel-sport.pl/api/nazwa.php`,
+	);
+
+	if (!response.ok) {
+		throw new Error("Error while fetching event name data");
+	}
+
+	const eventNameData = (await response.json()) as EventNameData;
+
+	return {
+		name: eventNameData.Nazwa_Imprezy,
+		city: eventNameData.Miasto,
+	};
+}
 
 const getCurriculum = async (
 	app: string,
@@ -224,6 +248,7 @@ export const processCompetitionsAndResults = async (
 	withResults = true,
 ) => {
 	const schedule = await getSchedule(app);
+	const eventNameData = await getEventNameData(app);
 	if (!withResults && Array.isArray(schedule) && schedule.length > 0) {
 		const startDate = schedule[0];
 		const endDate = schedule[schedule.length - 1];
@@ -321,6 +346,7 @@ export const processCompetitionsAndResults = async (
 												athleteId: athlete.id,
 												competitionId: competition.id,
 												lane: Number.parseInt(result.Pozycja_Tor, 10),
+												winPrediction: 0,
 											})
 											.onConflictDoNothing();
 									} else {
@@ -490,7 +516,7 @@ export const saveAthletes = async (
 							: "POLAND",
 					sex: "",
 					imageUrl: "https://starter.pzla.pl/foto/277503.jpg?m=20230118093122",
-					cost: 100,
+					cost: Math.floor(Math.random()*50)+50,
 					updatedAt: nowDate,
 					createdAt: nowDate,
 				};
@@ -503,12 +529,17 @@ const savePersonalRecords = async (
 	athletesData: AthletesRecord,
 	eventId: string,
 ) => {
+	console.log('save');
 	for (const [key, value] of Object.entries(athletesData)) {
+		console.log("key: ", Number.parseInt(key));
+		console.log("value: ", value);
 		const foundAthlete = await db.query.athlete.findFirst({
 			where: (table, { and, eq }) =>
 				and(eq(table.eventId, eventId), eq(table.number, Number.parseInt(key))),
 		});
+		console.log("LALA");
 		if (foundAthlete !== undefined) {
+			console.log("TUUUU", foundAthlete.firstName + foundAthlete.lastName);
 			await db
 				.update(tables.athlete)
 				.set({
@@ -519,6 +550,7 @@ const savePersonalRecords = async (
 		}
 
 		if (foundAthlete && athletesData[key] !== undefined) {
+			console.log("TUtaj", foundAthlete.firstName + foundAthlete.lastName);
 			for (const [discipline, recordData] of Object.entries(
 				athletesData[key].profile_data.pbs,
 			)) {
@@ -536,6 +568,7 @@ const savePersonalRecords = async (
 							result: recordData.result,
 							date: recordData.date,
 							location: recordData.location,
+							resultPoints: recordData.points,
 						})
 						.where(
 							operators.and(
@@ -550,6 +583,7 @@ const savePersonalRecords = async (
 						result: recordData.result,
 						date: recordData.date,
 						location: recordData.location,
+						resultPoints: recordData.points,
 					});
 				}
 			}
@@ -570,6 +604,7 @@ const savePersonalRecords = async (
 							result: recordData.result,
 							date: recordData.date,
 							location: recordData.location,
+							resultPoints: recordData.points,
 						})
 						.where(
 							operators.and(
@@ -584,6 +619,7 @@ const savePersonalRecords = async (
 						result: recordData.result,
 						date: recordData.date,
 						location: recordData.location,
+						resultPoints: recordData.points,
 					});
 				}
 			}
@@ -603,7 +639,7 @@ const scrapeUrl = async (
 	const res = await fetch(`${process.env.SCRAPER_URL}/api/scrape`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ url }),
+		body: JSON.stringify({ url: url, sex: discipline[0] }),
 	});
 
 	const data = await res.json();
@@ -623,6 +659,7 @@ type AthletesRecord = Record<
 					result: string;
 					date: string;
 					location: string;
+					points: number;
 				}
 			>;
 			sbs: Record<
@@ -631,6 +668,7 @@ type AthletesRecord = Record<
 					result: string;
 					date: string;
 					location: string;
+					points: number;
 				}
 			>;
 		};

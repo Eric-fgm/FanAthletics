@@ -32,9 +32,10 @@ const eventsApp = new Hono()
 			.values({
 				name: body.name,
 				organization: body.organization,
-				image: body.image ?? EVENT_IMAGE_PLACEHOLDER,
-				icon: body.icon ?? EVENT_ICON_PLACEHOLDER,
+				image: body.image && body.image !== "" ? body.image : EVENT_IMAGE_PLACEHOLDER,
+				icon: body.icon && body.icon !== "" ? body.icon : EVENT_ICON_PLACEHOLDER,
 				domtelApp: body.domtelApp,
+				domtelPhotos: body.domtelPhotos,
 				startAt: new Date(),
 				endAt: new Date(),
 				createdAt: new Date(),
@@ -58,6 +59,7 @@ const eventsApp = new Hono()
 			const athletes = await getAthletes(event.domtelApp);
 
 			await saveAthletes(event.id, athletes);
+			// TODO tutaj trzeba będzie dodać nadawanie kosztu zawodnikom
 
 			await processCompetitionsAndResults(event.domtelApp, event.id, false);
 		}
