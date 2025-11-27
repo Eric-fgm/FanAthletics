@@ -39,8 +39,8 @@ export const Timetable: React.FC<{
 	);
 
 	return (
-		<View className="flex-row py-3 px-5">
-			<View className="w-[20%]">
+		<View className="md:flex-row py-3 px-5">
+			<View className="w-full md:w-[20%] mb-3">
 				<Switch
 					items={days.map((day, index) => {
 						return {
@@ -65,7 +65,7 @@ export const Timetable: React.FC<{
 				/>
 			</View>
 			{selectedCompetition && (
-				<View className="w-[60%]">
+				<View className="w-full md:w-[80%]">
 					<ResultsTable competition={selectedCompetition} />
 				</View>
 			)}
@@ -86,14 +86,14 @@ const CompetitionsList: React.FC<{
 	const competitionsConsolidated: Map<string, CompetitionWithCompetitors[]> =
 		new Map();
 	competitions.map((c) => {
-		const key = `${c.disciplineId}-${c.round}`;
+		const key = `${c.disciplineId}-${c.round}-${c.startAt.toISOString().substring(11, 16)}`;
 		if (competitionsConsolidated.has(key)) {
 			competitionsConsolidated.set(
 				key,
 				(competitionsConsolidated.get(key) ?? []).concat(c),
 			);
 		} else {
-			competitionsConsolidated.set(`${c.disciplineId}-${c.round}`, [c]);
+			competitionsConsolidated.set(key, [c]);
 		}
 	});
 	console.log(competitionsConsolidated);
@@ -147,10 +147,11 @@ const CompetitionBar: React.FC<{
 	currentlySelectedBar,
 	currentlySelectedCompetition,
 }) => {
-	const hour = new Date(competitions[0].startAt)
-		.toISOString()
-		.substring(11, 16);
-	const key = `${competitions[0].disciplineId}-${competitions[0].round}`;
+	const hour = new Date(competitions[0].startAt).toLocaleTimeString("pl-PL", {
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+	const key = `${competitions[0].disciplineId}-${competitions[0].round}-${competitions[0].startAt.toISOString().substring(11, 16)}`;
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const colors = {
 		normal: "#973232",
@@ -171,22 +172,28 @@ const CompetitionBar: React.FC<{
 					className="flex-row w-full rounded-xl justify-center bg-[#EFEFEF] border"
 					style={{ borderColor: barInfoColor }}
 				>
-					<View className="ms-2 my-1">
-						<Typography size="base">{hour}</Typography>
-						{/* <View className="w-[75%] m-auto rounded-md bg-gray-400 items-center"> */}
-						<Typography size="small">{competitionSex}</Typography>
-						{/* </View> */}
+					<View className="flex-row md:flex-col max-md:w-[40%] ps-2 my-1 max-md:items-center">
+						<View>
+							<Typography size="base">{hour}</Typography>
+						</View>
+
+						<Typography size="small" className="ms-auto me-2">
+							{competitionSex}
+						</Typography>
 					</View>
 
 					<View
-						className="px-3 ms-auto py-1 w-[70%] rounded-xl"
+						className="px-3 ms-auto py-1 w-[70%] max-md:w-[60%] rounded-xl flex-row md:flex-col max-md:items-center"
 						style={{ backgroundColor: barInfoColor }}
 					>
-						<Typography type="bright" className="ms-auto mb-1">
+						<Typography
+							type="bright"
+							className="max-md:me-auto md:ms-auto mb-1"
+						>
 							{getCompetitionSexOrName(competitions[0], false)}
 						</Typography>
 						<View
-							className="ms-auto px-2 rounded-md bg-red-400 items-center"
+							className="ms-auto px-2 rounded-md bg-red-400 items-center justify-center"
 							style={{
 								backgroundColor: competitions[0].round === 3 ? "red" : "",
 							}}
@@ -199,7 +206,9 @@ const CompetitionBar: React.FC<{
 				</View>
 			</Pressable>
 			{currentlySelectedBar === key && competitions.length > 1 && (
-				<View className="py-2	 gap-y-1">
+				<View
+					className={`py-2 gap-y-1 gap-x-1 grid grid-cols-${competitions.length > 3 ? "3" : competitions.length}`}
+				>
 					{competitions
 						.sort((a, b) => {
 							if (a.series < b.series) return -1;
@@ -208,10 +217,7 @@ const CompetitionBar: React.FC<{
 						.map(
 							(c) =>
 								c.competitors.length > 0 && ( //Trzeba na backendzie zrobić jakieś poprawki, bo finały A się kilka razy pobierają
-									<Pressable
-										onPress={() => onCompetitionSelect(c)}
-										className="w-[70%] ms-auto"
-									>
+									<Pressable onPress={() => onCompetitionSelect(c)}>
 										<View
 											className="px-2 py-1 border rounded-lg"
 											style={{
@@ -239,6 +245,24 @@ const ResultsTable: React.FC<{
 	const { data: event } = useEventQuery();
 	if (!event) return null;
 
+	const columnClass = {
+		place: "w-[15%] md:w-[10%]",
+		lane: "hidden lg:flex w-[3%]",
+		number: "hidden md:flex md:w-[7%] lg:w-[5%]",
+		athlete: "w-[35%] md:w-[25%]",
+		club: "w-[30%] md:w-[25%]",
+		nationality: "hidden md:flex w-[15%]",
+		result: "w-[20%] md:w-[10%]",
+	};
+
+	// const columns = useMemo(() => {
+	// 	return [
+	// 		{
+	// 			key=""
+	// 		}
+	// 	]
+	// })
+
 	return (
 		// Pasowałoby to przerobić na tabelkę
 		<View className="w-full ms-5">
@@ -248,22 +272,29 @@ const ResultsTable: React.FC<{
 			</Typography>
 			<GradientBox sex="K" gradientType={GradientType.CAPTAIN} horizontal>
 				<View className="flex-row gap-x-4 my-2 mx-3">
-					<Typography size="base" type="bright" className="w-[7%]">
+					<Typography size="base" type="bright" className={columnClass.place}>
 						Miejsce
 					</Typography>
-					<Typography size="base" type="bright" className="w-[7%]">
+					<Typography size="base" type="bright" className={columnClass.lane}>
+						Tor
+					</Typography>
+					<Typography size="base" type="bright" className={columnClass.number}>
 						Numer
 					</Typography>
-					<Typography size="base" type="bright" className="w-[25%]">
+					<Typography size="base" type="bright" className={columnClass.athlete}>
 						Zawodnik
 					</Typography>
-					<Typography size="base" type="bright" className="w-[25%]">
+					<Typography size="base" type="bright" className={columnClass.club}>
 						Klub
 					</Typography>
-					<Typography size="base" type="bright" className="w-[20%]">
+					<Typography
+						size="base"
+						type="bright"
+						className={columnClass.nationality}
+					>
 						Narodowość
 					</Typography>
-					<Typography size="base" type="bright" className="w-[10%]">
+					<Typography size="base" type="bright" className={columnClass.result}>
 						Wynik
 					</Typography>
 				</View>
@@ -271,8 +302,9 @@ const ResultsTable: React.FC<{
 			<View className="mt-3">
 				{competition.competitors
 					.sort((a, b) => {
-						if (a.place < b.place) return -1;
-						return 1;
+						if (a.results && b.results)
+							return a.results.place - b.results.place;
+						return a.lane - b.lane;
 					})
 					.map((competitor, index) => (
 						<View
@@ -280,13 +312,20 @@ const ResultsTable: React.FC<{
 							className="flex-row gap-x-4 py-2 px-3 items-center"
 							style={{ backgroundColor: index % 2 === 0 ? "white" : "#EFEFEF" }}
 						>
-							<Typography className="w-[7%]">
-								{competitor.place !== 9999 && competitor.place}
+							<Typography className={columnClass.place}>
+								{competitor.results &&
+									competitor.results.place !== 9999 &&
+									competitor.results.place}
 							</Typography>
-							<Typography className="w-[7%]">{competitor.number}</Typography>
+							<Typography className={columnClass.lane}>
+								{competitor.lane}
+							</Typography>
+							<Typography className={columnClass.number}>
+								{competitor.number}
+							</Typography>
 							<Link
 								href={`/events/${event.id}/athletes/${competitor.id}`}
-								className="w-[25%]"
+								className={columnClass.athlete}
 							>
 								<View className="flex-row items-center gap-x-2">
 									{competitor.imageUrl ? (
@@ -302,15 +341,17 @@ const ResultsTable: React.FC<{
 									</Typography>
 								</View>
 							</Link>
-							<Typography className="w-[25%]">{competitor.club}</Typography>
-							<View className="flex-row w-[20%]">
+							<Typography className={columnClass.club}>
+								{competitor.club}
+							</Typography>
+							<View className={columnClass.nationality}>
 								<Image
 									source={{ uri: getFlagUrl(competitor.nationality) }}
 									style={{ width: 32, height: 24 }}
 								/>
 							</View>
-							<Typography className="w-[10%]">
-								{competitor.results.score}
+							<Typography className={columnClass.result}>
+								{competitor.results?.result}
 							</Typography>
 						</View>
 					))}

@@ -244,13 +244,12 @@ export const processCompetitionsAndResults = async (
 	).flat();
 
 	await Promise.all(
-		curriculums.map(async ({ Konkurencja, runda, seriaMax, data }) => {
+		curriculums.map(async ({ Konkurencja, runda, seria, seriaMax, data }) => {
 			try {
 				console.log(
 					Konkurencja,
 					Konkurencja.substring(0, Konkurencja.length - 1),
 				);
-				const round = Number.parseInt(runda, 10);
 				const metadata = domtel.disciplines[
 					Konkurencja.endsWith("j")
 						? (Konkurencja.substring(
@@ -269,11 +268,11 @@ export const processCompetitionsAndResults = async (
 				});
 
 				if (discipline) {
-					for (
-						let series = seriaMax === "0" && round === 3 ? 0 : 1;
-						series <= Number.parseInt(seriaMax, 10);
-						series++
-					) {
+					const round = Number.parseInt(runda, 10);
+					const maxSeries = Number.parseInt(seriaMax);
+					let series = Number.parseInt(seria);
+
+					for (series; series <= maxSeries; series++) {
 						console.log(series, discipline.name, seriaMax, round);
 						const { details, results } = await getCompetitionsWithResults(
 							app,
@@ -315,22 +314,37 @@ export const processCompetitionsAndResults = async (
 										),
 								});
 								if (athlete) {
-									if (withResults) {
+									if (!withResults) {
 										await db
 											.insert(tables.competitor)
 											.values({
 												athleteId: athlete.id,
 												competitionId: competition.id,
-												place:
-													result.Miejsce !== "0"
-														? Number.parseInt(result.Miejsce, 10)
-														: 9999,
-												results: {
-													score: result.Wynik,
-													ranking: result.Ranking,
-												},
+												lane: Number.parseInt(result.Pozycja_Tor, 10),
 											})
 											.onConflictDoNothing();
+									} else {
+										await db
+											.update(tables.competitor)
+											.set({
+												results: {
+													result: result.Wynik,
+													ranking: result.Ranking,
+													place:
+														result.Miejsce !== "0"
+															? Number.parseInt(result.Miejsce, 10)
+															: 9999,
+												},
+											})
+											.where(
+												operators.and(
+													operators.eq(tables.competitor.athleteId, athlete.id),
+													operators.eq(
+														tables.competitor.competitionId,
+														competition.id,
+													),
+												),
+											);
 									}
 									await db
 										.insert(tables.athleteDiscipline)
@@ -345,6 +359,14 @@ export const processCompetitionsAndResults = async (
 											.update(tables.athlete)
 											.set({
 												sex: Konkurencja[0],
+											})
+											.where(operators.eq(tables.athlete.id, athlete.id));
+									}
+									if (athlete.birthdate === null) {
+										await db
+											.update(tables.athlete)
+											.set({
+												birthdate: result.DataUr,
 											})
 											.where(operators.eq(tables.athlete.id, athlete.id));
 									}

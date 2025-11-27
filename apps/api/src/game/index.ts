@@ -1,5 +1,9 @@
 import { db, operators, tables } from "@fan-athletics/database";
-import type { Participant, User } from "@fan-athletics/shared/types";
+import type {
+	CompetitorResults,
+	Participant,
+	User,
+} from "@fan-athletics/shared/types";
 import { Hono } from "hono";
 
 export type TeamMembership = {
@@ -120,7 +124,8 @@ export default new Hono<{
 		});
 
 		if (!gameSpecification) {
-			const [defaultGameSpecification] = await db.insert(tables.gameSpecification)
+			const [defaultGameSpecification] = await db
+				.insert(tables.gameSpecification)
 				.values({
 					eventId: eventId,
 					numberOfTeamMembers: 8,
@@ -131,7 +136,7 @@ export default new Hono<{
 					sexParity: true,
 				})
 				.returning();
-			
+
 			return c.json(defaultGameSpecification);
 		}
 		return c.json(gameSpecification);
@@ -494,16 +499,13 @@ export default new Hono<{
 		});
 
 		for (const competitor of competitors) {
-			if (competitor.place !== null) {
-				const competitorResults = competitor.results as {
-					score: string;
-					ranking: string;
-				};
+			if (competitor.results) {
+				const competitorResults = competitor.results as CompetitorResults;
 				const pointsToAdd =
-					competitorResults.ranking === "" && competitor.place === 0 // Ma DNF, DQ albo DNS
+					competitorResults.ranking === "" && competitor.results.place === 0 // Ma DNF, DQ albo DNS
 						? 0
 						: competitorResults.ranking === ""
-							? Math.max(8 - competitor.place + 1, 0) // Jest w finale
+							? Math.max(8 - competitor.results.place + 1, 0) // Jest w finale
 							: Math.max(8 - Number.parseInt(competitorResults.ranking) + 1, 0); // Konkurencja nie ma finałów
 				console.log(
 					competitorResults.ranking,

@@ -32,10 +32,9 @@ export default new Hono().get("/", async (c) => {
 		);
 	}
 
-	const competitions = await query
-		.where(operators.and(...filters))
-		// .limit(limit)
-		// .offset(offset);
+	const competitions = await query.where(operators.and(...filters));
+	// .limit(limit)
+	// .offset(offset);
 
 	const competitionsWithCompetitors = await Promise.all(
 		competitions.map(async ({ competition, discipline }) => ({
@@ -49,9 +48,9 @@ export default new Hono().get("/", async (c) => {
 					where: (competitor, { eq }) =>
 						eq(competitor.competitionId, competition.id),
 				})
-			).map(({ athlete, place, results }) => ({
+			).map(({ athlete, lane, results }) => ({
 				...athlete,
-				place,
+				lane,
 				results,
 			})),
 		})),

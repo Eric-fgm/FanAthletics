@@ -44,6 +44,9 @@ export const useEventPullMutation = () => {
 				queryClient.invalidateQueries({
 					queryKey: ["events-competitions::retrieve", eventId],
 				}),
+				queryClient.invalidateQueries({
+					queryKey: ["competitions::retrieve"],
+				}),
 			]);
 			showToast({
 				text1: "Zaciągnięto Zmiany",

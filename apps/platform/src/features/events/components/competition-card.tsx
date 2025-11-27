@@ -15,7 +15,11 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({
 	competitors,
 	startAt,
 }) => {
-	const orderedCompetitors = competitors.sort((a, b) => a.place - b.place);
+	const orderedCompetitors = competitors.sort((a, b) => {
+		if (a.results && b.results) return a.results.place - b.results.place;
+		if (a.lane && b.lane) return a.lane - b.lane;
+		return -1;
+	});
 
 	return (
 		<View className="gap-y-5 px-4 py-5 border border-gray-200 rounded-2xl w-80 mb-3">
@@ -58,7 +62,7 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({
 								</Typography>
 							</View>
 							<View>
-								<Typography size="small">{results.score}</Typography>
+								<Typography size="small">{results?.result}</Typography>
 							</View>
 						</View>
 					))}

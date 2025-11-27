@@ -54,15 +54,19 @@ export default new Hono()
 				discipline,
 				competitors: (
 					await db.query.competitor.findMany({
+						columns: {
+							lane: true,
+							results: true,
+						},
 						with: {
 							athlete: true,
 						},
 						where: (competitor, { eq }) =>
 							eq(competitor.competitionId, competition.id),
 					})
-				).map(({ athlete, place, results }) => ({
+				).map(({ athlete, lane, results }) => ({
 					...athlete,
-					place,
+					lane,
 					results,
 				})),
 			})),

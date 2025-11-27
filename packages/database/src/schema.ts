@@ -247,8 +247,12 @@ export const competitor = pgTable(
 		athleteId: text()
 			.references(() => athlete.id)
 			.notNull(),
-		place: integer().notNull(),
-		results: json().notNull(),
+		lane: integer(),
+		results: json("results").$type<{
+			place: number;
+			ranking: string;
+			result: string;
+		}>(),
 	},
 	(table) => [
 		primaryKey({

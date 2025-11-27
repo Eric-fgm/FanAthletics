@@ -112,9 +112,15 @@ export interface Competition {
 }
 
 export interface Competitor extends Athlete {
-	place: number;
-	results: unknown;
+	results: CompetitorResults | null;
 	number: number;
+	lane: number;
+}
+
+export interface CompetitorResults {
+	place: number;
+	ranking: string;
+	result: string;
 }
 
 export interface CompetitionWithCompetitors extends Competition {
