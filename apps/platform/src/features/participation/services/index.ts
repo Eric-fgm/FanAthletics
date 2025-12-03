@@ -125,6 +125,30 @@ export const useCountPointsMutation = () => {
 	});
 };
 
+export const useGameIsActiveQuery = () => {
+	const eventId = useGlobalSearchParams().eventId?.toString();
+
+	return useQuery({
+		queryKey: ["game::block-team", eventId],
+		queryFn: () =>
+			fetcher<{
+				gameActive: boolean;
+				nearestDate: Date | null;
+				gameFinished: boolean;
+				firstCompetitionDateTime: Date | null;
+			}>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/is-game-active`,
+			),
+		refetchInterval: 1000,
+		placeholderData: {
+			gameActive: false,
+			nearestDate: null,
+			gameFinished: true,
+			firstCompetitionDateTime: null,
+		},
+	});
+};
+
 export const useParticipationQuery = () => {
 	const eventId = useGlobalSearchParams().eventId?.toString();
 

@@ -64,6 +64,8 @@ const eventsApp = new Hono()
 			await processCompetitionsAndResults(event.domtelApp, event.id, false);
 		}
 
+		blockGame(event.id);
+
 		return c.json({ message: "Event successfully created!" }, 201);
 	})
 	.post("/:eventId/pull", async (c) => {
@@ -204,9 +206,222 @@ const aiApp = new Hono().post("/:eventId", async (c) => {
 	return c.json(athletes, 200);
 });
 
+async function blockGame(eventId: string) {
+	async function setGameIsActive(
+		active: boolean,
+		date: Date | null,
+		finished: boolean,
+	) {
+		console.log(active, date, finished);
+		await db
+			.update(tables.gameSpecification)
+			.set({
+				isActive: active,
+				nearestDate: date,
+				finished: finished,
+			})
+			.where(operators.eq(tables.gameSpecification.eventId, eventId));
+	}
+
+	let event = await db.query.event.findFirst({
+		where: (table, { eq }) => eq(table.id, eventId),
+	});
+
+	while (!event) {
+		event = await db.query.event.findFirst({
+			where: (table, { eq }) => eq(table.id, eventId),
+		});
+	}
+
+	if (!event) throw new Error("Unexpected error: Event not found");
+
+	const daysDiff: number = Math.ceil(
+		(event.endAt.getTime() - event.startAt.getTime()) / (1000 * 3600 * 24),
+	);
+
+	const days: string[] = Array.from({ length: daysDiff + 1 }, (_, i) =>
+		new Date(
+			event.startAt.getTime() + i * (1000 * 3600 * 24),
+		).toLocaleDateString("pl-PL", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+		}),
+	);
+
+	const eventDisciplinesIds = (
+		await db.query.discipline.findMany({
+			where: (table, { eq }) => eq(table.eventId, event.id),
+		})
+	).map((d) => d.id);
+
+	const eventCompetitions = await db.query.competition.findMany({
+		where: (table, { inArray }) =>
+			inArray(table.disciplineId, eventDisciplinesIds),
+	});
+
+	const daysCompetitions = Array.from({ length: daysDiff + 1 }, (_, i) =>
+		eventCompetitions.filter(
+			(c) =>
+				c.startAt.toLocaleDateString("pl-PL", {
+					day: "2-digit",
+					month: "2-digit",
+					year: "numeric",
+				}) === days[i],
+		),
+	);
+
+	const firstAndLast: { first: Date; last: Date }[] = Array(daysDiff + 1);
+
+	daysCompetitions.forEach((dayCompetitions, i) => {
+		const dayCompetitionsStart = dayCompetitions
+			.map((c) => new Date(c.startAt))
+			.sort((a, b) => {
+				if (
+					a.toLocaleTimeString("pl-PL", {
+						hour: "2-digit",
+						minute: "2-digit",
+					}) <
+					b.toLocaleTimeString("pl-PL", {
+						hour: "2-digit",
+						minute: "2-digit",
+					})
+				)
+					return -1;
+				return 1;
+			});
+
+		const lastIndex = dayCompetitionsStart.length - 1;
+
+		firstAndLast[i] = {
+			first: dayCompetitionsStart[0] ?? event.startAt,
+			last:
+				lastIndex >= 0 && dayCompetitionsStart[lastIndex]
+					? dayCompetitionsStart[lastIndex]
+					: event.startAt,
+		};
+		firstAndLast[i].first.setMinutes(firstAndLast[i].first.getMinutes() - 5);
+		firstAndLast[i].last.setMinutes(firstAndLast[i].last.getMinutes() + 10);
+	});
+
+	console.log(firstAndLast);
+
+	setInterval(async () => {
+		const currentDateTime = new Date();
+		const currentDay = currentDateTime.toLocaleDateString("pl-PL", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+		});
+		// const currentDay = event.endAt.toLocaleDateString("pl-PL", {
+		// 	day: "2-digit",
+		// 	month: "2-digit",
+		// 	year: "numeric",
+		// });
+		// const currentDay = "22.08.2025";
+		const currentTime = currentDateTime.toLocaleTimeString("pl-PL", {
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+		// const currentTimes = [
+		// 	"08:00",
+		// 	"09:50",
+		// 	"09:00",
+		// 	"12:50",
+		// 	"13:00",
+		// 	"13:20",
+		// 	"13:26",
+		// 	"17:12",
+		// 	"17:15",
+		// 	"17:30",
+		// 	"17:34",
+		// 	"18:02",
+		// 	"19:55",
+		// 	"21:00",
+		// 	"21:30",
+		// ];
+		// const currentTime =
+		// 	currentTimes[Math.floor(Math.random() * currentTimes.length)];
+		const index = days.indexOf(currentDay);
+
+		console.log(currentDay, currentTime, days, index);
+
+		if (index === -1) {
+			// Przed dniem rozpoczynającym grę
+			if (
+				currentDay <
+				event.startAt.toLocaleDateString("pl-PL", {
+					day: "2-digit",
+					month: "2-digit",
+					year: "numeric",
+				})
+			)
+				await setGameIsActive(
+					true,
+					firstAndLast[0]?.first ?? event.startAt,
+					false,
+				);
+			// Po wydarzeniu
+			else await setGameIsActive(false, null, true);
+			return;
+		}
+
+		// console.log(firstAndLast[index]?.first.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }),
+		// 	currentTime <
+		// 		firstAndLast[index].first.toLocaleTimeString("pl-PL", {
+		// 			hour: "2-digit",
+		// 			minute: "2-digit",
+		// 		}))//, lastCompetition[1].toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }));
+		// console.log(firstAndLast[index]?.last.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }), currentTime,
+		// 	currentTime >
+		// 		firstAndLast[index].last.toLocaleTimeString("pl-PL", {
+		// 			hour: "2-digit",
+		// 			minute: "2-digit",
+		// 		}));
+
+		// console.log(currentTime, currentTime < firstCompetition[0].toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }), currentTime > lastCompetition[1].toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }));
+
+		// Przed rozpoczęciem gry w danym dniu wydarzenia
+		if (
+			firstAndLast[index] &&
+			currentTime <
+				firstAndLast[index].first.toLocaleTimeString("pl-PL", {
+					hour: "2-digit",
+					minute: "2-digit",
+				})
+		) {
+			await setGameIsActive(true, firstAndLast[index]?.first, false);
+			return;
+		}
+		// Po zakończeniu gry w danym dniu wydarzenia
+		if (
+			firstAndLast[index] &&
+			currentTime >
+				firstAndLast[index].last.toLocaleTimeString("pl-PL", {
+					hour: "2-digit",
+					minute: "2-digit",
+				}) &&
+			!daysCompetitions[index]?.some((c) => !c.finished)
+		) {
+			const nextFirst = firstAndLast[index + 1]?.first;
+			if (nextFirst) await setGameIsActive(true, nextFirst, false);
+			else await setGameIsActive(false, null, true);
+			return;
+		}
+
+		// Gra nieaktywna
+		const nextLast = firstAndLast[index]?.last;
+		if (nextLast) await setGameIsActive(false, nextLast, false);
+		else await setGameIsActive(false, null, true);
+		return;
+	}, 5 * 1000);
+}
+
 adminApp.route("/events", eventsApp);
 adminApp.route("/disciplines", disciplinesApp);
 adminApp.route("/athletes", athletesApp);
 adminApp.route("/ai", aiApp);
+
+console.log(adminApp.routes);
 
 export default adminApp;

@@ -9,7 +9,7 @@ import { useRouter } from "expo-router";
 import { UserRound, UserRoundPlus } from "lucide-react-native";
 import { CircleUser, Crown, Info, Plus } from "lucide-react-native";
 import { ArrowRight, Cake, Earth, Star, Trash2 } from "lucide-react-native";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
 	Animated,
 	Easing,
@@ -34,6 +34,7 @@ import {
 	useAddTeamMemberMutation,
 	useDeleteTeamLeaderPrivilegeMutation,
 	useDeleteTeamMemberMutation,
+	useGameIsActiveQuery,
 	useGameSpecificationQuery,
 	useInvalidateParticipation,
 	useMakeTeamLeaderMutation,
@@ -79,8 +80,22 @@ const Participation = () => {
 	const { data: teamMembers = [] } = useTeamMembersQuery({
 		enabled: !!participation,
 	});
+	const {
+		data: blockData = {
+			gameActive: false,
+			nearestDate: null,
+			gameFinished: false,
+			firstCompetitionDateTime: null,
+		},
+		isLoading: isBlockDataLoading,
+	} = useGameIsActiveQuery();
+	console.log("Game active: ", blockData, gameSpecification, event);
 
-	if (!event || !gameSpecification) return null;
+	useEffect(() => {
+		if (!blockData.gameActive) setSelectedMember(null);
+	}, [blockData.gameActive]);
+
+	if (!event || !gameSpecification || isBlockDataLoading) return null;
 
 	const maxNumberOfAthletes = gameSpecification.numberOfTeamMembers;
 	const teamMembersSlots =
@@ -198,98 +213,158 @@ const Participation = () => {
 						))}
 					</View>
 					<View className="mt-12 px-4 lg:px-12 pb-6">
-						<Typography size="large2">Zespół</Typography>
+						{blockData.gameFinished ? (
+							<View className="bg-yellow-700 rounded-2xl w-[70%] m-auto p-2 mb-3">
+								<Typography size="large1" type="bright" className="m-auto">
+									Zawody zakończyły się.
+								</Typography>
+							</View>
+						) : !blockData.gameActive ? (
+							<View>
+								<View className="bg-yellow-700 rounded-2xl w-[70%] m-auto p-2 mb-3">
+									<Typography size="large1" type="bright" className="m-auto">
+										{blockData.nearestDate &&
+											`Zawody w dniu dzisiejszym skończą się około ${new Date(blockData.nearestDate).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} - wtedy będzie można kontynuować grę.`}
+									</Typography>
+								</View>
+
+								<Typography size="large1" type="washed" className="m-auto">
+									Nie możesz modyfikować drużyny, bo zawody się rozpoczęły!
+								</Typography>
+							</View>
+						) : (
+							<View className="bg-yellow-700 rounded-2xl w-[70%] m-auto p-2 mb-3">
+								<Typography size="large1" type="bright" className="m-auto">
+									{blockData.nearestDate &&
+										// new Date(blockData.nearestDate).toUTCString() === new Date(blockData.firstCompetitionDateTime!).toUTCString() ? (
+										`Zawody rozpoczną się ${new Date(blockData.nearestDate).toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric" })} o ${new Date(blockData.nearestDate).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} - skompletuj drużynę do tego czasu.`
+										// ) : (
+
+										// `Zawody w dniu dzisiejszym rozpoczną się o ${new Date(blockData.nearestDate).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}`
+										// )
+									}
+								</Typography>
+							</View>
+						)}
 					</View>
 					<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 lg:px-12">
-						{teamMembersSlots.sort((a, b) => {
-							if (a && b) {
-								if (a.sex < b.sex) return -1;
+						{teamMembersSlots
+							.sort((a, b) => {
+								if (a && b) {
+									if (a.sex < b.sex) return -1;
+									return 1;
+								}
+								if (a) return -1;
 								return 1;
-							}
-							if (a)
-								return -1;
-							return 1;
-						}).map((member, index) => (
-							<React.Fragment key={member?.id ?? index}>
-								{member ? (
-									member.isCaptain ? (
-										<View>
-											<View className="w-auto flex-row" style={{ alignSelf: "flex-start", zIndex: 2, marginBottom: -20 }}>
-												<GradientBox sex={member.sex} gradientType={GradientType.POINTS} vertical borderRad={10}>
-													<View className="flex-row items-center py-3 pl-4 pr-1 gap-x-2" style={{ borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
-														<Typography size="large2-s" type="bright">
-																{/* +{member.pointsGathered} */}
-																+{Math.floor(Math.random()*100)+1000}
-														</Typography>
-														<StarBadge
+							})
+							.map((member, index) => (
+								<React.Fragment key={member?.id ?? index}>
+									{member ? (
+										member.isCaptain ? (
+											<View>
+												<View
+													className="w-auto flex-row"
+													style={{
+														alignSelf: "flex-start",
+														zIndex: 2,
+														marginBottom: -20,
+													}}
+												>
+													<GradientBox
+														sex={member.sex}
+														gradientType={GradientType.POINTS}
+														vertical
+														borderRad={10}
+													>
+														<View
+															className="flex-row items-center py-3 pl-4 pr-1 gap-x-2"
+															style={{
+																borderTopLeftRadius: 10,
+																borderTopRightRadius: 10,
+															}}
+														>
+															<Typography size="large2-s" type="bright">
+																{/* +{member.pointsGathered} */}+
+																{Math.floor(Math.random() * 100) + 1000}
+															</Typography>
+															<StarBadge
 																width={25}
 																height={25}
 																colorCircle="#fff"
 																colorStar="black"
+															/>
+														</View>
+													</GradientBox>
+													<View style={{ marginTop: 4, marginLeft: -2 }}>
+														<RightTriangle
+															width={40}
+															height={48}
+															colorTop={menColors.captainDownGradient}
+															colorBottom={menColors.captainUpGradient}
 														/>
 													</View>
-												</GradientBox>
-												<View style={{ marginTop: 4, marginLeft: -2 }}>
-													<RightTriangle width={40} height={48} colorTop={menColors.captainDownGradient} colorBottom={menColors.captainUpGradient}/>
+												</View>
+												<View
+													className="rounded-2xl"
+													style={{
+														shadowOpacity: 0.25,
+														shadowColor: "black",
+														shadowRadius: 10,
+														shadowOffset: { width: 4, height: 4 },
+														elevation: 8,
+														zIndex: 1,
+													}}
+												>
+													<GradientBox
+														sex={member.sex}
+														vertical
+														gradientType={GradientType.CAPTAIN}
+														borderRad={16}
+													>
+														<AthletePreview
+															isLoading={
+																isAddTeamMemberPending ||
+																isDeleteTeamMemberPending
+															}
+															onEdit={() => setSelectedMember(member)}
+															onDelete={() => setMemberToDelete(member)}
+															athlete={member}
+															isCaptain={member.isCaptain}
+															pointsGathered={member.pointsGathered}
+															gameActive={blockData.gameActive}
+														/>
+													</GradientBox>
 												</View>
 											</View>
-											<View
-												className="rounded-2xl"
-												style={{
-													shadowOpacity: 0.25,
-													shadowColor: "black",
-													shadowRadius: 10,
-													shadowOffset: { width: 4, height: 4 },
-													elevation: 8,
-													zIndex: 1,
-												}}
-											>
-												<GradientBox
-													sex={member.sex}
-													vertical
-													gradientType={GradientType.CAPTAIN}
-													borderRad={16}
-												>
-													<AthletePreview
-														isLoading={
-															isAddTeamMemberPending || isDeleteTeamMemberPending
-														}
-														onEdit={() => setSelectedMember(member)}
-														onDelete={() => setMemberToDelete(member)}
-														athlete={member}
-														isCaptain={member.isCaptain}
-														pointsGathered={member.pointsGathered}
-													/>
-												</GradientBox>
-											</View>
-										</View>
+										) : (
+											<AthletePreview
+												isLoading={
+													isAddTeamMemberPending || isDeleteTeamMemberPending
+												}
+												onEdit={() => setSelectedMember(member)}
+												onDelete={() => setMemberToDelete(member)}
+												athlete={member}
+												isCaptain={member.isCaptain}
+												pointsGathered={member.pointsGathered}
+												gameActive={blockData.gameActive}
+											/>
+										)
 									) : (
-										<AthletePreview
-											isLoading={
-												isAddTeamMemberPending || isDeleteTeamMemberPending
-											}
-											onEdit={() => setSelectedMember(member)}
-											onDelete={() => setMemberToDelete(member)}
-											athlete={member}
-											isCaptain={member.isCaptain}
-											pointsGathered={member.pointsGathered}
+										<AthleteSlot
+											index={index + 1}
+											onPress={() => setSelectedMember("edit")}
+											gameActive={blockData.gameActive}
 										/>
-									)
-								) : (
-									<AthleteSlot
-										index={index + 1}
-										onPress={() => setSelectedMember("edit")}
-									/>
-								)}
-							</React.Fragment>
-						))}
+									)}
+								</React.Fragment>
+							))}
 					</View>
 					<AthletesSearchDialog
 						disabledAtletes={teamMembers.map((member) => {
 							return { id: member.id, sex: member.sex };
 						})}
 						budget={participation.budget}
-						isOpen={selectedMember !== null}
+						isOpen={selectedMember !== null && blockData.gameActive}
 						webOptions={{ variant: "wide" }}
 						gameSpecification={gameSpecification}
 						onClose={() => setSelectedMember(null)}
@@ -348,23 +423,30 @@ const Participation = () => {
 	);
 };
 
-const AthleteSlot: React.FC<{ index: number; onPress: () => void }> = ({
-	index,
-	onPress,
-}) => {
+const AthleteSlot: React.FC<{
+	index: number;
+	gameActive: boolean;
+	onPress: () => void;
+}> = ({ index, gameActive, onPress }) => {
 	return (
 		<View className="p-4 rounded-2xl">
 			<View
-				className="relative justify-center items-center border border-gray-200 border-dashed rounded-2xl h-[432px]"
-				style={{ backgroundColor: "lightgrey" }}
+				className="relative justify-center items-center bg-gray-300 border border-gray-200 border-dashed rounded-2xl h-[432px]"
+				// style={{ backgroundColor: "lightgrey" }}
 			>
 				<Pressable
 					className="justify-center items-center rounded-full w-16 h-16"
+					disabled={!gameActive}
 					onPress={onPress}
 				>
-					<UserRoundPlus size={72} className="text-gray-500" />
+					<UserRoundPlus
+						size={72}
+						className={`text-gray-${gameActive ? "500" : "300"}`}
+					/>
 				</Pressable>
-				<Typography className="mt-4">Miejsce {index}</Typography>
+				{gameActive && (
+					<Typography className="mt-4">Miejsce {index}</Typography>
+				)}
 			</View>
 		</View>
 	);
@@ -374,10 +456,19 @@ const AthletePreview: React.FC<{
 	athlete: Athlete;
 	isCaptain: boolean;
 	pointsGathered: number;
+	gameActive: boolean;
 	isLoading?: boolean;
 	onEdit?: () => void;
 	onDelete?: () => void;
-}> = ({ athlete, isCaptain, pointsGathered, isLoading, onEdit, onDelete }) => {
+}> = ({
+	athlete,
+	isCaptain,
+	pointsGathered,
+	gameActive,
+	isLoading,
+	onEdit,
+	onDelete,
+}) => {
 	const {
 		mutateAsync: makeAthleteCaptain,
 		isPending: isMakeAthleteCaptainPending,
@@ -398,12 +489,25 @@ const AthletePreview: React.FC<{
 		<View>
 			<View className="p-5 rounded-2xl">
 				{!isCaptain ? (
-					<View className="w-auto flex-row" style={{ alignSelf: "flex-start", marginTop: -20, marginBottom: -28, zIndex: 1 }}>
-						<GradientBox sex={athlete.sex} gradientType={GradientType.POINTS} vertical borderRad={10}>
+					<View
+						className="w-auto flex-row"
+						style={{
+							alignSelf: "flex-start",
+							marginTop: -20,
+							marginBottom: -28,
+							zIndex: 1,
+						}}
+					>
+						<GradientBox
+							sex={athlete.sex}
+							gradientType={GradientType.POINTS}
+							vertical
+							borderRad={10}
+						>
 							<View className="flex-row items-center pt-3 pb-10 pl-4 pr-1 gap-x-2">
 								<Typography size="large2-s" type="bright">
-									{/* +{pointsGathered} */}
-									+{Math.floor(Math.random()*100)+1000}
+									{/* +{pointsGathered} */}+
+									{Math.floor(Math.random() * 100) + 1000}
 								</Typography>
 								<StarBadge
 									width={25}
@@ -414,11 +518,17 @@ const AthletePreview: React.FC<{
 							</View>
 						</GradientBox>
 						<View style={{ marginTop: 4, marginLeft: -2 }}>
-							<RightTriangle width={55} height={66} colorTop={menColors.captainDownGradient} colorBottom={menColors.captainUpGradient}/>
+							<RightTriangle
+								width={55}
+								height={66}
+								colorTop={menColors.captainDownGradient}
+								colorBottom={menColors.captainUpGradient}
+							/>
 						</View>
 					</View>
-					) : <></>
-				}
+				) : (
+					<></>
+				)}
 				<Pressable
 					onPress={() => {
 						console.log("Kliknięto: ", athlete);
@@ -448,7 +558,9 @@ const AthletePreview: React.FC<{
 									shadowOpacity: !isCaptain ? 0.25 : undefined,
 									shadowColor: !isCaptain ? "black" : undefined,
 									shadowRadius: !isCaptain ? 10 : undefined,
-									shadowOffset: !isCaptain ? { width: 4, height: 4 } : undefined,
+									shadowOffset: !isCaptain
+										? { width: 4, height: 4 }
+										: undefined,
 									elevation: !isCaptain ? 8 : 0,
 								}}
 							>
@@ -510,6 +622,7 @@ const AthletePreview: React.FC<{
 						onDelete={onDelete}
 						setFunction={setDetailedMember}
 						pointsGathered={pointsGathered}
+						gameActive={gameActive}
 					/>
 				</Dialog>
 			</View>
@@ -520,6 +633,7 @@ const AthletePreview: React.FC<{
 const AthleteInfoDialog: React.FC<{
 	athlete: Athlete | null;
 	isCaptain: boolean;
+	gameActive: boolean;
 	isLoading?: boolean;
 	onCaptainPressed?: () => void;
 	onCaptainDeletePressed?: () => void;
@@ -530,6 +644,7 @@ const AthleteInfoDialog: React.FC<{
 }> = ({
 	athlete,
 	isCaptain,
+	gameActive,
 	isLoading,
 	onCaptainPressed,
 	onCaptainDeletePressed,
@@ -673,20 +788,22 @@ const AthleteInfoDialog: React.FC<{
 						{isCaptain ? (
 							<Button
 								text="Usuń rolę kapitana"
-								variant="assignCaptain"
+								variant={gameActive ? "assignCaptain" : "disabledDark"}
 								size="base"
 								className="mt-auto flex-[0.7] shadow-common"
 								textClassName="!text-lg"
+								disabled={!gameActive}
 								isLoading={isLoading}
 								onPress={onCaptainDeletePressed}
 							/>
 						) : (
 							<Button
 								text="Ustaw jako kapitana"
-								variant="assignCaptain"
+								variant={gameActive ? "assignCaptain" : "disabledDark"}
 								size="base"
 								className="mt-auto flex-[0.7] shadow-common"
 								textClassName="!text-lg"
+								disabled={!gameActive}
 								isLoading={isLoading}
 								onPress={onCaptainPressed}
 							/>
@@ -694,10 +811,11 @@ const AthleteInfoDialog: React.FC<{
 						<Button
 							text="Usuń"
 							//icon={Trash2}
-							variant="danger"
+							variant={gameActive ? "danger" : "disabledLight"}
 							size="base"
 							className="mt-auto flex-[0.3] shadow-common"
 							textClassName="!text-lg"
+							disabled={!gameActive}
 							isLoading={isLoading}
 							onPress={onDelete}
 						/>
@@ -815,7 +933,8 @@ const AthleteInfoDialog: React.FC<{
 							className="h-[1px] w-[93%]"
 							style={{ backgroundColor: colors.profileUpGradient }}
 						/>
-						<Animated.View className="h-full"
+						<Animated.View
+							className="h-full"
 							style={{
 								height: 100,
 								opacity: fadeAnim,
@@ -981,9 +1100,9 @@ export const PersonalRecordsBoxItem: React.FC<{
 					<Typography size="base" className="w-[10%] text-end mr-8">
 						{personalRecord.resultPoints}
 					</Typography>
-					) : (
-						<Typography className="w-[10%] text-end mr-8"></Typography>
-					)}
+				) : (
+					<Typography className="w-[10%] text-end mr-8" />
+				)}
 			</View>
 			{showLine && (
 				<View
@@ -1003,13 +1122,9 @@ export const PersonalRecordsBox: React.FC<{
 			<ScrollView className="flex-1">
 				{personalRecords
 					.sort((a, b) => {
-						if (
-							a.resultPoints &&
-							b.resultPoints
-						)
+						if (a.resultPoints && b.resultPoints)
 							return b.resultPoints - a.resultPoints;
-						if (a.resultPoints)
-							return -1;
+						if (a.resultPoints) return -1;
 						return 1;
 					})
 					.map((record) => (

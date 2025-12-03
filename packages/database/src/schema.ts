@@ -2,10 +2,10 @@ import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	integer,
-	real,
 	json,
 	pgTable,
 	primaryKey,
+	real,
 	text,
 	timestamp,
 	varchar,
@@ -92,10 +92,13 @@ export const gameSpecification = pgTable("game_specification", {
 		.references(() => event.id)
 		.notNull(),
 	numberOfTeamMembers: integer().default(8).notNull(),
-	budget: integer().default(300).notNull(),
+	budget: integer().default(500).notNull(),
 	maxExchanges: integer().default(8).notNull(),
 	minAthleteCost: integer().default(50).notNull(),
 	maxAthleteCost: integer().default(100).notNull(),
+	isActive: boolean().default(true).notNull(),
+	nearestDate: timestamp({ withTimezone: true }),
+	finished: boolean().default(false).notNull(),
 	sexParity: boolean().default(true).notNull(),
 });
 
@@ -238,6 +241,7 @@ export const competition = pgTable("competition", {
 	startAt: timestamp({ withTimezone: true }).notNull(),
 	endedAt: timestamp({ withTimezone: true }),
 	pointsAlreadyCounted: boolean().default(false).notNull(),
+	finished: boolean().default(false).notNull(),
 });
 
 export const competitor = pgTable(

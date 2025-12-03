@@ -110,6 +110,8 @@ export interface Competition {
 	trials: unknown;
 	startAt: Date;
 	endedAt: Date | null;
+	finished: boolean;
+	pointsAlreadyCounted: boolean;
 }
 
 export interface Competitor extends Athlete {
@@ -180,6 +182,10 @@ export interface GameSpecification {
 	maxExchanges: number;
 	minAthleteCost: number;
 	maxAthleteCost: number;
+	isActive: boolean;
+	info: {
+		first: boolean;
+		date: Date | null;
+	} | null;
 	sexParity: boolean;
 }
-
