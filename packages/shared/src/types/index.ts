@@ -55,6 +55,7 @@ export interface Discipline {
 	id: string;
 	eventId: string;
 	name: string;
+	code: string;
 	organization: string | null;
 	record: string;
 	icon: string;
@@ -65,6 +66,7 @@ export interface Discipline {
 export interface DisciplinePayload {
 	eventId: string;
 	name: string;
+	code: string;
 	organization?: string | null;
 	record: string;
 	icon: string;

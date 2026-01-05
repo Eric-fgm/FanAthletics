@@ -140,7 +140,8 @@ export default new Hono<{
 			return c.json(defaultGameSpecification);
 		}
 		return c.json(gameSpecification);
-	}).post("/count-points", async (c) => {
+	})
+	.post("/count-points", async (c) => {
 		const eventId = c.req.param("eventId");
 
 		const disciplineIds = (

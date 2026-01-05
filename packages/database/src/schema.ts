@@ -122,6 +122,7 @@ export const discipline = pgTable("discipline", {
 		.references(() => event.id)
 		.notNull(),
 	name: varchar({ length: 255 }).notNull(),
+	code: varchar({ length: 255 }).notNull(),
 	organization: varchar({ length: 255 }),
 	record: varchar({ length: 255 }).notNull(),
 	icon: varchar({ length: 255 }).notNull(),

@@ -107,9 +107,7 @@ const getSchedule = async (app: string) => {
 };
 
 const getEventNameData = async (app: string) => {
-	const response = await fetch(
-		`https://${app}.domtel-sport.pl/api/nazwa.php`,
-	);
+	const response = await fetch(`https://${app}.domtel-sport.pl/api/nazwa.php`);
 
 	if (!response.ok) {
 		throw new Error("Error while fetching event name data");
@@ -121,7 +119,7 @@ const getEventNameData = async (app: string) => {
 		name: eventNameData.Nazwa_Imprezy,
 		city: eventNameData.Miasto,
 	};
-}
+};
 
 const getCurriculum = async (
 	app: string,
@@ -155,7 +153,7 @@ const getCurriculum = async (
 	return Object.values(curriculum);
 };
 
-const getCompetitionsWithResults = async (
+export const getCompetitionsWithResults = async (
 	app: string,
 	name: string,
 	round: number,
@@ -449,6 +447,7 @@ export const saveDiscplines = async (
 
 			await db.insert(tables.discipline).values({
 				...metadata,
+				code: discipline,
 				eventId,
 				icon: "trophy",
 			});
@@ -516,7 +515,7 @@ export const saveAthletes = async (
 							: "POLAND",
 					sex: "",
 					imageUrl: "https://starter.pzla.pl/foto/277503.jpg?m=20230118093122",
-					cost: Math.floor(Math.random()*50)+50,
+					cost: Math.floor(Math.random() * 50) + 50,
 					updatedAt: nowDate,
 					createdAt: nowDate,
 				};
@@ -529,7 +528,7 @@ const savePersonalRecords = async (
 	athletesData: AthletesRecord,
 	eventId: string,
 ) => {
-	console.log('save');
+	console.log("save");
 	for (const [key, value] of Object.entries(athletesData)) {
 		console.log("key: ", Number.parseInt(key));
 		console.log("value: ", value);

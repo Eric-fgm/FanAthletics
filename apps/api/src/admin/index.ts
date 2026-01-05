@@ -9,12 +9,14 @@ import type {
 import { Hono } from "hono";
 import {
 	getAthletes,
+	getCompetitionsWithResults,
 	getDisciplines,
 	processCompetitionsAndResults,
 	saveAthletes,
 	saveDiscplines,
 } from "#/domtel";
 import { requireUser } from "#/middlewares";
+import { convertToPolishDateTime } from "#/utils/functions";
 
 const EVENT_IMAGE_PLACEHOLDER =
 	"https://assets.aws.worldathletics.org/large/610276d3511e6525b0b00ef6.jpg";
@@ -32,8 +34,12 @@ const eventsApp = new Hono()
 			.values({
 				name: body.name,
 				organization: body.organization,
-				image: body.image && body.image !== "" ? body.image : EVENT_IMAGE_PLACEHOLDER,
-				icon: body.icon && body.icon !== "" ? body.icon : EVENT_ICON_PLACEHOLDER,
+				image:
+					body.image && body.image !== ""
+						? body.image
+						: EVENT_IMAGE_PLACEHOLDER,
+				icon:
+					body.icon && body.icon !== "" ? body.icon : EVENT_ICON_PLACEHOLDER,
 				domtelApp: body.domtelApp,
 				domtelPhotos: body.domtelPhotos,
 				startAt: new Date(),
@@ -64,6 +70,7 @@ const eventsApp = new Hono()
 			await processCompetitionsAndResults(event.domtelApp, event.id, false);
 		}
 
+		getResultsPeriodically(event.id);
 		blockGame(event.id);
 
 		return c.json({ message: "Event successfully created!" }, 201);
@@ -206,6 +213,141 @@ const aiApp = new Hono().post("/:eventId", async (c) => {
 	return c.json(athletes, 200);
 });
 
+async function getResultsPeriodically(eventId: string) {
+	let event = await db.query.event.findFirst({
+		where: (table, { eq }) => eq(table.id, eventId),
+	});
+
+	while (!event) {
+		event = await db.query.event.findFirst({
+			where: (table, { eq }) => eq(table.id, eventId),
+		});
+	}
+
+	if (!event) return "Unexpected error: Event not found";
+
+	const eventDisciplinesIds = (
+		await db.query.discipline.findMany({
+			where: (table, { eq }) => eq(table.eventId, event.id),
+		})
+	).map((d) => d.id);
+
+	const interval = setInterval(async () => {
+		const eventCompetitions = await Promise.all(
+			(
+				await db.query.competition.findMany({
+					where: (table, { inArray }) =>
+						inArray(table.disciplineId, eventDisciplinesIds),
+				})
+			)
+				.filter((c) => !c.finished)
+				.map(async (competition) => {
+					const competitionDiscipline = await db.query.discipline.findFirst({
+						where: (table, { eq }) => eq(table.id, competition.disciplineId),
+					});
+
+					const competitors = await db.query.competitor.findMany({
+						where: (table, { eq }) => eq(table.competitionId, competition.id),
+					});
+
+					return {
+						...competition,
+						disciplineName: competitionDiscipline?.code ?? null,
+						competitors: competitors,
+					};
+				}),
+		);
+
+		console.log(
+			"Number of uncompleted competitions: ",
+			eventCompetitions.length,
+		);
+
+		if (eventCompetitions.length <= 0) {
+			clearInterval(interval);
+			return;
+		}
+		// Można dodać usuwanie sprawdzania wyników konkurencji, jeżeli przy którejś z kolei próbie nie zwraca wyników.
+		// Na przykład jeśli minęły trzy dni od kiedy konkurencja się rozpoczęła, to przerywamy nasłuchiwanie - to natomiast
+		// powoduje problem przy pobieraniu wyników wydarzenia z przeszłości.
+		// Można ewentualnie dodać to sprawdzenie na końcu tej funkcji.
+
+		if (event.domtelApp === null) return "Event is not connected to domtel.";
+
+		const currentDateTime = new Date();
+		for (const competition of eventCompetitions) {
+			if (!competition.disciplineName) {
+				console.warn("Discipline code unknown.");
+				continue;
+			}
+
+			if (competition.startAt > currentDateTime) {
+				console.info(
+					`${competition.disciplineName} ${competition.round} ${competition.series} has not started yet.`,
+				);
+				continue;
+			}
+
+			const { details, results } = await getCompetitionsWithResults(
+				event.domtelApp,
+				competition.disciplineName,
+				competition.round,
+				competition.series,
+			);
+
+			if (results.length !== competition.competitors.length) {
+				console.info(
+					`${competition.disciplineName} ${competition.round} ${competition.series}: All competitors not fetched yet.`,
+				);
+				continue;
+			}
+
+			await Promise.all(
+				results.map(async (result) => {
+					const athlete = await db.query.athlete.findFirst({
+						where: (table, { and, eq }) =>
+							and(
+								eq(table.eventId, eventId),
+								eq(table.number, Number.parseInt(result.NrStart, 10)),
+							),
+					});
+					if (athlete) {
+						await db
+							.update(tables.competitor)
+							.set({
+								results: {
+									result: result.Wynik,
+									ranking: result.Ranking,
+									place:
+										result.Miejsce !== "0"
+											? Number.parseInt(result.Miejsce, 10)
+											: 9999,
+								},
+							})
+							.where(
+								operators.and(
+									operators.eq(tables.competitor.athleteId, athlete.id),
+									operators.eq(tables.competitor.competitionId, competition.id),
+								),
+							);
+					}
+				}),
+			);
+
+			await db
+				.update(tables.competition)
+				.set({
+					finished: true,
+				})
+				.where(operators.eq(tables.competition.id, competition.id));
+		}
+
+		return;
+	}, 20 * 1000);
+
+	return;
+}
+
 async function blockGame(eventId: string) {
 	async function setGameIsActive(
 		active: boolean,
@@ -240,13 +382,10 @@ async function blockGame(eventId: string) {
 	);
 
 	const days: string[] = Array.from({ length: daysDiff + 1 }, (_, i) =>
-		new Date(
-			event.startAt.getTime() + i * (1000 * 3600 * 24),
-		).toLocaleDateString("pl-PL", {
-			day: "2-digit",
-			month: "2-digit",
-			year: "numeric",
-		}),
+		convertToPolishDateTime(
+			new Date(event.startAt.getTime() + i * (1000 * 3600 * 24)),
+			"date",
+		),
 	);
 
 	const eventDisciplinesIds = (
@@ -262,12 +401,7 @@ async function blockGame(eventId: string) {
 
 	const daysCompetitions = Array.from({ length: daysDiff + 1 }, (_, i) =>
 		eventCompetitions.filter(
-			(c) =>
-				c.startAt.toLocaleDateString("pl-PL", {
-					day: "2-digit",
-					month: "2-digit",
-					year: "numeric",
-				}) === days[i],
+			(c) => convertToPolishDateTime(c.startAt, "date") === days[i],
 		),
 	);
 
@@ -278,14 +412,8 @@ async function blockGame(eventId: string) {
 			.map((c) => new Date(c.startAt))
 			.sort((a, b) => {
 				if (
-					a.toLocaleTimeString("pl-PL", {
-						hour: "2-digit",
-						minute: "2-digit",
-					}) <
-					b.toLocaleTimeString("pl-PL", {
-						hour: "2-digit",
-						minute: "2-digit",
-					})
+					convertToPolishDateTime(a, "time") <
+					convertToPolishDateTime(b, "time")
 				)
 					return -1;
 				return 1;
@@ -307,22 +435,27 @@ async function blockGame(eventId: string) {
 	console.log(firstAndLast);
 
 	setInterval(async () => {
-		const currentDateTime = new Date();
-		const currentDay = currentDateTime.toLocaleDateString("pl-PL", {
-			day: "2-digit",
-			month: "2-digit",
-			year: "numeric",
+		// Trzeba odświeżać dane o konkurencjach pobierając je na nowo z bazy.
+		const eventCompetitions = await db.query.competition.findMany({
+			where: (table, { inArray }) =>
+				inArray(table.disciplineId, eventDisciplinesIds),
 		});
+
+		const daysCompetitions = Array.from({ length: daysDiff + 1 }, (_, i) =>
+			eventCompetitions.filter(
+				(c) => convertToPolishDateTime(c.startAt, "date") === days[i],
+			),
+		);
+
+		const currentDateTime = new Date();
+		const currentDay = convertToPolishDateTime(currentDateTime, "date");
 		// const currentDay = event.endAt.toLocaleDateString("pl-PL", {
 		// 	day: "2-digit",
 		// 	month: "2-digit",
 		// 	year: "numeric",
 		// });
 		// const currentDay = "22.08.2025";
-		const currentTime = currentDateTime.toLocaleTimeString("pl-PL", {
-			hour: "2-digit",
-			minute: "2-digit",
-		});
+		const currentTime = convertToPolishDateTime(currentDateTime, "time");
 		// const currentTimes = [
 		// 	"08:00",
 		// 	"09:50",
@@ -345,17 +478,16 @@ async function blockGame(eventId: string) {
 		const index = days.indexOf(currentDay);
 
 		console.log(currentDay, currentTime, days, index);
+		console.log(
+			"BLOCK: Number of finished competitions: ",
+			eventCompetitions.filter((c) => c.finished).length,
+		);
 
 		if (index === -1) {
 			// Przed dniem rozpoczynającym grę
-			if (
-				currentDay <
-				event.startAt.toLocaleDateString("pl-PL", {
-					day: "2-digit",
-					month: "2-digit",
-					year: "numeric",
-				})
-			)
+			console.log(convertToPolishDateTime(event.startAt, "date"), currentDay);
+			console.log(currentDay < convertToPolishDateTime(event.startAt, "date"));
+			if (currentDay < convertToPolishDateTime(event.startAt, "date"))
 				await setGameIsActive(
 					true,
 					firstAndLast[0]?.first ?? event.startAt,
@@ -384,11 +516,7 @@ async function blockGame(eventId: string) {
 		// Przed rozpoczęciem gry w danym dniu wydarzenia
 		if (
 			firstAndLast[index] &&
-			currentTime <
-				firstAndLast[index].first.toLocaleTimeString("pl-PL", {
-					hour: "2-digit",
-					minute: "2-digit",
-				})
+			currentTime < convertToPolishDateTime(firstAndLast[index].first, "time")
 		) {
 			await setGameIsActive(true, firstAndLast[index]?.first, false);
 			return;
@@ -396,11 +524,7 @@ async function blockGame(eventId: string) {
 		// Po zakończeniu gry w danym dniu wydarzenia
 		if (
 			firstAndLast[index] &&
-			currentTime >
-				firstAndLast[index].last.toLocaleTimeString("pl-PL", {
-					hour: "2-digit",
-					minute: "2-digit",
-				}) &&
+			currentTime > convertToPolishDateTime(firstAndLast[index].last, "time") &&
 			!daysCompetitions[index]?.some((c) => !c.finished)
 		) {
 			const nextFirst = firstAndLast[index + 1]?.first;
