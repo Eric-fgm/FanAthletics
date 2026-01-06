@@ -31,6 +31,9 @@ export const useInvalidateParticipation = () => {
 				queryClient.invalidateQueries({
 					queryKey: ["game::specification", eventId],
 				}),
+				queryClient.invalidateQueries({
+					queryKey: ["game::ai-team", eventId],
+				}),
 			]);
 		},
 	};
@@ -204,6 +207,20 @@ export const useGameSpecificationQuery = (eventId?: string) => {
 				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${currentEventId}/game-specification`,
 			),
 		queryKey: ["game::specification", currentEventId],
+		enabled: !!currentEventId,
+	});
+};
+
+export const useAITeamQuery = (eventId?: string) => {
+	const { eventId: defaultEventId } = useGlobalSearchParams();
+	const currentEventId = eventId ?? defaultEventId?.toString();
+
+	return useQuery({
+		queryFn: () =>
+			fetcher<(Athlete & { pointsGathered: number })[]>(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${currentEventId}/ai-team`,
+			),
+		queryKey: ["game::ai-team", currentEventId],
 		enabled: !!currentEventId,
 	});
 };

@@ -6,9 +6,16 @@ import type {
 } from "@fan-athletics/shared/types";
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
-import { UserRound, UserRoundPlus } from "lucide-react-native";
-import { CircleUser, Crown, Info, Plus } from "lucide-react-native";
-import { ArrowRight, Cake, Earth, Star, Trash2 } from "lucide-react-native";
+import {
+	ArrowRight,
+	BrainCircuit,
+	Cake,
+	Earth,
+	Info,
+	Star,
+	UserRound,
+	UserRoundPlus,
+} from "lucide-react-native";
 import React, { useState, useRef, useEffect } from "react";
 import {
 	Animated,
@@ -30,7 +37,7 @@ import {
 } from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
 import {
-	TeamManageDialog,
+	useAITeamQuery,
 	useAddTeamMemberMutation,
 	useDeleteTeamLeaderPrivilegeMutation,
 	useDeleteTeamMemberMutation,
@@ -50,7 +57,6 @@ import {
 	GradientType,
 	RightTriangle,
 	StarBadge,
-	countries,
 	getFlagUrl,
 	menColors,
 	womenColors,
@@ -64,6 +70,8 @@ const Participation = () => {
 	);
 	const [memberToDelete, setMemberToDelete] = useState<Athlete | null>(null);
 	const [isAthleteDialogVisible, setAthleteDialogVisible] = useState(false);
+	const [aiTeamDialogOpen, setAITeamDialogOpen] = useState(false);
+
 	const { data: event, isLoading: isEventLoading } = useEventQuery();
 	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
 	const { data: gameSpecification, isLoading: isGSLoading } =
@@ -89,6 +97,7 @@ const Participation = () => {
 		},
 		isLoading: isBlockDataLoading,
 	} = useGameIsActiveQuery();
+	const { data: aiTeam = [], isLoading: isAITeamLoading } = useAITeamQuery();
 	console.log("Game active: ", blockData, gameSpecification, event);
 
 	useEffect(() => {
@@ -235,9 +244,10 @@ const Participation = () => {
 						) : (
 							<View className="bg-yellow-700 rounded-2xl w-[70%] m-auto p-2 mb-3">
 								<Typography size="large1" type="bright" className="m-auto">
-									{blockData.nearestDate &&
-										// new Date(blockData.nearestDate).toUTCString() === new Date(blockData.firstCompetitionDateTime!).toUTCString() ? (
-										`Zawody rozpoczną się ${new Date(blockData.nearestDate).toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric" })} o ${new Date(blockData.nearestDate).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} - skompletuj drużynę do tego czasu.`
+									{
+										blockData.nearestDate &&
+											// new Date(blockData.nearestDate).toUTCString() === new Date(blockData.firstCompetitionDateTime!).toUTCString() ? (
+											`Zawody rozpoczną się ${new Date(blockData.nearestDate).toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric" })} o ${new Date(blockData.nearestDate).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} - skompletuj drużynę do tego czasu.`
 										// ) : (
 
 										// `Zawody w dniu dzisiejszym rozpoczną się o ${new Date(blockData.nearestDate).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}`
@@ -359,6 +369,15 @@ const Participation = () => {
 								</React.Fragment>
 							))}
 					</View>
+					<View className="items-center mt-3 mb-3">
+						<Button
+							text="Zobacz drużynę modelu AI"
+							icon={BrainCircuit}
+							size="base"
+							className="rounded-xl"
+							onPress={() => setAITeamDialogOpen(true)}
+						/>
+					</View>
 					<AthletesSearchDialog
 						disabledAtletes={teamMembers.map((member) => {
 							return { id: member.id, sex: member.sex };
@@ -415,6 +434,43 @@ const Participation = () => {
 									onPress={() => setMemberToDelete(null)}
 								/>
 							</View>
+						</View>
+					</Dialog>
+					<Dialog
+						isOpen={aiTeamDialogOpen}
+						onClose={() => setAITeamDialogOpen(false)}
+						webOptions={{ variant: aiTeam.length > 0 ? "wide" : "normal" }}
+					>
+						<View
+							className={`${aiTeam.length > 0 ? "h-[70vh]" : ""} flex flex-col`}
+						>
+							{aiTeam.length > 0 ? (
+								<View className="flex-1 overflow-y-auto py-4">
+									<View className="items-center m-2 mb-3">
+										<Typography type="dark" size="large2">
+											Drużyna modelu AI
+										</Typography>
+										<View className="h-[1px] w-[90%] bg-black mt-2" />
+									</View>
+									<View className="gap-2 grid sm:grid-cols-1 lg:grid-cols-3 xl:grid-cols-3 px-4 lg:px-12 auto-rows-fr">
+										{aiTeam.map((athlete) => (
+											<AthletePreview
+												key={athlete.id}
+												athlete={athlete}
+												isCaptain={false}
+												pointsGathered={athlete.pointsGathered}
+												gameActive={false}
+											/>
+										))}
+									</View>
+								</View>
+							) : (
+								<View className="items-center p-4">
+									<Typography size="large1" type="washed">
+										Model AI jeszcze nie utworzył drużyny.
+									</Typography>
+								</View>
+							)}
 						</View>
 					</Dialog>
 				</>
@@ -506,8 +562,8 @@ const AthletePreview: React.FC<{
 						>
 							<View className="flex-row items-center pt-3 pb-10 pl-4 pr-1 gap-x-2">
 								<Typography size="large2-s" type="bright">
-									{/* +{pointsGathered} */}+
-									{Math.floor(Math.random() * 100) + 1000}
+									+{pointsGathered}
+									{/* {Math.floor(Math.random() * 100) + 1000} */}
 								</Typography>
 								<StarBadge
 									width={25}

@@ -230,6 +230,16 @@ export const teamMember = pgTable(
 	],
 );
 
+export const aiTeamMember = pgTable("ai_team_member", {
+	athleteId: text()
+		.references(() => athlete.id)
+		.notNull(),
+	eventId: text()
+		.references(() => event.id)
+		.notNull(),
+	pointsGathered: integer().default(0).notNull(),
+});
+
 export const competition = pgTable("competition", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),
 	disciplineId: text()

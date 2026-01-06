@@ -180,8 +180,18 @@ const athletesApp = new Hono().put("/:athleteId", async (c) => {
 });
 
 const aiApp = new Hono().post("/:eventId", async (c) => {
-	const payload = await c.req.json<{ budget: number }>();
 	const eventId = c.req.param("eventId");
+	const payload = await db.query.gameSpecification.findFirst({
+		where: (table, { eq }) => eq(table.eventId, eventId),
+	});
+
+	if (!payload)
+		return c.json(
+			{
+				message: "Cannot create AI team because game specification is unknown.",
+			},
+			404,
+		);
 
 	const ai = getAI(process.env.GEMINI_API_KEY as string);
 	const files = getFilesAI(ai);
@@ -197,6 +207,7 @@ const aiApp = new Hono().post("/:eventId", async (c) => {
 	const promptResult = await model.generate({
 		file: uploadedFile,
 		budget: payload.budget,
+		numberOfAthletes: payload.numberOfTeamMembers,
 	});
 
 	if (!promptResult.text) {
@@ -209,6 +220,17 @@ const aiApp = new Hono().post("/:eventId", async (c) => {
 		where: (athlete, { eq, and, inArray }) =>
 			and(eq(athlete.eventId, eventId), inArray(athlete.id, athletesIds)),
 	});
+
+	await db
+		.delete(tables.aiTeamMember)
+		.where(operators.eq(tables.aiTeamMember.eventId, eventId));
+
+	for (const athlete of athletes) {
+		await db.insert(tables.aiTeamMember).values({
+			athleteId: athlete.id,
+			eventId: eventId,
+		});
+	}
 
 	return c.json(athletes, 200);
 });
@@ -454,7 +476,7 @@ async function blockGame(eventId: string) {
 		// 	month: "2-digit",
 		// 	year: "numeric",
 		// });
-		// const currentDay = "22.08.2025";
+		// const currentDay = "2025.08.22";
 		const currentTime = convertToPolishDateTime(currentDateTime, "time");
 		// const currentTimes = [
 		// 	"08:00",

@@ -387,6 +387,30 @@ export default new Hono<{
 					: null,
 		});
 	})
+	.get("/ai-team", async (c) => {
+		const eventId = c.req.param("eventId");
+
+		const aiAthletes = await db.query.aiTeamMember.findMany({
+			where: (table, { eq }) => eq(table.eventId, eventId),
+		});
+
+		const athletes = await Promise.all(
+			aiAthletes.map(async (aiAthlete) => {
+				const athlete = await db.query.athlete.findFirst({
+					where: (table, { eq }) => eq(table.id, aiAthlete.athleteId),
+				});
+
+				return {
+					...athlete,
+					pointsGathered: aiAthlete.pointsGathered,
+				};
+			}),
+		);
+
+		console.log(athletes);
+
+		return c.json(athletes, 200);
+	})
 	.use(async (c, next) => {
 		const eventId = c.req.param("eventId");
 
