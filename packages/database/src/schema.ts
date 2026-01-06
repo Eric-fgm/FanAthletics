@@ -2,10 +2,10 @@ import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	integer,
-	real,
 	json,
 	pgTable,
 	primaryKey,
+	real,
 	text,
 	timestamp,
 	varchar,
@@ -92,10 +92,13 @@ export const gameSpecification = pgTable("game_specification", {
 		.references(() => event.id)
 		.notNull(),
 	numberOfTeamMembers: integer().default(8).notNull(),
-	budget: integer().default(300).notNull(),
+	budget: integer().default(500).notNull(),
 	maxExchanges: integer().default(8).notNull(),
 	minAthleteCost: integer().default(50).notNull(),
 	maxAthleteCost: integer().default(100).notNull(),
+	isActive: boolean().default(true).notNull(),
+	nearestDate: timestamp({ withTimezone: true }),
+	finished: boolean().default(false).notNull(),
 	sexParity: boolean().default(true).notNull(),
 });
 
@@ -119,6 +122,7 @@ export const discipline = pgTable("discipline", {
 		.references(() => event.id)
 		.notNull(),
 	name: varchar({ length: 255 }).notNull(),
+	code: varchar({ length: 255 }).notNull(),
 	organization: varchar({ length: 255 }),
 	record: varchar({ length: 255 }).notNull(),
 	icon: varchar({ length: 255 }).notNull(),
@@ -226,6 +230,16 @@ export const teamMember = pgTable(
 	],
 );
 
+export const aiTeamMember = pgTable("ai_team_member", {
+	athleteId: text()
+		.references(() => athlete.id)
+		.notNull(),
+	eventId: text()
+		.references(() => event.id)
+		.notNull(),
+	pointsGathered: integer().default(0).notNull(),
+});
+
 export const competition = pgTable("competition", {
 	id: text().primaryKey().default(sql`gen_random_uuid()`),
 	disciplineId: text()
@@ -238,6 +252,7 @@ export const competition = pgTable("competition", {
 	startAt: timestamp({ withTimezone: true }).notNull(),
 	endedAt: timestamp({ withTimezone: true }),
 	pointsAlreadyCounted: boolean().default(false).notNull(),
+	finished: boolean().default(false).notNull(),
 });
 
 export const competitor = pgTable(

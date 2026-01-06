@@ -95,3 +95,18 @@ export const useEventDeletedMutation = () => {
 		},
 	});
 };
+
+export const useGenerateAITeamMutation = () => {
+	return useMutation({
+		mutationFn: (eventId: string) =>
+			fetcher(`${process.env.EXPO_PUBLIC_API_URL}/api/v1/admin/ai/${eventId}`, {
+				method: "POST",
+			}),
+		async onSuccess() {
+			showToast({
+				text1: "Model AI stworzył swój zespół",
+				text2: "Sztuczna inteligencja pomyślnie stworzyła swój zespół.",
+			});
+		},
+	});
+};

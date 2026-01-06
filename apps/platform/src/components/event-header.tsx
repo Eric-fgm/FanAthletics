@@ -11,7 +11,10 @@ const EventHeader: React.FC<{
 
 	if (event === undefined) return null;
 
-	const eventDate = eventDateInfo(event.startAt, event.endAt);
+	const eventDate = eventDateInfo(
+		new Date(event.startAt),
+		new Date(event.endAt),
+	);
 
 	return (
 		<View className="p-7 mb-3">
@@ -72,36 +75,39 @@ const EventHeader: React.FC<{
 
 export default EventHeader;
 
-const months: Record<string, string> = {
-	"01": "stycznia",
-	"02": "lutego",
-	"03": "marca",
-	"04": "kwietnia",
-	"05": "maja",
-	"06": "czerwca",
-	"07": "lipca",
-	"08": "sierpnia",
-	"09": "września",
-	"10": "października",
-	"11": "listopada",
-	"12": "grudnia",
+const months: Record<number, string> = {
+	1: "stycznia",
+	2: "lutego",
+	3: "marca",
+	4: "kwietnia",
+	5: "maja",
+	6: "czerwca",
+	7: "lipca",
+	8: "sierpnia",
+	9: "września",
+	10: "października",
+	11: "listopada",
+	12: "grudnia",
 };
 
-function eventDateInfo(startDate: string, endDate: string) {
-	function writeFullDate(date: string, withoutYear = false, withoutMonthAndYear = false) {
+function eventDateInfo(startDate: Date, endDate: Date) {
+	function writeFullDate(
+		date: Date,
+		withoutYear = false,
+		withoutMonthAndYear = false,
+	) {
 		if (withoutYear)
-			return `${date.substring(8, 10)} ${months[date.substring(5, 7)]}`;
-		if (withoutMonthAndYear)
-			return date.substring(8, 10);
-		return `${date.substring(8, 10)} ${months[date.substring(5, 7)]} ${date.substring(0, 4)}`;
+			return `${date.getUTCDate()} ${months[date.getUTCMonth() + 1]}`;
+		if (withoutMonthAndYear) return date.getUTCDate();
+		return `${date.getUTCDate()} ${months[date.getUTCMonth() + 1]} ${date.getUTCFullYear()}`;
 	}
 
-	if (startDate === endDate)
+	if (startDate.getDate() === endDate.getDate())
 		return writeFullDate(startDate);
 
-	if (startDate.substring(0, 4) !== endDate.substring(0, 4))
+	if (startDate.getUTCFullYear() !== endDate.getUTCFullYear())
 		return `${writeFullDate(startDate)} - ${writeFullDate(endDate)}`;
-	if (startDate.substring(5, 7) !== endDate.substring(5, 7))
+	if (startDate.getUTCMonth() !== endDate.getUTCMonth())
 		return `${writeFullDate(startDate, true)} - ${writeFullDate(endDate)}`;
 	return `${writeFullDate(startDate, false, true)} - ${writeFullDate(endDate)}`;
 }

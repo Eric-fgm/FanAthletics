@@ -8,6 +8,7 @@ import {
 	EventCreateDialog,
 	EventUpdateDialog,
 	useEventPullMutation,
+	useGenerateAITeamMutation,
 } from "#/features/admin";
 import {
 	useAthleteQuery,
@@ -35,6 +36,8 @@ const AdminTools = () => {
 	const { mutate: pullEvent, isPending } = useEventPullMutation();
 	const { mutateAsync: countPoints, isPending: isCountPointsPending } =
 		useCountPointsMutation();
+	const { mutate: generateAITeam, isPending: isGeneratingAITeamPending } =
+		useGenerateAITeamMutation();
 	const { invalidate: invalidateParticipation } = useInvalidateParticipation();
 
 	return (
@@ -61,6 +64,16 @@ const AdminTools = () => {
 									disabled: isPending,
 									onPress: () => {
 										pullEvent(event.id);
+									},
+								},
+								{
+									name: isGeneratingAITeamPending
+										? "Trwa tworzenie..."
+										: "Stwórz drużynę AI",
+									disabled: isGeneratingAITeamPending,
+									onPress: async () => {
+										generateAITeam(event.id);
+										await invalidateParticipation(event.id);
 									},
 								},
 							]

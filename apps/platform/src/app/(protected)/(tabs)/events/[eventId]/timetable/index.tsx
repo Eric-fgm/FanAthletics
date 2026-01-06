@@ -8,7 +8,7 @@ import { Timetable } from "./timetable";
 export default function EventTimetable() {
 	const { data: event, isLoading: isEventLoading } = useEventQuery();
 	const { data: competitions = [], isLoading: areCompetitionsLoading } =
-		useCompetitionsQuery();
+		useCompetitionsQuery({}, { refetchInterval: 5000 });
 
 	if (!event) return null;
 
