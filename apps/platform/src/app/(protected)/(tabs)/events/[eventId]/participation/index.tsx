@@ -294,8 +294,8 @@ const Participation = () => {
 															}}
 														>
 															<Typography size="large2-s" type="bright">
-																{/* +{member.pointsGathered} */}+
-																{Math.floor(Math.random() * 100) + 1000}
+																+{member.pointsGathered}
+																{/* {Math.floor(Math.random() * 100) + 1000} */}
 															</Typography>
 															<StarBadge
 																width={25}
