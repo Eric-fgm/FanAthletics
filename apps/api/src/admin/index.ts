@@ -3,6 +3,7 @@ import { getAI, getFilesAI, getModelAI } from "@fan-athletics/ai";
 import { db, operators, tables } from "@fan-athletics/database";
 import type {
 	AthletePayload,
+	CompetitorResults,
 	DisciplinePayload,
 	EventPayload,
 } from "@fan-athletics/shared/types";
@@ -72,6 +73,7 @@ const eventsApp = new Hono()
 
 		getResultsPeriodically(event.id);
 		blockGame(event.id);
+		countPoints(event.id);
 
 		return c.json({ message: "Event successfully created!" }, 201);
 	})
@@ -365,7 +367,7 @@ async function getResultsPeriodically(eventId: string) {
 		}
 
 		return;
-	}, 20 * 1000);
+	}, 30 * 1000);
 
 	return;
 }
@@ -470,13 +472,13 @@ async function blockGame(eventId: string) {
 		);
 
 		const currentDateTime = new Date();
-		const currentDay = convertToPolishDateTime(currentDateTime, "date");
+		// const currentDay = convertToPolishDateTime(currentDateTime, "date");
 		// const currentDay = event.endAt.toLocaleDateString("pl-PL", {
 		// 	day: "2-digit",
 		// 	month: "2-digit",
 		// 	year: "numeric",
 		// });
-		// const currentDay = "2025.08.22";
+		const currentDay = "2025.01.01";
 		const currentTime = convertToPolishDateTime(currentDateTime, "time");
 		// const currentTimes = [
 		// 	"08:00",
@@ -561,6 +563,166 @@ async function blockGame(eventId: string) {
 		else await setGameIsActive(false, null, true);
 		return;
 	}, 5 * 1000);
+}
+
+async function countPoints(eventId: string) {
+	const disciplineIds = (
+		await db.query.discipline.findMany({
+			where: (discipline, { eq }) => eq(discipline.eventId, eventId),
+		})
+	)
+		.filter((dis) => !dis.name.endsWith("pk"))
+		.map((dis) => dis.id);
+
+	const interval = setInterval(async () => {
+		const competitions = await db.query.competition.findMany({
+			where: (competition, { inArray }) =>
+				inArray(competition.disciplineId, disciplineIds),
+		});
+
+		const filtered = [];
+
+		for (const disciplineId of disciplineIds) {
+			const comps = competitions.filter((c) => c.disciplineId === disciplineId);
+
+			if (comps.length === 0) continue;
+
+			const round3Exists = comps.some((c) => c.round === 3);
+
+			if (round3Exists) {
+				for (const comp of comps) {
+					if (comp.round === 3) filtered.push(comp);
+				}
+			} else {
+				for (const comp of comps) filtered.push(comp);
+			}
+		}
+
+		const finishedAndCounted = filtered.filter(
+			(c) => c.finished && c.pointsAlreadyCounted,
+		);
+
+		if (finishedAndCounted.length === filtered.length) {
+			console.info("ALL COMPETITIONS ALREADY COUNTED");
+			clearInterval(interval);
+			return;
+		}
+
+		const onlyFinishedAndNotCounted = filtered.filter(
+			(c) => c.finished && !c.pointsAlreadyCounted,
+		);
+		console.log(
+			"COMPETITIONS TO BE COUNTED: ",
+			onlyFinishedAndNotCounted.length,
+		);
+
+		for (const c of onlyFinishedAndNotCounted) {
+			await db
+				.update(tables.competition)
+				.set({
+					pointsAlreadyCounted: true,
+				})
+				.where(operators.eq(tables.competition.id, c.id));
+		}
+
+		const competitionIds = filtered
+			.filter((c) => !c.pointsAlreadyCounted)
+			.map((c) => c.id);
+
+		const competitors = await db.query.competitor.findMany({
+			where: (competitor, { inArray }) =>
+				inArray(competitor.competitionId, competitionIds),
+		});
+
+		for (const competitor of competitors) {
+			if (competitor.results) {
+				const competitorResults = competitor.results as CompetitorResults;
+				const pointsToAdd =
+					competitorResults.ranking === "" && competitor.results.place === 0 // Ma DNF, DQ albo DNS
+						? 0
+						: competitorResults.ranking === ""
+							? Math.max(8 - competitor.results.place + 1, 0) // Jest w finale
+							: Math.max(8 - Number.parseInt(competitorResults.ranking) + 1, 0); // Konkurencja nie ma finałów
+				console.log(
+					competitorResults.ranking,
+					typeof competitorResults.ranking,
+					pointsToAdd,
+					Number.parseInt(competitorResults.ranking),
+				);
+
+				const teamMembers = await db.query.teamMember.findMany({
+					where: (member, { and, eq }) =>
+						and(
+							eq(member.athleteId, competitor.athleteId),
+							eq(member.stillInTeam, true),
+						),
+				});
+
+				for (const member of teamMembers) {
+					await db
+						.update(tables.teamMember)
+						.set({
+							pointsGathered: operators.sql`${tables.teamMember.pointsGathered} + ${member.isCaptain ? pointsToAdd * 2 : pointsToAdd}`,
+						})
+						.where(
+							operators.and(
+								operators.eq(
+									tables.teamMember.participantId,
+									member.participantId,
+								),
+								operators.eq(tables.teamMember.athleteId, member.athleteId),
+								operators.eq(tables.teamMember.isCaptain, member.isCaptain),
+								operators.eq(
+									tables.teamMember.pointsGathered,
+									member.pointsGathered,
+								),
+							),
+						);
+				}
+
+				const aiTeamMembers = await db.query.aiTeamMember.findMany({
+					where: (table, { eq }) => eq(table.athleteId, competitor.athleteId),
+				});
+
+				for (const aiTeamMember of aiTeamMembers) {
+					await db
+						.update(tables.aiTeamMember)
+						.set({
+							pointsGathered: operators.sql`${tables.aiTeamMember.pointsGathered} + ${pointsToAdd}`,
+						})
+						.where(
+							operators.eq(
+								tables.aiTeamMember.athleteId,
+								aiTeamMember.athleteId,
+							),
+						);
+				}
+			}
+		}
+
+		const participants = await db.query.participant.findMany({
+			where: (particip, { eq }) => eq(particip.referenceId, eventId),
+		});
+
+		for (const participant of participants) {
+			const teamMembers = await db.query.teamMember.findMany({
+				where: (member, { eq }) => eq(member.participantId, participant.id),
+			});
+
+			const allPoints = teamMembers.reduce((a, b) => {
+				return a + b.pointsGathered;
+			}, 0);
+
+			await db
+				.update(tables.participant)
+				.set({
+					lastPoints: allPoints,
+				})
+				.where(operators.eq(tables.participant.id, participant.id));
+		}
+	}, 5000);
+
+	return;
 }
 
 adminApp.route("/events", eventsApp);

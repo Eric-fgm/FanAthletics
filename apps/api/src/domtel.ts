@@ -386,7 +386,7 @@ export const processCompetitionsAndResults = async (
 											})
 											.where(operators.eq(tables.athlete.id, athlete.id));
 									}
-									if (athlete.birthdate === null) {
+									if (athlete.birthdate === null || athlete.birthdate === "") {
 										await db
 											.update(tables.athlete)
 											.set({
