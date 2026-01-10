@@ -5,6 +5,7 @@ import type {
 	User,
 } from "@fan-athletics/shared/types";
 import { Hono } from "hono";
+import { countAthleteCosts, countWinPredictions } from "#/domtel";
 
 export type TeamMembership = {
 	athleteId: string;
@@ -63,6 +64,8 @@ export default new Hono<{
 	.get("/participation", async (c) => {
 		const user = c.get("user");
 		const eventId = c.req.param("eventId");
+
+		console.log("USER ID:", user.id);
 
 		const participant = await db.query.participant.findFirst({
 			where: (participant, { eq, and }) =>
@@ -140,6 +143,19 @@ export default new Hono<{
 			return c.json(defaultGameSpecification);
 		}
 		return c.json(gameSpecification);
+	})
+	.post("/count-win-predictions", async (c) => {
+		const eventId = c.req.param("eventId");
+		console.log("EVNT", eventId);
+		await countWinPredictions(eventId);
+		return c.json({ message: "Win predictions counted successfully." }, 200);
+		//return c.json(data);
+	})
+	.post("/count-athlete-costs", async (c) => {
+		const eventId = c.req.param("eventId");
+		console.log("EVNT", eventId);
+		await countAthleteCosts(eventId);
+		return c.json({ message: "Athlete costs counted successfully." }, 200);
 	})
 	.use(async (c, next) => {
 		const user = c.get("user");
@@ -479,15 +495,15 @@ export default new Hono<{
 			}
 		}
 
-		const onlyNotCounted = filtered.filter((c) => !c.pointsAlreadyCounted);
-		for (const c of onlyNotCounted) {
-			await db
-				.update(tables.competition)
-				.set({
-					pointsAlreadyCounted: true,
-				})
-				.where(operators.eq(tables.competition.id, c.id));
-		}
+		// const onlyNotCounted = filtered.filter((c) => !c.pointsAlreadyCounted);
+		// for (const c of onlyNotCounted) {
+		// 	await db
+		// 		.update(tables.competition)
+		// 		.set({
+		// 			pointsAlreadyCounted: true,
+		// 		})
+		// 		.where(operators.eq(tables.competition.id, c.id));
+		// }
 
 		const competitionIds = filtered
 			.filter((c) => !c.pointsAlreadyCounted)
@@ -501,12 +517,57 @@ export default new Hono<{
 		for (const competitor of competitors) {
 			if (competitor.results) {
 				const competitorResults = competitor.results as CompetitorResults;
-				const pointsToAdd =
+				let pointsToAdd =
 					competitorResults.ranking === "" && competitor.results.place === 0 // Ma DNF, DQ albo DNS
 						? 0
 						: competitorResults.ranking === ""
 							? Math.max(8 - competitor.results.place + 1, 0) // Jest w finale
 							: Math.max(8 - Number.parseInt(competitorResults.ranking) + 1, 0); // Konkurencja nie ma finałów
+
+				const competitorComp = await db.query.competition.findFirst({
+					where: (comp, { eq }) => eq(comp.id, competitor.competitionId),
+				});
+				let discName = "";
+				if (competitorComp) {
+					const disc = await db.query.discipline.findFirst({
+						where: (d, { eq }) => eq(d.id, competitorComp?.disciplineId),
+					});
+					if (disc) {
+						discName = disc?.code;
+					}
+				}
+				console.log(
+					"Dyscyplina:",
+					discName,
+					"Wynik:",
+					competitorResults.result,
+				);
+				if (competitorResults.result !== "" && competitorResults.place !== 0) {
+					try {
+						console.log("TU");
+						const res = await fetch(
+							`${process.env.SCRAPER_URL}/api/assign-points`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									result: competitorResults.result,
+									discipline: discName,
+									sex: discName[0],
+								}),
+							},
+						);
+						//console.log("TUUU", res.status, " ", res.statusText);
+						const waPoints = (await res.json()) as WAPointsRecord;
+						//console.log("Punkty:", waPoints.points);
+						pointsToAdd += waPoints.points;
+					} catch (e) {
+						console.log("BLAAAAAD", e);
+					}
+				}
+
 				console.log(
 					competitorResults.ranking,
 					typeof competitorResults.ranking,
@@ -616,3 +677,7 @@ async function doesAthleteBelongToTeam(
 	});
 	return !!athleteInTeam;
 }
+
+type WAPointsRecord = {
+	points: number;
+};

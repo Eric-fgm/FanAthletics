@@ -10,6 +10,93 @@ runs = ["60 m", "100 m", "200 m", "300 m", "400 m", "600 m", "800 m", "1000 m", 
 short_racewalking = ["Chód 3 km", "Chód 5 km"]
 long_racewalking = ["Chód 20 km", "Chód 30 km", "Chód 35 km", "Chód 50 km"]
 
+outdoor_discipline_names = {
+    # MĘŻCZYZNI
+    # Biegi
+    "M60": "60 m",
+    "M100": "100 m",
+    "M200": "200 m",
+    "M300": "300 m",
+    "M400": "400 m",
+    "M600": "600 m",
+    "M800": "800 m",
+    "M1000": "1000 m",
+    "M1500": "1500 m",
+    "Mmila": "Mila",
+    "M2000": "2000 m",
+    "M3000": "3000 m",
+    "M5000": "5000 m",
+    "M10000": "10000 m",
+    "M60pł": "60 m pł M",
+    "M110": "110 m pł",
+    "M400pł": "400 m pł",
+    "M2000p": "2000 m prz",
+    "M3000p": "3000 m prz",
+    # Chód
+    "M3ch": "Chód 3 km",
+    "M5ch": "Chód 5 km",
+    "M10ch": "Chód 10 km",
+    "M15ch": "Chód 15 km",
+    "M20ch": "Chód 20 km",
+    "M30ch": "Chód 30 km",
+    "M35ch": "Chód 35 km",
+    "M50ch": "Chód 50 km",
+    # Skoki
+    "Mw": "Wzwyż",
+    "Mwd": "W dal",
+    "Mtrójs": "Trójskok",
+    "Mt": "Tyczka",
+    # Rzuty
+    "Mkula": "Kula (7.26)",
+    "Mdysk": "Dysk (2)",
+    "Mmłot": "Młot (7.26)",
+    "Mo": "Oszczep (800)",
+    # Wielobój
+    "WM10": "10-bój",
+
+    # KOBIETY
+    # Biegi
+    "K60": "60 m",
+    "K100": "100 m",
+    "K200": "200 m",
+    "K300": "300 m",
+    "K400": "400 m",
+    "K600": "600 m",
+    "K800": "800 m",
+    "K1000": "1000 m",
+    "K1500": "1500 m",
+    "Kmila": "Mila",
+    "K2000": "2000 m",
+    "K3000": "3000 m",
+    "K5000": "5000 m",
+    "K10000": "10000 m",
+    "K60pł": "60 m pł K",
+    "K100pł": "100 m pł",
+    "K400pł": "400 m pł K",
+    "K2000p": "2000 m prz",
+    "K3000p": "3000 m prz",
+    # Chód
+    "K3ch": "Chód 3 km",
+    "K5ch": "Chód 5 km",
+    "K10ch": "Chód 10 km",
+    "K15ch": "Chód 15 km",
+    "K20ch": "Chód 20 km",
+    "K30ch": "Chód 30 km",
+    "K35ch": "Chód 35 km",
+    "K50ch": "Chód 50 km",
+    # Skoki
+    "Kw": "Wzwyż",
+    "Kwd": "W dal",
+    "Ktrójs": "Trójskok",
+    "Kt": "Tyczka",
+    # Rzuty
+    "Kkula": "Kula (4)",
+    "Kdysk": "Dysk (1)",
+    "Kmłot": "Młot (4)",
+    "Ko": "Oszczep (600)",
+    # Wielobój
+    "WK7": "7-bój",
+}
 
 def parse_duration(t):
     t = t.strip().replace(",", ".")
@@ -54,6 +141,8 @@ def assign_points(result, discipline, sex):
     else:
         with open("all_points_women.json", 'r', encoding="utf-8") as f:
             data = json.load(f)
+    
+    discipline = outdoor_discipline_names[discipline]
     #print("TU", result)
     # Jeśli dokładnie tyle co jakaś liczba punktów
     for i, res in enumerate(data[discipline]):

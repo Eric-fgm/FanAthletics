@@ -16,11 +16,96 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
 
 runs = ["60 m", "100 m", "200 m", "300 m", "400 m", "600 m", "800 m", "1000 m", "1500 m", "Mila", "2000 m", "3000 m",
-        "5000 m", "10000 m", "110 m pł M", "400 m pł", "2000 m prz", "3000 m prz", "Chód 3 km", "Chód 5 km",
+        "5000 m", "10000 m", "110 m pł M", "100 m pł", "400 m pł", "400 m pł K", "2000 m prz", "3000 m prz", "Chód 3 km", "Chód 5 km",
         "Chód 10 km", "Chód 15 km", "Chód 20 km", "Chód 30 km", "Chód 35 km", "Chód 50 km"]
 
 short_racewalking = ["Chód 3 km", "Chód 5 km"]
 long_racewalking = ["Chód 20 km", "Chód 30 km", "Chód 35 km", "Chód 50 km"]
+
+discipline_codes_dict_men = {
+    "60 m": "M60",
+    "100 m": "M100",
+    "200 m": "M200",
+    "300 m": "M300",
+    "400 m": "M400",
+    "600 m": "M600",
+    "800 m": "M800",
+    "1000 m": "M1000",
+    "1500 m": "M1500",
+    "Mila": "Mmila",
+    "2000 m": "M2000",
+    "3000 m": "M3000",
+    "5000 m": "M5000",
+    "10000 m": "M10000",
+    "60 m pł M": "M60pł",
+    "110 m pł": "M110",
+    "400 m pł": "M400pł",
+    "2000 m prz": "M2000p",
+    "3000 m prz": "M3000p",
+    # Chód
+    "Chód 3 km": "M3ch",
+    "Chód 5 km": "M5ch",
+    "Chód 10 km": "M10ch",
+    "Chód 15 km": "M15ch",
+    "Chód 20 km": "M20ch",
+    "Chód 30 km": "M30ch",
+    "Chód 35 km": "M35ch",
+    "Chód 50 km": "M50ch",
+    # Skoki
+    "Wzwyż": "Mw",
+    "W dal": "Mwd",
+    "Trójskok": "Mtrójs",
+    "Tyczka": "Mt",
+    # Rzuty
+    "Kula (7.26)": "Mkula",
+    "Dysk (2)": "Mdysk",
+    "Młot (7.26)": "Mmłot",
+    "Oszczep (800)": "Mo",
+    # Wielobój
+    "10-bój": "WM10",
+}
+discipline_codes_dict_women = {
+    "60 m": "K60",
+    "100 m": "K100",
+    "200 m": "K200",
+    "300 m": "K300",
+    "400 m": "K400",
+    "600 m": "K600",
+    "800 m": "K800",
+    "1000 m": "K1000",
+    "1500 m": "K1500",
+    "Mila": "Kmila",
+    "2000 m": "K2000",
+    "3000 m": "K3000",
+    "5000 m": "K5000",
+    "10000 m": "K10000",
+    "60 m pł K": "K60pł",
+    "100 m pł": "K100pł",
+    "400 m pł K": "K400pł",
+    "2000 m prz": "K2000p",
+    "3000 m prz": "K3000p",
+    # Chód
+    "Chód 3 km": "K3ch",
+    "Chód 5 km": "K5ch",
+    "Chód 10 km": "K10ch",
+    "Chód 15 km": "K15ch",
+    "Chód 20 km": "K20ch",
+    "Chód 30 km": "K30ch",
+    "Chód 35 km": "K35ch",
+    "Chód 50 km": "K50ch",
+    # Skoki
+    "Wzwyż": "Kw",
+    "W dal": "Kwd",
+    "Trójskok": "Ktrójs",
+    "Tyczka": "Kt",
+    # Rzuty
+    "Kula (4)": "Kkula",
+    "Dysk (1)": "Kdysk",
+    "Młot (4)": "Kmłot",
+    "Oszczep (600)": "Ko",
+    # Wielobój
+    "7-bój": "WK7",
+}
 
 def get_athletes_from_domtel_results_site(url, sex):
 
@@ -41,14 +126,14 @@ def get_athletes_from_domtel_results_site(url, sex):
     final_data = {}
 
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = [executor.submit(athlete_worker, str(trow).strip(), final_data, points_data) for trow in trows[1:]]
+        futures = [executor.submit(athlete_worker, str(trow).strip(), final_data, points_data, sex) for trow in trows[1:]]
 
         for future in as_completed(futures):
             future.result()
 
     return json.dumps(final_data)
 
-def athlete_worker(trow, final_data, points_data):
+def athlete_worker(trow, final_data, points_data, sex):
     soup = BeautifulSoup(trow, "html.parser")
     tds = soup.find_all('td')
     # Numer startowy
@@ -69,15 +154,15 @@ def athlete_worker(trow, final_data, points_data):
         for idx, a in enumerate(a_s):
             if a is not None:
                 # Pobieramy dane z domtela (życiówki i rekordy sezonu)
-                profile_data = get_data_from_domtel_profile(a['href'], points_data)
+                profile_data = get_data_from_domtel_profile(a['href'], points_data, sex)
                 data[a.text.strip()] = {"profile_data": profile_data}
     elif a_s:
         # Jeśli nie-sztafeta to jeszcze zdjęcie i data urodzenia
-        profile_data = get_data_from_domtel_profile(a_s[0]['href'], points_data)
+        profile_data = get_data_from_domtel_profile(a_s[0]['href'], points_data, sex)
         data = {"photo": photo, "birthdate": birthdate, "profile_data": profile_data}
     final_data[number] = data
 
-def get_data_from_domtel_profile(url, points_data):
+def get_data_from_domtel_profile(url, points_data, sex):
     
     #driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     
@@ -87,6 +172,11 @@ def get_data_from_domtel_profile(url, points_data):
     data = {}
 
     data['pbs'] = {}
+
+    if sex == "M":
+        discipline_codes = discipline_codes_dict_men
+    else:
+        discipline_codes = discipline_codes_dict_women
 
     # Życiówki
     pbs_table = None
@@ -99,16 +189,20 @@ def get_data_from_domtel_profile(url, points_data):
     for tr in trs[3:]:
         tds = tr.find_all('td')
         discipline = tds[0].text.strip()
+        if discipline in discipline_codes:
+            code = discipline_codes[discipline]
+        else:
+            code = ""
         result = tds[1].text.strip()
         points = 0
         if discipline in points_data:
             points = assign_points(result.split("\n")[0], discipline, points_data)
-        data['pbs'][tds[0].text.strip()] = {"result": result, "date": tds[2].text.strip(), "location": tds[3].text.strip(), "points": points}
+        data['pbs'][tds[0].text.strip()] = {"code": code, "result": result, "date": tds[2].text.strip(), "location": tds[3].text.strip(), "points": points}
 
-    data['sbs'] = get_season_bests(change_url(url, "sb"), points_data)
+    data['sbs'] = get_season_bests(change_url(url, "sb"), points_data, discipline_codes)
     return data
 
-def get_season_bests(url, points_data):
+def get_season_bests(url, points_data, discipline_codes):
     response = requests.get(url, verify=False)
     soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -127,6 +221,10 @@ def get_season_bests(url, points_data):
             continue
         font = tds[0].find('font')
         discipline = font.text.strip()
+        if discipline in discipline_codes:
+            code = discipline_codes[discipline]
+        else:
+            code = ""
         result = tds[1].find('font').text.strip()
         date = tds[3].text.strip()
         location = tds[4].find('font')
@@ -151,11 +249,11 @@ def get_season_bests(url, points_data):
 
                 
                 if sbs.get(discipline) is None:
-                    sbs[discipline] = {"result": result, "date": date, "location": location, "points": points}
+                    sbs[discipline] = {"code": code, "result": result, "date": date, "location": location, "points": points}
                 else:
                     res = compare_times(result.split(" ")[0], sbs[discipline]["result"].split(" ")[0])
                     if res == result.split(" ")[0]:
-                        sbs[discipline] = {"result": result, "date": date, "location": location, "points": points}
+                        sbs[discipline] = {"code": code, "result": result, "date": date, "location": location, "points": points}
         else:
             # Konkurencje techniczne
             if all(x not in result for x in {"DQ", "DNF", "DNS", "NM"}):
@@ -167,12 +265,12 @@ def get_season_bests(url, points_data):
                         points = assign_points(result.split("\n")[0].strip(), discipline.split("*")[0], points_data)
 
                 if sbs.get(discipline) is None:
-                    sbs[discipline] = {"result": result, "date": date, "location": location, "points": points}
+                    sbs[discipline] = {"code": code, "result": result, "date": date, "location": location, "points": points}
                 else:
                     r1 = float(result.split(" ")[0])
                     r2 = float(sbs[discipline]["result"].split(" ")[0])
                     if r1 > r2:
-                        sbs[discipline] = {"result": result, "date": date, "location": location, "points": points}
+                        sbs[discipline] = {"code": code, "result": result, "date": date, "location": location, "points": points}
 
     # Usuwanie gorszych życiówek przy dużym wietrze
     sbs2 = deepcopy(sbs)
@@ -192,7 +290,8 @@ def get_season_bests(url, points_data):
     return sbs
 
 def change_url(url, change):
-    return url.replace("profile", change)
+    url = url.replace("profile", change)
+    return url + "&sezon=2025&sezon2=L"
 
 def parse_duration(t):
     t = t.strip().replace(",", ".")
@@ -282,7 +381,7 @@ def assign_points(result, discipline, data):
         ind = len(data[discipline]) // 2
         ind = binary_search_times(data[discipline], result, ind, 0, len(data[discipline])-1)
 
-        return data["Points"][ind]
+        return data["Points"][ind] if ind is not None else 10000
 
     else:
         # Jeśli słabiej niż 600 pkt.
@@ -299,7 +398,7 @@ def assign_points(result, discipline, data):
         ind = len(data[discipline]) // 2
         ind = binary_search_tech(data[discipline], result, ind, 0, len(data[discipline])-1)
 
-        return data["Points"][ind]
+        return data["Points"][ind] if ind is not None else 10000
 
 def binary_search_times(discipline_data, result, ind, start, end):
     """

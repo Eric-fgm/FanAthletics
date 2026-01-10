@@ -2,10 +2,10 @@ import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	integer,
-	real,
 	json,
 	pgTable,
 	primaryKey,
+	real,
 	text,
 	timestamp,
 	varchar,
@@ -119,6 +119,7 @@ export const discipline = pgTable("discipline", {
 		.references(() => event.id)
 		.notNull(),
 	name: varchar({ length: 255 }).notNull(),
+	code: varchar({ length: 255 }).notNull(),
 	organization: varchar({ length: 255 }),
 	record: varchar({ length: 255 }).notNull(),
 	icon: varchar({ length: 255 }).notNull(),
@@ -151,6 +152,7 @@ export const personalRecords = pgTable("personal_records", {
 		.references(() => athlete.id)
 		.notNull(),
 	disciplineName: varchar({ length: 255 }).notNull(),
+	disciplineCode: varchar({ length: 255 }).notNull(),
 	result: varchar({ length: 255 }).notNull(),
 	date: varchar({ length: 255 }),
 	location: varchar({ length: 255 }),
@@ -164,6 +166,7 @@ export const seasonBests = pgTable("season_bests", {
 		.references(() => athlete.id)
 		.notNull(),
 	disciplineName: varchar({ length: 255 }).notNull(),
+	disciplineCode: varchar({ length: 255 }).notNull(),
 	result: varchar({ length: 255 }).notNull(),
 	date: varchar({ length: 255 }),
 	location: varchar({ length: 255 }),
@@ -249,6 +252,7 @@ export const competitor = pgTable(
 		athleteId: text()
 			.references(() => athlete.id)
 			.notNull(),
+		// predictionPoints: real().notNull(),
 		winPrediction: real().notNull(),
 		lane: integer(),
 		results: json("results").$type<{

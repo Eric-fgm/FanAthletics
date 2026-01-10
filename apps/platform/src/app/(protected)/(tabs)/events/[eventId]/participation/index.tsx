@@ -7,7 +7,7 @@ import type {
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
 import { UserRound, UserRoundPlus } from "lucide-react-native";
-import { CircleUser, Crown, Info, Plus } from "lucide-react-native";
+import { CircleUser, Crown, HelpCircle, Info, Plus } from "lucide-react-native";
 import { ArrowRight, Cake, Earth, Star, Trash2 } from "lucide-react-native";
 import React, { useState, useRef } from "react";
 import {
@@ -19,13 +19,14 @@ import {
 	ScrollView,
 	View,
 } from "react-native";
-import { Button, Dialog, Select, Typography } from "#/components";
+import { Button, Dialog, Divider, Select, Typography } from "#/components";
 import EventHeader from "#/components/event-header";
 import {
 	AthletesSearchDialog,
 	useAthletePersonalRecordsQuery,
 	useAthleteQuery,
 	useAthleteSeasonBestsQuery,
+	useCompetitionsQuery,
 	useEventQuery,
 } from "#/features/events";
 import { Header, ScrollArea } from "#/features/layout";
@@ -58,6 +59,7 @@ import type { AthleteColors } from "./utils";
 
 const Participation = () => {
 	const { tab } = useLocalSearchParams<{ tab?: string }>();
+	const [gameRulesShown, setGameRulesShown] = useState(false);
 	const [selectedMember, setSelectedMember] = useState<Athlete | "edit" | null>(
 		null,
 	);
@@ -197,92 +199,135 @@ const Participation = () => {
 							</View>
 						))}
 					</View>
-					<View className="mt-12 px-4 lg:px-12 pb-6">
+					<View className="flex-row mt-12 px-4 lg:px-12 pb-6">
 						<Typography size="large2">Zespół</Typography>
+						<Button
+							className="ml-auto"
+							icon={HelpCircle}
+							onPress={() => setGameRulesShown(true)}
+						/>
+						<Dialog
+							webOptions={{}}
+							isOpen={gameRulesShown}
+							onClose={() => setGameRulesShown(false)}
+						>
+							<View className="p-8 gap-y-3">
+								<Typography size="large4">Zasady gry</Typography>
+								<Divider />
+								<Typography size="large2">1. Skompletuj drużynę</Typography>
+								<Typography size="base">
+									Wybierz 4 mężczyzn i 4 kobiety
+								</Typography>
+							</View>
+						</Dialog>
 					</View>
 					<View className="gap-4 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-4 lg:px-12">
-						{teamMembersSlots.sort((a, b) => {
-							if (a && b) {
-								if (a.sex < b.sex) return -1;
+						{teamMembersSlots
+							.sort((a, b) => {
+								if (a && b) {
+									if (a.sex < b.sex) return -1;
+									return 1;
+								}
+								if (a) return -1;
 								return 1;
-							}
-							if (a)
-								return -1;
-							return 1;
-						}).map((member, index) => (
-							<React.Fragment key={member?.id ?? index}>
-								{member ? (
-									member.isCaptain ? (
-										<View>
-											<View className="w-auto flex-row" style={{ alignSelf: "flex-start", zIndex: 2, marginBottom: -20 }}>
-												<GradientBox sex={member.sex} gradientType={GradientType.POINTS} vertical borderRad={10}>
-													<View className="flex-row items-center py-3 pl-4 pr-1 gap-x-2" style={{ borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
-														<Typography size="large2-s" type="bright">
-																{/* +{member.pointsGathered} */}
-																+{Math.floor(Math.random()*100)+1000}
-														</Typography>
-														<StarBadge
+							})
+							.map((member, index) => (
+								<React.Fragment key={member?.id ?? index}>
+									{member ? (
+										member.isCaptain ? (
+											<View>
+												<View
+													className="w-auto flex-row"
+													style={{
+														alignSelf: "flex-start",
+														zIndex: 2,
+														marginBottom: -20,
+													}}
+												>
+													<GradientBox
+														sex={member.sex}
+														gradientType={GradientType.POINTS}
+														vertical
+														borderRad={10}
+													>
+														<View
+															className="flex-row items-center py-3 pl-4 pr-1 gap-x-2"
+															style={{
+																borderTopLeftRadius: 10,
+																borderTopRightRadius: 10,
+															}}
+														>
+															<Typography size="large2-s" type="bright">
+																{/* +{member.pointsGathered} */}+
+																{Math.floor(Math.random() * 1000 + 50)}
+															</Typography>
+															<StarBadge
 																width={25}
 																height={25}
 																colorCircle="#fff"
 																colorStar="black"
+															/>
+														</View>
+													</GradientBox>
+													<View style={{ marginTop: 4, marginLeft: -2 }}>
+														<RightTriangle
+															width={40}
+															height={48}
+															sex={member.sex}
 														/>
 													</View>
-												</GradientBox>
-												<View style={{ marginTop: 4, marginLeft: -2 }}>
-													<RightTriangle width={40} height={48} colorTop={menColors.captainDownGradient} colorBottom={menColors.captainUpGradient}/>
+												</View>
+												<View
+													className="rounded-2xl"
+													style={{
+														shadowOpacity: 0.25,
+														shadowColor: "black",
+														shadowRadius: 10,
+														shadowOffset: { width: 4, height: 4 },
+														elevation: 8,
+														zIndex: 1,
+													}}
+												>
+													<GradientBox
+														sex={member.sex}
+														vertical
+														gradientType={GradientType.CAPTAIN}
+														borderRad={16}
+													>
+														<AthletePreview
+															isLoading={
+																isAddTeamMemberPending ||
+																isDeleteTeamMemberPending
+															}
+															onEdit={() => setSelectedMember(member)}
+															onDelete={() => setMemberToDelete(member)}
+															athlete={member}
+															isCaptain={member.isCaptain}
+															pointsGathered={member.pointsGathered}
+														/>
+													</GradientBox>
 												</View>
 											</View>
-											<View
-												className="rounded-2xl"
-												style={{
-													shadowOpacity: 0.25,
-													shadowColor: "black",
-													shadowRadius: 10,
-													shadowOffset: { width: 4, height: 4 },
-													elevation: 8,
-													zIndex: 1,
-												}}
-											>
-												<GradientBox
-													sex={member.sex}
-													vertical
-													gradientType={GradientType.CAPTAIN}
-													borderRad={16}
-												>
-													<AthletePreview
-														isLoading={
-															isAddTeamMemberPending || isDeleteTeamMemberPending
-														}
-														onEdit={() => setSelectedMember(member)}
-														onDelete={() => setMemberToDelete(member)}
-														athlete={member}
-														isCaptain={member.isCaptain}
-														pointsGathered={member.pointsGathered}
-													/>
-												</GradientBox>
-											</View>
-										</View>
+										) : (
+											<AthletePreview
+												isLoading={
+													isAddTeamMemberPending || isDeleteTeamMemberPending
+												}
+												onEdit={() => setSelectedMember(member)}
+												onDelete={() => setMemberToDelete(member)}
+												athlete={member}
+												isCaptain={member.isCaptain}
+												pointsGathered={member.pointsGathered}
+											/>
+										)
 									) : (
-										<AthletePreview
-											isLoading={
-												isAddTeamMemberPending || isDeleteTeamMemberPending
-											}
-											onEdit={() => setSelectedMember(member)}
-											onDelete={() => setMemberToDelete(member)}
-											athlete={member}
-											isCaptain={member.isCaptain}
-											pointsGathered={member.pointsGathered}
+										<AthleteSlot
+											index={index + 1}
+											onPress={() => setSelectedMember("edit")}
 										/>
-									)
-								) : (
-									<AthleteSlot
-										index={index + 1}
-										onPress={() => setSelectedMember("edit")}
-									/>
-								)}
-							</React.Fragment>
-						))}
+									)}
+								</React.Fragment>
+							))}
 					</View>
 					<AthletesSearchDialog
 						disabledAtletes={teamMembers.map((member) => {
@@ -398,12 +443,25 @@ const AthletePreview: React.FC<{
 		<View>
 			<View className="p-5 rounded-2xl">
 				{!isCaptain ? (
-					<View className="w-auto flex-row" style={{ alignSelf: "flex-start", marginTop: -20, marginBottom: -28, zIndex: 1 }}>
-						<GradientBox sex={athlete.sex} gradientType={GradientType.POINTS} vertical borderRad={10}>
+					<View
+						className="w-auto flex-row"
+						style={{
+							alignSelf: "flex-start",
+							marginTop: -20,
+							marginBottom: -28,
+							zIndex: 1,
+						}}
+					>
+						<GradientBox
+							sex={athlete.sex}
+							gradientType={GradientType.POINTS}
+							vertical
+							borderRad={10}
+						>
 							<View className="flex-row items-center pt-3 pb-10 pl-4 pr-1 gap-x-2">
 								<Typography size="large2-s" type="bright">
-									{/* +{pointsGathered} */}
-									+{Math.floor(Math.random()*100)+1000}
+									{/* +{pointsGathered} */}+
+									{Math.floor(Math.random() * 1000 + 50)}
 								</Typography>
 								<StarBadge
 									width={25}
@@ -414,11 +472,12 @@ const AthletePreview: React.FC<{
 							</View>
 						</GradientBox>
 						<View style={{ marginTop: 4, marginLeft: -2 }}>
-							<RightTriangle width={55} height={66} colorTop={menColors.captainDownGradient} colorBottom={menColors.captainUpGradient}/>
+							<RightTriangle width={55} height={66} sex={athlete.sex} />
 						</View>
 					</View>
-					) : <></>
-				}
+				) : (
+					<></>
+				)}
 				<Pressable
 					onPress={() => {
 						console.log("Kliknięto: ", athlete);
@@ -448,7 +507,9 @@ const AthletePreview: React.FC<{
 									shadowOpacity: !isCaptain ? 0.25 : undefined,
 									shadowColor: !isCaptain ? "black" : undefined,
 									shadowRadius: !isCaptain ? 10 : undefined,
-									shadowOffset: !isCaptain ? { width: 4, height: 4 } : undefined,
+									shadowOffset: !isCaptain
+										? { width: 4, height: 4 }
+										: undefined,
 									elevation: !isCaptain ? 8 : 0,
 								}}
 							>
@@ -540,8 +601,11 @@ const AthleteInfoDialog: React.FC<{
 }) => {
 	if (athlete === null) return null;
 
-	const { data: athleteWithDisciplines } = useAthleteQuery(athlete.id);
-	const disciplines = athleteWithDisciplines?.disciplines;
+	// const { data: athleteWithDisciplines } = useAthleteQuery(athlete.id);
+	// const disciplines = athleteWithDisciplines?.disciplines;
+	const { data: competitions = [] } = useCompetitionsQuery({
+		athleteId: athlete.id,
+	});
 
 	const { data: personalRecords, isLoading: arePersonalRecordsLoading } =
 		useAthletePersonalRecordsQuery(athlete.id);
@@ -556,7 +620,7 @@ const AthleteInfoDialog: React.FC<{
 
 	const router = useRouter();
 
-	console.log(athlete.lastName, isCaptain, disciplines);
+	console.log(athlete.lastName, isCaptain, competitions);
 	const colors = athlete.sex === "M" ? menColors : womenColors;
 
 	const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -736,19 +800,19 @@ const AthleteInfoDialog: React.FC<{
 						<Typography size="large2-s" className="mx-2 mb-1">
 							Następne starty
 						</Typography>
-						{disciplines !== undefined && disciplines.length > 0 ? (
-							disciplines.map((discipline) => (
+						{competitions !== undefined && competitions.length > 0 ? (
+							competitions.map((competition) => (
 								<NextStartBoxItem
-									key={discipline.name}
+									key={competition.id}
 									athlete={athlete}
-									discipline={discipline}
+									discipline={competition.discipline}
 									onPress={() => {
 										setFunction(null);
 										router.push(
-											`events/${discipline.eventId}/disciplines/${discipline.id}`,
+											`events/${competition.discipline.eventId}/disciplines/${competition.disciplineId}`,
 										);
 									}}
-									prediction="92%"
+									prediction="22%"
 								/>
 							))
 						) : (
@@ -762,23 +826,44 @@ const AthleteInfoDialog: React.FC<{
 						<Typography size="large2-s" className="mx-2 mb-1">
 							Poprzednie starty
 						</Typography>
-						{disciplines !== undefined && disciplines.length > 0 ? (
-							disciplines.map((discipline) => (
+						{competitions !== undefined &&
+						competitions.length > 0 ? (
+							competitions.map((competition) => (
 								<NextStartBoxItem
-									key={discipline.name}
+									key={competition.id}
 									athlete={athlete}
-									discipline={discipline}
+									discipline={competition.discipline}
 									onPress={() => {
 										setFunction(null);
 										router.push(
-											`events/${discipline.eventId}/disciplines/${discipline.id}`,
+											`events/${competition.discipline.eventId}/disciplines/${competition.disciplineId}`,
 										);
 									}}
 									prediction="92%"
 								/>
 							))
+							// competitions.map((competition) => ({
+
+							// return (
+							// <NextStartBoxItem
+							// 	key={competition.id}
+							// 	athlete={athlete}
+							// 	discipline={competition.discipline}
+							// 	onPress={() => {
+							// 		setFunction(null);
+							// 		router.push(
+							// 			`events/${competition.discipline.eventId}/disciplines/${competition.disciplineId}`,
+							// 		);
+							// 	}}
+							// 	prediction={competition.competitors
+							// 		.find((c) => c.id === athlete.id)
+							// 		.map((c) => c.winPrediction)
+							// 	}
+							// />)}))
 						) : (
-							<Typography size="large2">Zawodnik już nie ma startów</Typography>
+							<Typography size="large2">
+								Zawodnik nie miał dotąd żadnych startów
+							</Typography>
 						)}
 					</View>
 					<View className="flex-col mx-4 mt-1 gap-y-2">
@@ -815,9 +900,10 @@ const AthleteInfoDialog: React.FC<{
 							className="h-[1px] w-[93%]"
 							style={{ backgroundColor: colors.profileUpGradient }}
 						/>
-						<Animated.View className="h-full"
+						<Animated.View
+							className="h-full"
 							style={{
-								height: 100,
+								height: 150,
 								opacity: fadeAnim,
 							}} /*className="h-[100px]"*/
 						>
@@ -967,6 +1053,7 @@ export const PersonalRecordsBoxItem: React.FC<{
 			<View className="flex-row items-center gap-x-5">
 				<Typography size="base-s" className="w-[20%]">
 					{personalRecord.disciplineName}
+					{/*, {personalRecord.disciplineCode}*/}
 				</Typography>
 				<Typography size="base" className="w-[28%]">
 					{personalRecord.result.replace(/[\n\r]/g, " ")}
@@ -981,9 +1068,9 @@ export const PersonalRecordsBoxItem: React.FC<{
 					<Typography size="base" className="w-[10%] text-end mr-8">
 						{personalRecord.resultPoints}
 					</Typography>
-					) : (
-						<Typography className="w-[10%] text-end mr-8"></Typography>
-					)}
+				) : (
+					<Typography className="w-[10%] text-end mr-8" />
+				)}
 			</View>
 			{showLine && (
 				<View
@@ -1003,13 +1090,9 @@ export const PersonalRecordsBox: React.FC<{
 			<ScrollView className="flex-1">
 				{personalRecords
 					.sort((a, b) => {
-						if (
-							a.resultPoints &&
-							b.resultPoints
-						)
+						if (a.resultPoints && b.resultPoints)
 							return b.resultPoints - a.resultPoints;
-						if (a.resultPoints)
-							return -1;
+						if (a.resultPoints) return -1;
 						return 1;
 					})
 					.map((record) => (
