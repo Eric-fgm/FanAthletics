@@ -826,8 +826,7 @@ const AthleteInfoDialog: React.FC<{
 						<Typography size="large2-s" className="mx-2 mb-1">
 							Poprzednie starty
 						</Typography>
-						{competitions !== undefined &&
-						competitions.length > 0 ? (
+						{competitions !== undefined && competitions.length > 0 ? (
 							competitions.map((competition) => (
 								<NextStartBoxItem
 									key={competition.id}
