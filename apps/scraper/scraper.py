@@ -381,7 +381,7 @@ def assign_points(result, discipline, data):
         ind = len(data[discipline]) // 2
         ind = binary_search_times(data[discipline], result, ind, 0, len(data[discipline])-1)
 
-        return data["Points"][ind] if ind is not None else 10000
+        return data["Points"][ind] if ind is not None else 1
 
     else:
         # Jeśli słabiej niż 600 pkt.
@@ -398,7 +398,7 @@ def assign_points(result, discipline, data):
         ind = len(data[discipline]) // 2
         ind = binary_search_tech(data[discipline], result, ind, 0, len(data[discipline])-1)
 
-        return data["Points"][ind] if ind is not None else 10000
+        return data["Points"][ind] if ind is not None else 1
 
 def binary_search_times(discipline_data, result, ind, start, end):
     """
