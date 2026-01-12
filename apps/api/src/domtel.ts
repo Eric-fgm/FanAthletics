@@ -543,9 +543,8 @@ const savePersonalRecords = async (
 			where: (table, { and, eq }) =>
 				and(eq(table.eventId, eventId), eq(table.number, Number.parseInt(key))),
 		});
-		console.log("LALA");
 		if (foundAthlete !== undefined) {
-			console.log("TUUUU", foundAthlete.firstName + foundAthlete.lastName);
+			// console.log("TUUUU", foundAthlete.firstName + foundAthlete.lastName);
 			await db
 				.update(tables.athlete)
 				.set({
@@ -556,7 +555,7 @@ const savePersonalRecords = async (
 		}
 
 		if (foundAthlete && athletesData[key] !== undefined) {
-			console.log("TUtaj", foundAthlete.firstName + foundAthlete.lastName);
+			// console.log("TUtaj", foundAthlete.firstName + foundAthlete.lastName);
 			for (const [discipline, recordData] of Object.entries(
 				athletesData[key].profile_data.pbs,
 			)) {
