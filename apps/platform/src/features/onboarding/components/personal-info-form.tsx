@@ -13,7 +13,7 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ onPressNext }) => {
 	return (
 		<View className="mx-auto pt-24 w-full max-w-sm">
 			<Typography size="large2" className="text-center">
-				Witaj na Olympics!
+				Witaj na FanAthletics!
 			</Typography>
 			<Typography type="washed" className="mt-1 mb-8 text-center">
 				Jeszcze kilka kroków

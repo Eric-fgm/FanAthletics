@@ -30,7 +30,7 @@ const Logo: React.FC<LogoProps> = ({
 				style={{ width: size, height: size }}
 				source={require("../../assets/fan-athletics-logo.png")}
 			/>
-			{namePosition && <Typography size={nameSize}>Olympics</Typography>}
+			{namePosition && <Typography size={nameSize}>FanAthletics</Typography>}
 		</Comp>
 	);
 };

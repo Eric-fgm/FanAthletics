@@ -463,7 +463,7 @@ const Participation = () => {
 						webOptions={{ variant: aiTeam.length > 0 ? "wide" : "normal" }}
 					>
 						<View
-							className={`${aiTeam.length > 0 ? "h-[70vh]" : ""} flex flex-col`}
+							className={`${aiTeam.length > 0 ? "h-[80vh]" : ""} flex flex-col`}
 						>
 							{aiTeam.length > 0 ? (
 								<View className="flex-1 overflow-y-auto py-4">
@@ -473,12 +473,12 @@ const Participation = () => {
 											{aiTeam.reduce(
 												(sum, athlete) => sum + athlete.pointsGathered,
 												0,
-											)}
+											)} PKT
 										</Typography>
 										<View className="h-[1px] w-[90%] bg-black mt-2" />
 									</View>
 									<View className="gap-2 grid sm:grid-cols-1 lg:grid-cols-3 xl:grid-cols-3 px-4 lg:px-12 auto-rows-fr">
-										{aiTeam.map((athlete) => (
+										{aiTeam.sort((a, b) => b.pointsGathered - a.pointsGathered).map((athlete) => (
 											<AthletePreview
 												key={athlete.id}
 												athlete={athlete}

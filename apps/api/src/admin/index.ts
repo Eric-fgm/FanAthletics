@@ -18,6 +18,7 @@ import {
 } from "#/domtel";
 import { requireUser } from "#/middlewares";
 import { convertToPolishDateTime } from "#/utils/functions";
+import { writeFileSync } from "node:fs";
 
 const EVENT_IMAGE_PLACEHOLDER =
 	"https://assets.aws.worldathletics.org/large/610276d3511e6525b0b00ef6.jpg";
@@ -69,6 +70,15 @@ const eventsApp = new Hono()
 			// TODO tutaj trzeba będzie dodać nadawanie kosztu zawodnikom
 
 			await processCompetitionsAndResults(event.domtelApp, event.id, false);
+
+			const aiFilePathname = path.join(
+				__dirname,
+				"../temp",
+				`ai-${event.id}-data.txt`,
+			);
+
+			await createFileForAI(event.id, aiFilePathname);
+			await generateAITeam(event.id, aiFilePathname);
 		}
 
 		getResultsPeriodically(event.id);
@@ -472,33 +482,9 @@ async function blockGame(eventId: string) {
 		);
 
 		const currentDateTime = new Date();
-		// const currentDay = convertToPolishDateTime(currentDateTime, "date");
-		// const currentDay = event.endAt.toLocaleDateString("pl-PL", {
-		// 	day: "2-digit",
-		// 	month: "2-digit",
-		// 	year: "numeric",
-		// });
-		const currentDay = "2025.01.01";
+		const currentDay = convertToPolishDateTime(currentDateTime, "date");
 		const currentTime = convertToPolishDateTime(currentDateTime, "time");
-		// const currentTimes = [
-		// 	"08:00",
-		// 	"09:50",
-		// 	"09:00",
-		// 	"12:50",
-		// 	"13:00",
-		// 	"13:20",
-		// 	"13:26",
-		// 	"17:12",
-		// 	"17:15",
-		// 	"17:30",
-		// 	"17:34",
-		// 	"18:02",
-		// 	"19:55",
-		// 	"21:00",
-		// 	"21:30",
-		// ];
-		// const currentTime =
-		// 	currentTimes[Math.floor(Math.random() * currentTimes.length)];
+
 		const index = days.indexOf(currentDay);
 
 		console.log(currentDay, currentTime, days, index);
@@ -521,21 +507,6 @@ async function blockGame(eventId: string) {
 			else await setGameIsActive(false, null, true);
 			return;
 		}
-
-		// console.log(firstAndLast[index]?.first.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }),
-		// 	currentTime <
-		// 		firstAndLast[index].first.toLocaleTimeString("pl-PL", {
-		// 			hour: "2-digit",
-		// 			minute: "2-digit",
-		// 		}))//, lastCompetition[1].toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }));
-		// console.log(firstAndLast[index]?.last.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }), currentTime,
-		// 	currentTime >
-		// 		firstAndLast[index].last.toLocaleTimeString("pl-PL", {
-		// 			hour: "2-digit",
-		// 			minute: "2-digit",
-		// 		}));
-
-		// console.log(currentTime, currentTime < firstCompetition[0].toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }), currentTime > lastCompetition[1].toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }));
 
 		// Przed rozpoczęciem gry w danym dniu wydarzenia
 		if (
@@ -721,6 +692,65 @@ async function countPoints(eventId: string) {
 				.where(operators.eq(tables.participant.id, participant.id));
 		}
 	}, 5000);
+
+	return;
+}
+
+async function createFileForAI(eventId: string, aiFilePathname: string) {
+	const data = await db.select()
+		.from(tables.athlete)
+		.where(operators.eq(tables.athlete.eventId, eventId))
+		.innerJoin(
+			tables.competitor,
+			operators.eq(tables.competitor.athleteId, tables.athlete.id)
+		);
+	
+	writeFileSync(aiFilePathname, JSON.stringify(data));
+}
+
+async function generateAITeam(eventId: string, aiFilePathname: string) {
+	const payload = await db.query.gameSpecification.findFirst({
+		where: (table, { eq }) => eq(table.eventId, eventId),
+	});
+
+	if (!payload)
+		return "Cannot create AI team because game specification is unknown."
+
+	// const ai = getAI(process.env.GEMINI_API_KEY as string);
+	// const files = getFilesAI(ai);
+	// const model = getModelAI(ai);
+
+	// const uploadedFile = await files.upload(aiFilePathname);
+	// const promptResult = await model.generate({
+	// 	file: uploadedFile,
+	// 	budget: payload.budget,
+	// 	numberOfAthletes: payload.numberOfTeamMembers,
+	// });
+
+	// if (!promptResult.text) {
+	// 	return "AI generation error!";
+	// }
+
+	// const athletesIds = JSON.parse(promptResult.text) as string[];
+
+	// const athletes = await db.query.athlete.findMany({
+	// 	where: (athlete, { eq, and, inArray }) =>
+	// 		and(eq(athlete.eventId, eventId), inArray(athlete.id, athletesIds)),
+	// });
+	const athletes = (await db.query.athlete.findMany({
+		where: (table, { eq }) => eq(table.eventId, eventId),
+	})).slice(0, payload.numberOfTeamMembers);
+
+	await db
+		.delete(tables.aiTeamMember)
+		.where(operators.eq(tables.aiTeamMember.eventId, eventId));
+
+	for (const athlete of athletes) {
+		await db.insert(tables.aiTeamMember).values({
+			athleteId: athlete.id,
+			eventId: eventId,
+		});
+	}
 
 	return;
 }
