@@ -155,6 +155,7 @@ export const personalRecords = pgTable("personal_records", {
 		.references(() => athlete.id)
 		.notNull(),
 	disciplineName: varchar({ length: 255 }).notNull(),
+	disciplineCode: varchar({ length: 255 }).notNull(),
 	result: varchar({ length: 255 }).notNull(),
 	date: varchar({ length: 255 }),
 	location: varchar({ length: 255 }),
@@ -168,6 +169,7 @@ export const seasonBests = pgTable("season_bests", {
 		.references(() => athlete.id)
 		.notNull(),
 	disciplineName: varchar({ length: 255 }).notNull(),
+	disciplineCode: varchar({ length: 255 }).notNull(),
 	result: varchar({ length: 255 }).notNull(),
 	date: varchar({ length: 255 }),
 	location: varchar({ length: 255 }),
@@ -264,6 +266,7 @@ export const competitor = pgTable(
 		athleteId: text()
 			.references(() => athlete.id)
 			.notNull(),
+		// predictionPoints: real().notNull(),
 		winPrediction: real().notNull(),
 		lane: integer(),
 		results: json("results").$type<{

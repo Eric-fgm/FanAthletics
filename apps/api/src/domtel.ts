@@ -1,4 +1,8 @@
 import { db, operators, tables } from "@fan-athletics/database";
+import {
+	Competitor,
+	type DisciplineCompetitor,
+} from "@fan-athletics/shared/types";
 import { domtel } from "#/utils/constants";
 import { fetchCSV } from "#/utils/file";
 
@@ -344,6 +348,7 @@ export const processCompetitionsAndResults = async (
 												athleteId: athlete.id,
 												competitionId: competition.id,
 												lane: Number.parseInt(result.Pozycja_Tor, 10),
+												// predictionPoints: 0,
 												winPrediction: 0,
 											})
 											.onConflictDoNothing();
@@ -404,6 +409,8 @@ export const processCompetitionsAndResults = async (
 			}
 		}),
 	);
+	await countWinPredictions(eventId);
+	await countAthleteCosts(eventId);
 };
 
 export const getDisciplines = async (app: string) => {
@@ -579,6 +586,7 @@ const savePersonalRecords = async (
 					await db.insert(tables.personalRecords).values({
 						athleteId: foundAthlete.id,
 						disciplineName: discipline,
+						disciplineCode: recordData.code,
 						result: recordData.result,
 						date: recordData.date,
 						location: recordData.location,
@@ -615,6 +623,7 @@ const savePersonalRecords = async (
 					await db.insert(tables.seasonBests).values({
 						athleteId: foundAthlete.id,
 						disciplineName: discipline,
+						disciplineCode: recordData.code,
 						result: recordData.result,
 						date: recordData.date,
 						location: recordData.location,
@@ -623,6 +632,295 @@ const savePersonalRecords = async (
 				}
 			}
 		}
+	}
+};
+
+export const countWinPredictions = async (eventId: string) => {
+	// Najpierw musimy znaleźć wszystkie dyscypliny w evencie
+	const disciplines = await db.query.discipline.findMany({
+		where: (d, { eq }) => eq(d.eventId, eventId),
+	});
+	console.log("ILE", disciplines.length);
+	// Teraz znajdujemy wszystkie competitions dla dyscypliny
+	for (const disc of disciplines) {
+		// const disc = await db.query.discipline.findFirst({
+		// 	where: (d, { and, eq }) =>
+		// 		and(
+		// 			eq(d.code, "K100pł"),
+		// 			eq(d.eventId, eventId)
+		// 		)
+		// });
+		// console.log("Dysc:", disc);
+		// if (disc != undefined) {
+		if (disc.id !== undefined) {
+			console.log(disc.name);
+			let disciplineCompetitors = [];
+			const competitions = await db.query.competition.findMany({
+				where: (c, { eq }) => eq(c.disciplineId, disc.id),
+			});
+			// Teraz znajdujemy wszystkich competitorów dla competition
+			if (competitions !== undefined) {
+				for (const comp of competitions) {
+					if (comp.id !== undefined) {
+						const competitors = await db.query.competitor.findMany({
+							where: (c, { eq }) => eq(c.competitionId, comp.id),
+						});
+						disciplineCompetitors.push(competitors);
+					}
+					//TODO Muszę zrobić słownik przetwarzający kod dyscypliny na jej nazwę w życiówkach
+				}
+				disciplineCompetitors = disciplineCompetitors.flat();
+
+				for (const discComp of disciplineCompetitors) {
+					// Znajdujemy PB i SB zawodnika w danej konkurencji
+					//const pbs = await db.query.personalRecords.findMany({where: (pb, {eq, and}) => and(eq(pb.disciplineCode, disc.code), eq(pb.athleteId, "31550fd2-4421-415f-ac08-41692fc01ba2"))});
+					//console.log("PBS:", pbs);
+					//console.log("DISCCOMP:", discComp.id);
+					const pb = await db.query.personalRecords.findFirst({
+						where: (p, { eq, and }) =>
+							and(
+								eq(p.athleteId, discComp.athleteId),
+								eq(p.disciplineCode, disc.code),
+							),
+					});
+					const sb = await db.query.seasonBests.findFirst({
+						where: (s, { eq, and }) =>
+							and(
+								eq(s.athleteId, discComp.athleteId),
+								eq(s.disciplineCode, disc.code),
+							),
+					});
+					//console.log(discComp.athleteId, "PB:", pb, "SB:", sb);
+					if (pb?.resultPoints && sb?.resultPoints) {
+						discComp.winPrediction = pb.resultPoints + sb.resultPoints * 1.2;
+					} else if (pb?.resultPoints && !sb?.resultPoints) {
+						console.log(
+							"TUTEJ:",
+							pb.disciplineCode,
+							pb.resultPoints,
+							pb.location,
+							pb.date,
+						);
+						discComp.winPrediction = pb.resultPoints * 2;
+						console.log(discComp.winPrediction);
+					}
+				}
+				//disciplineCompetitors = await countPredictions(disciplineCompetitors);
+				disciplineCompetitors = await countPlackettLucePredictions(
+					disciplineCompetitors,
+				);
+				//console.log("TUUUU", disciplineCompetitors);
+				for (const discComp of disciplineCompetitors) {
+					//return {athleteId: discComp.athleteId, winPrediction: discComp.winPrediction}
+					const foundCompetitor = await db.query.competitor.findFirst({
+						where: (c, { eq, and }) =>
+							and(
+								eq(c.athleteId, discComp.athleteId),
+								eq(c.competitionId, discComp.competitionId),
+							),
+					});
+					//console.log("FOUND:", foundCompetitor);
+					if (foundCompetitor) {
+						await db
+							.update(tables.competitor)
+							.set({
+								winPrediction: discComp.winPrediction,
+							})
+							.where(
+								operators.and(
+									operators.eq(
+										tables.competitor.athleteId,
+										foundCompetitor.athleteId,
+									),
+									operators.eq(
+										tables.competitor.competitionId,
+										foundCompetitor.competitionId,
+									),
+								),
+							);
+					}
+				}
+				//console.log(disciplineCompetitors);
+				//var uniqueDisciplineCompetitors = [...new Map(disciplineCompetitors.map(r => [r.athleteId, r])).values()];
+				//uniqueDisciplineCompetitors = await countPredictions(uniqueDisciplineCompetitors);
+			}
+		}
+	}
+	console.log("END");
+	//console.log(disciplineCompetitors);
+	//return disciplineCompetitors;
+};
+
+const countPredictions = async (
+	disciplineCompetitors: DisciplineCompetitor[],
+) => {
+	let compPoints = new Array(disciplineCompetitors.length);
+	let maxPoints = 0;
+	let minPoints = 50000;
+	for (const [i, discComp] of disciplineCompetitors.entries()) {
+		compPoints[i] = Math.max(discComp.winPrediction - 1200, 0);
+		if (maxPoints < compPoints[i]) {
+			maxPoints = compPoints[i];
+		}
+		if (minPoints > compPoints[i]) {
+			minPoints = compPoints[i];
+		}
+	}
+	maxPoints += 100; // Zwiększenie maxPoints, żeby najlepszy nie miał predykcji = 1
+	//console.log("MAX:", maxPoints, " MIN:", minPoints);
+	maxPoints -= minPoints - 1;
+	//console.log("COMPP", compPoints);
+	compPoints = compPoints.map((p) => (p - minPoints + 1 + 30) / maxPoints);
+	//console.log("COMP:", compPoints);
+	//const overallPointsSum = compPoints.reduce((a, b) => a+b, 0);
+	for (const [i, discComp] of disciplineCompetitors.entries()) {
+		//const restSum = overallPointsSum - compPoints[i];
+		discComp.winPrediction = Math.ceil(compPoints[i] * 100) / 100;
+		//console.log(i, compPoints[i]);
+	}
+	return disciplineCompetitors;
+};
+
+function gumbel(): number {
+	const eps = 1e-10;
+	const u = Math.random() * (1 - 2 * eps) + eps;
+	return -Math.log(-Math.log(u));
+}
+
+function plackettLuceTop3(compPoints: number[]) {
+	const z = compPoints.map((cp) => Math.log(cp) + gumbel());
+
+	return z
+		.map((value, index) => ({ value, index }))
+		.sort((a, b) => b.value - a.value)
+		.slice(0, 3)
+		.map((e) => e.index);
+}
+
+const countPlackettLucePredictions = async (
+	disciplineCompetitors: DisciplineCompetitor[],
+) => {
+	let compPoints = new Array(disciplineCompetitors.length);
+	//console.log("DISC COMPETITORS:", disciplineCompetitors);
+	for (const [i, discComp] of disciplineCompetitors.entries()) {
+		compPoints[i] = Math.max(discComp.winPrediction, 0);
+	}
+	//console.log("COMP POINTS:", compPoints);
+	compPoints = compPoints.map((cp) => 10 ** (cp / 250));
+	//console.log("COMP POINTS MOD:", compPoints);
+
+	const N = 100000;
+	const athleteInTop3 = new Array(disciplineCompetitors.length).fill(0);
+
+	for (let i = 0; i < N; i++) {
+		// Obliczamy top 3 rozkładem Plackett-Luce
+		const top3 = plackettLuceTop3(compPoints);
+		// Zliczamy ile razy zawodnik był w top 3
+		for (const j of top3) {
+			athleteInTop3[j]++;
+		}
+	}
+	//console.log("ATHLETE IN TOP 3:", athleteInTop3);
+
+	//const probs = athleteInTop3.map(c => c/N);
+	for (const [i, discComp] of disciplineCompetitors.entries()) {
+		if (athleteInTop3[i] === 0) {
+			discComp.winPrediction = 0.01;
+		}
+		discComp.winPrediction = Math.ceil((athleteInTop3[i] / N) * 100) / 100;
+		//console.log(discComp.winPrediction);
+	}
+
+	return disciplineCompetitors;
+};
+
+export const countAthleteCosts = async (eventId: string) => {
+	// Znajdujemy wszystkich zawodników dla eventu
+	const athletes = await db.query.athlete.findMany({
+		where: (a, { eq }) => eq(a.eventId, eventId),
+	});
+	for (const athlete of athletes) {
+		// Dla każdego zawodnika znajdujemy jego profile
+		// w seriach (rekordy w competitor)
+		const athleteCompetitors = await db.query.competitor.findMany({
+			where: (comp, { eq }) => eq(comp.athleteId, athlete.id),
+		});
+		// Usuwamy podwójne profile dla jednej konkurencji
+		// athleteCompetitors = [...new Map(athleteCompetitors.map(r => [r.competitionId, r])).values()];
+		let cost = 0;
+		const athleteDisciplines: string[] = [];
+		let athleteDisciplinesCount = 0;
+		// Dla każdego profilu zawodnika w konkurencji znajdujemy
+		// dyscyplinę i jego PB
+		for (const athleteComp of athleteCompetitors) {
+			// Wyciągamy nazwę konkurencji
+			const competition = await db.query.competition.findFirst({
+				where: (c, { eq }) => eq(c.id, athleteComp.competitionId),
+			});
+			if (competition) {
+				const discipline = await db.query.discipline.findFirst({
+					where: (d, { eq }) => eq(d.id, competition.disciplineId),
+				});
+				if (discipline?.code) {
+					const disciplineCode = discipline.code;
+					if (!athleteDisciplines.includes(disciplineCode)) {
+						athleteDisciplines.push(disciplineCode);
+						// Znajdujemy PB tego zawodnika w tej konkurencji
+						const pb = await db.query.personalRecords.findFirst({
+							where: (p, { and, eq }) =>
+								and(
+									eq(p.athleteId, athlete.id),
+									eq(p.disciplineCode, disciplineCode),
+								),
+						});
+						if (pb?.resultPoints) {
+							athleteDisciplinesCount++;
+							cost += athleteComp.winPrediction * pb.resultPoints;
+							// Można dodać licznik o tym, w ilu konkurencjach ma PB, żeby później nie dzielić za bardzo
+						}
+					}
+				}
+			}
+		}
+		// Ustawiamy koszt zawodnika
+		if (athleteDisciplinesCount === 1) {
+			athlete.cost = Math.round(cost);
+		} else if (athleteDisciplinesCount > 1) {
+			cost = cost / (athleteDisciplinesCount - 0.3);
+			athlete.cost = Math.round(cost);
+			console.log(athlete.firstName, " ", athlete.lastName, " ", cost);
+		} else {
+			athlete.cost = 5; // Domyślny koszt, gdy brak PB
+		}
+	}
+	// Normalizujemy koszty do przedziału 50-100
+	const costs = athletes.map((a) => a.cost);
+	let maxCost = Math.max(...costs);
+	const minCost = Math.min(...costs);
+	console.log("COSTS:", costs, " MAX:", maxCost, " MIN:", minCost);
+	maxCost += 10; // Zwiększenie maxCost, żeby najlepszy nie miał kosztu = 100
+	//minCost -= 10;
+	const normalizedCosts = costs.map(
+		(c) => ((c - minCost) / (maxCost - minCost)) * 50 + 50,
+	);
+	console.log("NORMALIZED COSTS:", normalizedCosts);
+	for (const [i, athlete] of athletes.entries()) {
+		if (normalizedCosts[i] !== undefined) {
+			athlete.cost = Math.round(normalizedCosts[i]);
+		}
+		console.log(
+			athlete.firstName,
+			" ",
+			athlete.lastName,
+			" COST:",
+			athlete.cost,
+		);
+		await db
+			.update(tables.athlete)
+			.set({
+				cost: athlete.cost,
+			})
+			.where(operators.eq(tables.athlete.id, athlete.id));
 	}
 };
 
@@ -655,6 +953,7 @@ type AthletesRecord = Record<
 			pbs: Record<
 				string,
 				{
+					code: string;
 					result: string;
 					date: string;
 					location: string;
@@ -664,6 +963,7 @@ type AthletesRecord = Record<
 			sbs: Record<
 				string,
 				{
+					code: string;
 					result: string;
 					date: string;
 					location: string;

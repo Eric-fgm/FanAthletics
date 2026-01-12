@@ -120,6 +120,17 @@ export interface Competitor extends Athlete {
 	results: CompetitorResults | null;
 	number: number;
 	lane: number;
+	winPrediction: number;
+	// predictionPoints: number;
+}
+
+export interface DisciplineCompetitor {
+	athleteId: string;
+	competitionId: string;
+	lane: number | null;
+	winPrediction: number;
+	// predictionPoints: number;
+	results: CompetitorResults | null;
 }
 
 export interface CompetitorResults {
@@ -136,6 +147,7 @@ export interface PersonalRecord {
 	id: string;
 	athleteId: string;
 	disciplineName: string;
+	disciplineCode: string;
 	result: string;
 	date: string | null;
 	location: string | null;
@@ -147,6 +159,7 @@ export interface SeasonBest {
 	id: string;
 	athleteId: string;
 	disciplineName: string;
+	disciplineCode: string;
 	result: string;
 	date: string | null;
 	location: string | null;

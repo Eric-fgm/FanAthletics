@@ -56,6 +56,7 @@ export default new Hono()
 					await db.query.competitor.findMany({
 						columns: {
 							lane: true,
+							winPrediction: true,
 							results: true,
 						},
 						with: {
@@ -64,11 +65,20 @@ export default new Hono()
 						where: (competitor, { eq }) =>
 							eq(competitor.competitionId, competition.id),
 					})
-				).map(({ athlete, lane, results }) => ({
-					...athlete,
-					lane,
-					results,
-				})),
+				).map(
+					({
+						athlete,
+						lane,
+						/*predictionPoints,*/ winPrediction,
+						results,
+					}) => ({
+						...athlete,
+						lane,
+						// predictionPoints,
+						winPrediction,
+						results,
+					}),
+				),
 			})),
 		);
 

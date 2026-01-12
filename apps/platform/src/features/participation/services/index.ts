@@ -152,6 +152,18 @@ export const useGameIsActiveQuery = () => {
 	});
 };
 
+export const useCountWinPredictionsMutation = () => {
+	return useMutation({
+		mutationFn: (eventId: string) =>
+			fetcher(
+				`${process.env.EXPO_PUBLIC_API_URL}/api/v1/game/${eventId}/count-win-predictions`,
+				{
+					method: "POST",
+				},
+			),
+	});
+};
+
 export const useParticipationQuery = () => {
 	const eventId = useGlobalSearchParams().eventId?.toString();
 

@@ -173,16 +173,32 @@ export const countries: Record<
 	{ polishName: string; code: string; continent: string }
 > = {
 	AFGHANISTAN: { polishName: "Afganistan", code: "AF", continent: "Asia" },
-	"ÅLAND ISLANDS": { polishName: "Wyspy Alandzkie", code: "AX", continent: "Europe" },
+	"ÅLAND ISLANDS": {
+		polishName: "Wyspy Alandzkie",
+		code: "AX",
+		continent: "Europe",
+	},
 	ALBANIA: { polishName: "Albania", code: "AL", continent: "Europe" },
 	ALGERIA: { polishName: "Algieria", code: "DZ", continent: "Africa" },
-	"AMERICAN SAMOA": { polishName: "Samoa Amerykańskie", code: "AS", continent: "Oceania" },
+	"AMERICAN SAMOA": {
+		polishName: "Samoa Amerykańskie",
+		code: "AS",
+		continent: "Oceania",
+	},
 	ANDORRA: { polishName: "Andora", code: "AD", continent: "Europe" },
 	ANGOLA: { polishName: "Angola", code: "AO", continent: "Africa" },
 	ANGUILLA: { polishName: "Anguilla", code: "AI", continent: "North America" },
 	ANTARCTICA: { polishName: "Antarktyda", code: "AQ", continent: "Antarctica" },
-	"ANTIGUA AND BARBUDA": { polishName: "Antigua i Barbuda", code: "AG", continent: "North America" },
-	ARGENTINA: { polishName: "Argentyna", code: "AR", continent: "South America" },
+	"ANTIGUA AND BARBUDA": {
+		polishName: "Antigua i Barbuda",
+		code: "AG",
+		continent: "North America",
+	},
+	ARGENTINA: {
+		polishName: "Argentyna",
+		code: "AR",
+		continent: "South America",
+	},
 	ARMENIA: { polishName: "Armenia", code: "AM", continent: "Asia" },
 	ARUBA: { polishName: "Aruba", code: "AW", continent: "North America" },
 	AUSTRALIA: { polishName: "Australia", code: "AU", continent: "Oceania" },
@@ -192,40 +208,68 @@ export const countries: Record<
 	BAHRAIN: { polishName: "Bahrajn", code: "BH", continent: "Asia" },
 	BANGLADESH: { polishName: "Bangladesz", code: "BD", continent: "Asia" },
 	BARBADOS: { polishName: "Barbados", code: "BB", continent: "North America" },
-  	BELARUS: { polishName: "Białoruś", code: "BY", continent: "Europe" },
+	BELARUS: { polishName: "Białoruś", code: "BY", continent: "Europe" },
 	BELGIUM: { polishName: "Belgia", code: "BE", continent: "Europe" },
 	BELIZE: { polishName: "Belize", code: "BZ", continent: "North America" },
 	BENIN: { polishName: "Benin", code: "BJ", continent: "Africa" },
 	BERMUDA: { polishName: "Bermudy", code: "BM", continent: "North America" },
 	BHUTAN: { polishName: "Bhutan", code: "BT", continent: "Asia" },
 	BOLIVIA: { polishName: "Boliwia", code: "BO", continent: "South America" },
-	"BOSNIA AND HERZEGOVINA": { polishName: "Bośnia i Hercegowina", code: "BA", continent: "Europe" },
+	"BOSNIA AND HERZEGOVINA": {
+		polishName: "Bośnia i Hercegowina",
+		code: "BA",
+		continent: "Europe",
+	},
 	BOTSWANA: { polishName: "Botswana", code: "BW", continent: "Africa" },
 	BRAZIL: { polishName: "Brazylia", code: "BR", continent: "South America" },
 	"BRUNEI DARUSSALAM": { polishName: "Brunei", code: "BN", continent: "Asia" },
 	BULGARIA: { polishName: "Bułgaria", code: "BG", continent: "Europe" },
-	"BURKINA FASO": { polishName: "Burkina Faso", code: "BF", continent: "Africa" },
+	"BURKINA FASO": {
+		polishName: "Burkina Faso",
+		code: "BF",
+		continent: "Africa",
+	},
 	BURUNDI: { polishName: "Burundi", code: "BI", continent: "Africa" },
 	CAMEROON: { polishName: "Kamerun", code: "CM", continent: "Africa" },
 	CANADA: { polishName: "Kanada", code: "CA", continent: "North America" },
-	"CENTRAL AFRICAN REPUBLIC": { polishName: "Republika Środkowoafrykańska", code: "CF", continent: "Africa" },
+	"CENTRAL AFRICAN REPUBLIC": {
+		polishName: "Republika Środkowoafrykańska",
+		code: "CF",
+		continent: "Africa",
+	},
 	CHILE: { polishName: "Chile", code: "CL", continent: "South America" },
 	CHINA: { polishName: "Chiny", code: "CN", continent: "Asia" },
 	COLOMBIA: { polishName: "Kolumbia", code: "CO", continent: "South America" },
 	CONGO: { polishName: "Kongo", code: "CG", continent: "Africa" },
-	"COSTA RICA": { polishName: "Kostaryka", code: "CR", continent: "North America" },
-	"CÔTE D'IVOIRE": { polishName: "Wybrzeże Kości Słoniowej", code: "CI", continent: "Africa" },
+	"COSTA RICA": {
+		polishName: "Kostaryka",
+		code: "CR",
+		continent: "North America",
+	},
+	"CÔTE D'IVOIRE": {
+		polishName: "Wybrzeże Kości Słoniowej",
+		code: "CI",
+		continent: "Africa",
+	},
 	CROATIA: { polishName: "Chorwacja", code: "HR", continent: "Europe" },
 	CUBA: { polishName: "Kuba", code: "CU", continent: "North America" },
 	CYPRUS: { polishName: "Cypr", code: "CY", continent: "Europe" },
-	"CZECHIA": { polishName: "Czechy", code: "CZ", continent: "Europe" },
+	CZECHIA: { polishName: "Czechy", code: "CZ", continent: "Europe" },
 	DENMARK: { polishName: "Dania", code: "DK", continent: "Europe" },
 	DJIBOUTI: { polishName: "Dżibuti", code: "DJ", continent: "Africa" },
 	DOMINICA: { polishName: "Dominika", code: "DM", continent: "North America" },
-	"DOMINICAN REPUBLIC": { polishName: "Dominikana", code: "DO", continent: "North America" },
+	"DOMINICAN REPUBLIC": {
+		polishName: "Dominikana",
+		code: "DO",
+		continent: "North America",
+	},
 	ECUADOR: { polishName: "Ekwador", code: "EC", continent: "South America" },
 	EGYPT: { polishName: "Egipt", code: "EG", continent: "Africa" },
-	"EL SALVADOR": { polishName: "Salwador", code: "SV", continent: "North America" },
+	"EL SALVADOR": {
+		polishName: "Salwador",
+		code: "SV",
+		continent: "North America",
+	},
 	ERITREA: { polishName: "Erytrea", code: "ER", continent: "Africa" },
 	ESTONIA: { polishName: "Estonia", code: "EE", continent: "Europe" },
 	ESWATINI: { polishName: "Eswatini", code: "SZ", continent: "Africa" },
@@ -238,11 +282,23 @@ export const countries: Record<
 	GERMANY: { polishName: "Niemcy", code: "DE", continent: "Europe" },
 	GHANA: { polishName: "Ghana", code: "GH", continent: "Africa" },
 	GREECE: { polishName: "Grecja", code: "GR", continent: "Europe" },
-	GREENLAND: { polishName: "Grenlandia", code: "GL", continent: "North America" },
+	GREENLAND: {
+		polishName: "Grenlandia",
+		code: "GL",
+		continent: "North America",
+	},
 	GRENADA: { polishName: "Grenada", code: "GD", continent: "North America" },
-	GUATEMALA: { polishName: "Gwatemala", code: "GT", continent: "North America" },
+	GUATEMALA: {
+		polishName: "Gwatemala",
+		code: "GT",
+		continent: "North America",
+	},
 	GUINEA: { polishName: "Gwinea", code: "GN", continent: "Africa" },
-	"GUINEA BISSAU": { polishName: "Gwinea Bissau", code: "GW", continent: "Africa" },
+	"GUINEA BISSAU": {
+		polishName: "Gwinea Bissau",
+		code: "GW",
+		continent: "Africa",
+	},
 	GUYANA: { polishName: "Gujana", code: "GY", continent: "South America" },
 	HAITI: { polishName: "Haiti", code: "HT", continent: "North America" },
 	HONDURAS: { polishName: "Honduras", code: "HN", continent: "North America" },
@@ -266,7 +322,11 @@ export const countries: Record<
 	LEBANON: { polishName: "Liban", code: "LB", continent: "Asia" },
 	LIBERIA: { polishName: "Liberia", code: "LR", continent: "Africa" },
 	LIBYA: { polishName: "Libia", code: "LY", continent: "Africa" },
-	LIECHTENSTEIN: { polishName: "Liechtenstein", code: "LI", continent: "Europe" },
+	LIECHTENSTEIN: {
+		polishName: "Liechtenstein",
+		code: "LI",
+		continent: "Europe",
+	},
 	LITHUANIA: { polishName: "Litwa", code: "LT", continent: "Europe" },
 	LUXEMBOURG: { polishName: "Luksemburg", code: "LU", continent: "Europe" },
 	MADAGASCAR: { polishName: "Madagaskar", code: "MG", continent: "Africa" },
@@ -287,12 +347,28 @@ export const countries: Record<
 	NAMIBIA: { polishName: "Namibia", code: "NA", continent: "Africa" },
 	NEPAL: { polishName: "Nepal", code: "NP", continent: "Asia" },
 	NETHERLANDS: { polishName: "Holandia", code: "NL", continent: "Europe" },
-	"NETHERLANDS ANTILLES": { polishName: "Antyle Holenderskie", code: "AN", continent: "North America" },
-	"NEW ZEALAND": { polishName: "Nowa Zelandia", code: "NZ", continent: "Oceania" },
-	NICARAGUA: { polishName: "Nikaragua", code: "NI", continent: "North America" },
+	"NETHERLANDS ANTILLES": {
+		polishName: "Antyle Holenderskie",
+		code: "AN",
+		continent: "North America",
+	},
+	"NEW ZEALAND": {
+		polishName: "Nowa Zelandia",
+		code: "NZ",
+		continent: "Oceania",
+	},
+	NICARAGUA: {
+		polishName: "Nikaragua",
+		code: "NI",
+		continent: "North America",
+	},
 	NIGER: { polishName: "Niger", code: "NE", continent: "Africa" },
 	NIGERIA: { polishName: "Nigeria", code: "NG", continent: "Africa" },
-	"NORTH MACEDONIA": { polishName: "Macedonia Północna", code: "MK", continent: "Europe" },
+	"NORTH MACEDONIA": {
+		polishName: "Macedonia Północna",
+		code: "MK",
+		continent: "Europe",
+	},
 	NORWAY: { polishName: "Norwegia", code: "NO", continent: "Europe" },
 	OMAN: { polishName: "Oman", code: "OM", continent: "Asia" },
 	PAKISTAN: { polishName: "Pakistan", code: "PK", continent: "Asia" },
@@ -302,14 +378,26 @@ export const countries: Record<
 	PHILIPPINES: { polishName: "Filipiny", code: "PH", continent: "Asia" },
 	POLAND: { polishName: "Polska", code: "PL", continent: "Europe" },
 	PORTUGAL: { polishName: "Portugalia", code: "PT", continent: "Europe" },
-	"PUERTO RICO": { polishName: "Portoryko ", code: "PR", continent: "South America" },
+	"PUERTO RICO": {
+		polishName: "Portoryko ",
+		code: "PR",
+		continent: "South America",
+	},
 	QATAR: { polishName: "Katar", code: "QA", continent: "Asia" },
 	ROMANIA: { polishName: "Rumunia", code: "RO", continent: "Europe" },
 	RUSSIA: { polishName: "Rosja", code: "RU", continent: "Europe" },
 	RWANDA: { polishName: "Rwanda", code: "RW", continent: "Africa" },
-	"SAINT BARTHÉLEMY": { polishName: "Saint-Barthélemy", code: "BL", continent: "North America" },
+	"SAINT BARTHÉLEMY": {
+		polishName: "Saint-Barthélemy",
+		code: "BL",
+		continent: "North America",
+	},
 	"SAN MARINO": { polishName: "San Marino", code: "SM", continent: "Europe" },
-	"SAUDI ARABIA": { polishName: "Arabia Saudyjska", code: "SA", continent: "Asia" },
+	"SAUDI ARABIA": {
+		polishName: "Arabia Saudyjska",
+		code: "SA",
+		continent: "Asia",
+	},
 	SENEGAL: { polishName: "Senegal", code: "SN", continent: "Africa" },
 	SERBIA: { polishName: "Serbia", code: "RS", continent: "Europe" },
 	SEYCHELLES: { polishName: "Seszele", code: "SC", continent: "Africa" },
@@ -317,8 +405,16 @@ export const countries: Record<
 	SLOVAKIA: { polishName: "Słowacja", code: "SK", continent: "Europe" },
 	SLOVENIA: { polishName: "Słowenia", code: "SI", continent: "Europe" },
 	SOMALIA: { polishName: "Somalia", code: "SO", continent: "Africa" },
-	"SOUTH AFRICA": { polishName: "Republika Południowej Afryki", code: "ZA", continent: "Africa" },
-	"SOUTH KOREA": { polishName: "Korea Południowa", code: "KR", continent: "Asia" },
+	"SOUTH AFRICA": {
+		polishName: "Republika Południowej Afryki",
+		code: "ZA",
+		continent: "Africa",
+	},
+	"SOUTH KOREA": {
+		polishName: "Korea Południowa",
+		code: "KR",
+		continent: "Asia",
+	},
 	SPAIN: { polishName: "Hiszpania", code: "ES", continent: "Europe" },
 	SUDAN: { polishName: "Sudan", code: "SD", continent: "Africa" },
 	SURINAME: { polishName: "Surinam", code: "SR", continent: "South America" },
@@ -335,24 +431,41 @@ export const countries: Record<
 	TURKMENISTAN: { polishName: "Turkmenistan", code: "TM", continent: "Asia" },
 	UGANDA: { polishName: "Uganda", code: "UG", continent: "Africa" },
 	UKRAINE: { polishName: "Ukraina", code: "UA", continent: "Europe" },
-	USA: { polishName: "Stany Zjednoczone", code: "US", continent: "North America" },
-	"UNITED ARAB EMIRATES": { polishName: "Zjednoczone Emiraty Arabskie", code: "AE", continent: "Asia" },
-	"GREAT BRITAIN": { polishName: "Wielka Brytania", code: "GB", continent: "Europe" },
+	USA: {
+		polishName: "Stany Zjednoczone",
+		code: "US",
+		continent: "North America",
+	},
+	"UNITED ARAB EMIRATES": {
+		polishName: "Zjednoczone Emiraty Arabskie",
+		code: "AE",
+		continent: "Asia",
+	},
+	"GREAT BRITAIN": {
+		polishName: "Wielka Brytania",
+		code: "GB",
+		continent: "Europe",
+	},
 };
 
 export const getFlagUrl = (nationality: string) => {
-	if (!Object.keys(countries).includes(nationality))
-		return "";
+	if (!Object.keys(countries).includes(nationality)) return "";
 	return `https://flagsapi.com/${countries[nationality].code}/flat/64.png`;
 };
 
 export const RightTriangle: React.FC<{
 	width: number;
 	height: number;
-	colorTop: string;
-	colorBottom: string;
+	colorTop?: string;
+	colorBottom?: string;
+	sex: string;
 	rotate?: number;
-}> = ({ width, height, colorTop, colorBottom, rotate = 0 }) => {
+}> = ({ width, height, colorTop, colorBottom, sex, rotate = 0 }) => {
+	const colors = sex === "M" ? menColors : womenColors;
+	if (!colorTop && !colorBottom) {
+		colorTop = colors.captainDownGradient;
+		colorBottom = colors.captainUpGradient;
+	}
 	return (
 		<Svg
 			width={width}
@@ -361,15 +474,22 @@ export const RightTriangle: React.FC<{
 			style={{ transform: [{ rotate: `${rotate}deg` }] }}
 		>
 			<Defs>
-				<LinearGradient id="triangleGradient" x1="0" y1="0" x2="0" y2="1">
+				<LinearGradient
+					id={`${colorTop}.${colorBottom}.grad`}
+					x1="0"
+					y1="0"
+					x2="0"
+					y2="1"
+				>
 					<Stop offset="0%" stopColor={colorTop} />
-          			<Stop offset="100%" stopColor={colorBottom} />
+					<Stop offset="100%" stopColor={colorBottom} />
 				</LinearGradient>
 			</Defs>
 
 			<Polygon
 				points={`0,0 0,${height} ${width},${height}`}
-				fill="url(#triangleGradient)"/>
+				fill={`url(#${colorTop}.${colorBottom}.grad)`}
+			/>
 		</Svg>
-	)
-} 
+	);
+};

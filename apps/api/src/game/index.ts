@@ -5,6 +5,7 @@ import type {
 	User,
 } from "@fan-athletics/shared/types";
 import { Hono } from "hono";
+import { countAthleteCosts, countWinPredictions } from "#/domtel";
 
 export type TeamMembership = {
 	athleteId: string;
@@ -63,6 +64,8 @@ export default new Hono<{
 	.get("/participation", async (c) => {
 		const user = c.get("user");
 		const eventId = c.req.param("eventId");
+
+		console.log("USER ID:", user.id);
 
 		const participant = await db.query.participant.findFirst({
 			where: (participant, { eq, and }) =>
@@ -141,162 +144,18 @@ export default new Hono<{
 		}
 		return c.json(gameSpecification);
 	})
-	.post("/count-points", async (c) => {
+	.post("/count-win-predictions", async (c) => {
 		const eventId = c.req.param("eventId");
-
-		const disciplineIds = (
-			await db.query.discipline.findMany({
-				where: (discipline, { eq }) => eq(discipline.eventId, eventId),
-			})
-		)
-			.filter((dis) => !dis.name.endsWith("pk"))
-			.map((dis) => dis.id);
-
-		const competitions = await db.query.competition.findMany({
-			where: (competition, { inArray }) =>
-				inArray(competition.disciplineId, disciplineIds),
-		});
-
-		const filtered = [];
-
-		for (const disciplineId of disciplineIds) {
-			const comps = competitions.filter((c) => c.disciplineId === disciplineId);
-
-			if (comps.length === 0) continue;
-
-			const round3Exists = comps.some((c) => c.round === 3);
-
-			if (round3Exists) {
-				for (const comp of comps) {
-					if (comp.round === 3) filtered.push(comp);
-				}
-			} else {
-				for (const comp of comps) filtered.push(comp);
-			}
-		}
-
-		const onlyNotCounted = filtered.filter((c) => !c.pointsAlreadyCounted);
-		for (const c of onlyNotCounted) {
-			await db
-				.update(tables.competition)
-				.set({
-					pointsAlreadyCounted: true,
-				})
-				.where(operators.eq(tables.competition.id, c.id));
-		}
-
-		const competitionIds = filtered
-			.filter((c) => !c.pointsAlreadyCounted)
-			.map((c) => c.id);
-
-		const competitors = await db.query.competitor.findMany({
-			where: (competitor, { inArray }) =>
-				inArray(competitor.competitionId, competitionIds),
-		});
-
-		for (const competitor of competitors) {
-			if (competitor.results) {
-				const competitorResults = competitor.results as CompetitorResults;
-				const pointsToAdd =
-					competitorResults.ranking === "" && competitor.results.place === 0 // Ma DNF, DQ albo DNS
-						? 0
-						: competitorResults.ranking === ""
-							? Math.max(8 - competitor.results.place + 1, 0) // Jest w finale
-							: Math.max(8 - Number.parseInt(competitorResults.ranking) + 1, 0); // Konkurencja nie ma finałów
-				console.log(
-					competitorResults.ranking,
-					typeof competitorResults.ranking,
-					pointsToAdd,
-					Number.parseInt(competitorResults.ranking),
-				);
-
-				const teamMembers = await db.query.teamMember.findMany({
-					where: (member, { and, eq }) =>
-						and(
-							eq(member.athleteId, competitor.athleteId),
-							eq(member.stillInTeam, true),
-						),
-				});
-
-				for (const member of teamMembers) {
-					await db
-						.update(tables.teamMember)
-						.set({
-							pointsGathered: operators.sql`${tables.teamMember.pointsGathered} + ${member.isCaptain ? pointsToAdd * 2 : pointsToAdd}`,
-						})
-						.where(
-							operators.and(
-								operators.eq(
-									tables.teamMember.participantId,
-									member.participantId,
-								),
-								operators.eq(
-									tables.teamMember.participantId,
-									member.participantId,
-								),
-								operators.eq(tables.teamMember.athleteId, member.athleteId),
-								operators.eq(tables.teamMember.isCaptain, member.isCaptain),
-								operators.eq(
-									tables.teamMember.pointsGathered,
-									member.pointsGathered,
-								),
-								operators.eq(
-									tables.teamMember.pointsGathered,
-									member.pointsGathered,
-								),
-							),
-						);
-				}
-			}
-
-			// for (const participId of participantIds) {
-			// 	let pointsToAdd: number;
-			// 	if (competitor.place === null) pointsToAdd = 0;
-			// 	else {
-			// 		const competitorResults = competitor.results as {
-			// 			score: string;
-			// 			ranking: string;
-			// 		};
-			// 		pointsToAdd = Math.max(
-			// 			8 - Number.parseInt(competitorResults.ranking) + 1,
-			// 			0,
-			// 		);
-			// 		// Kapitan musi mieć podwójne punkty - trzeba to dodać.
-			// 	}
-			// 	await db
-			// 		.update(tables.participant)
-			// 		.set({
-			// 			lastPoints: sql`${tables.participant.lastPoints} + ${pointsToAdd}`,
-			// 		})
-			// 		.where(eq(tables.participant.id, participId));
-			// const particip = await db.query.participant.findFirst({
-			// 	where: (participant, { eq }) => eq(participant.id, participId)
-			// });
-			// }
-		}
-
-		const participants = await db.query.participant.findMany({
-			where: (particip, { eq }) => eq(particip.referenceId, eventId),
-		});
-
-		for (const participant of participants) {
-			const teamMembers = await db.query.teamMember.findMany({
-				where: (member, { eq }) => eq(member.participantId, participant.id),
-			});
-
-			const allPoints = teamMembers.reduce((a, b) => {
-				return a + b.pointsGathered;
-			}, 0);
-
-			await db
-				.update(tables.participant)
-				.set({
-					lastPoints: allPoints,
-				})
-				.where(operators.eq(tables.participant.id, participant.id));
-		}
-
-		return c.json({ message: "Points successfully counted." }, 200);
+		console.log("EVNT", eventId);
+		await countWinPredictions(eventId);
+		return c.json({ message: "Win predictions counted successfully." }, 200);
+		//return c.json(data);
+	})
+	.post("/count-athlete-costs", async (c) => {
+		const eventId = c.req.param("eventId");
+		console.log("EVNT", eventId);
+		await countAthleteCosts(eventId);
+		return c.json({ message: "Athlete costs counted successfully." }, 200);
 	})
 	.use(async (c, next) => {
 		const user = c.get("user");
@@ -673,6 +532,208 @@ export default new Hono<{
 			{ message: "Captain privilege successfully deleted from athlete." },
 			200,
 		);
+	})
+	.post("/count-points", async (c) => {
+		const eventId = c.req.param("eventId");
+
+		const disciplineIds = (
+			await db.query.discipline.findMany({
+				where: (discipline, { eq }) => eq(discipline.eventId, eventId),
+			})
+		)
+			.filter((dis) => !dis.name.endsWith("pk"))
+			.map((dis) => dis.id);
+
+		const competitions = await db.query.competition.findMany({
+			where: (competition, { inArray }) =>
+				inArray(competition.disciplineId, disciplineIds),
+		});
+
+		const filtered = [];
+
+		for (const disciplineId of disciplineIds) {
+			const comps = competitions.filter((c) => c.disciplineId === disciplineId);
+
+			if (comps.length === 0) continue;
+
+			const round3Exists = comps.some((c) => c.round === 3);
+
+			if (round3Exists) {
+				for (const comp of comps) {
+					if (comp.round === 3) filtered.push(comp);
+				}
+			} else {
+				for (const comp of comps) filtered.push(comp);
+			}
+		}
+
+		// const onlyNotCounted = filtered.filter((c) => !c.pointsAlreadyCounted);
+		// for (const c of onlyNotCounted) {
+		// 	await db
+		// 		.update(tables.competition)
+		// 		.set({
+		// 			pointsAlreadyCounted: true,
+		// 		})
+		// 		.where(operators.eq(tables.competition.id, c.id));
+		// }
+
+		const competitionIds = filtered
+			.filter((c) => !c.pointsAlreadyCounted)
+			.map((c) => c.id);
+
+		const competitors = await db.query.competitor.findMany({
+			where: (competitor, { inArray }) =>
+				inArray(competitor.competitionId, competitionIds),
+		});
+
+		for (const competitor of competitors) {
+			if (competitor.results) {
+				const competitorResults = competitor.results as CompetitorResults;
+				let pointsToAdd =
+					competitorResults.ranking === "" && competitor.results.place === 0 // Ma DNF, DQ albo DNS
+						? 0
+						: competitorResults.ranking === ""
+							? Math.max(8 - competitor.results.place + 1, 0) // Jest w finale
+							: Math.max(8 - Number.parseInt(competitorResults.ranking) + 1, 0); // Konkurencja nie ma finałów
+
+				const competitorComp = await db.query.competition.findFirst({
+					where: (comp, { eq }) => eq(comp.id, competitor.competitionId),
+				});
+				let discName = "";
+				if (competitorComp) {
+					const disc = await db.query.discipline.findFirst({
+						where: (d, { eq }) => eq(d.id, competitorComp?.disciplineId),
+					});
+					if (disc) {
+						discName = disc?.code;
+					}
+				}
+				console.log(
+					"Dyscyplina:",
+					discName,
+					"Wynik:",
+					competitorResults.result,
+				);
+				if (competitorResults.result !== "" && competitorResults.place !== 0) {
+					try {
+						console.log("TU");
+						const res = await fetch(
+							`${process.env.SCRAPER_URL}/api/assign-points`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									result: competitorResults.result,
+									discipline: discName,
+									sex: discName[0],
+								}),
+							},
+						);
+						//console.log("TUUU", res.status, " ", res.statusText);
+						const waPoints = (await res.json()) as WAPointsRecord;
+						//console.log("Punkty:", waPoints.points);
+						pointsToAdd += waPoints.points;
+					} catch (e) {
+						console.log("BLAAAAAD", e);
+					}
+				}
+
+				console.log(
+					competitorResults.ranking,
+					typeof competitorResults.ranking,
+					pointsToAdd,
+					Number.parseInt(competitorResults.ranking),
+				);
+
+				const teamMembers = await db.query.teamMember.findMany({
+					where: (member, { and, eq }) =>
+						and(
+							eq(member.athleteId, competitor.athleteId),
+							eq(member.stillInTeam, true),
+						),
+				});
+
+				for (const member of teamMembers) {
+					await db
+						.update(tables.teamMember)
+						.set({
+							pointsGathered: operators.sql`${tables.teamMember.pointsGathered} + ${member.isCaptain ? pointsToAdd * 2 : pointsToAdd}`,
+						})
+						.where(
+							operators.and(
+								operators.eq(
+									tables.teamMember.participantId,
+									member.participantId,
+								),
+								operators.eq(
+									tables.teamMember.participantId,
+									member.participantId,
+								),
+								operators.eq(tables.teamMember.athleteId, member.athleteId),
+								operators.eq(tables.teamMember.isCaptain, member.isCaptain),
+								operators.eq(
+									tables.teamMember.pointsGathered,
+									member.pointsGathered,
+								),
+								operators.eq(
+									tables.teamMember.pointsGathered,
+									member.pointsGathered,
+								),
+							),
+						);
+				}
+			}
+
+			// for (const participId of participantIds) {
+			// 	let pointsToAdd: number;
+			// 	if (competitor.place === null) pointsToAdd = 0;
+			// 	else {
+			// 		const competitorResults = competitor.results as {
+			// 			score: string;
+			// 			ranking: string;
+			// 		};
+			// 		pointsToAdd = Math.max(
+			// 			8 - Number.parseInt(competitorResults.ranking) + 1,
+			// 			0,
+			// 		);
+			// 		// Kapitan musi mieć podwójne punkty - trzeba to dodać.
+			// 	}
+			// 	await db
+			// 		.update(tables.participant)
+			// 		.set({
+			// 			lastPoints: sql`${tables.participant.lastPoints} + ${pointsToAdd}`,
+			// 		})
+			// 		.where(eq(tables.participant.id, participId));
+			// const particip = await db.query.participant.findFirst({
+			// 	where: (participant, { eq }) => eq(participant.id, participId)
+			// });
+			// }
+		}
+
+		const participants = await db.query.participant.findMany({
+			where: (particip, { eq }) => eq(particip.referenceId, eventId),
+		});
+
+		for (const participant of participants) {
+			const teamMembers = await db.query.teamMember.findMany({
+				where: (member, { eq }) => eq(member.participantId, participant.id),
+			});
+
+			const allPoints = teamMembers.reduce((a, b) => {
+				return a + b.pointsGathered;
+			}, 0);
+
+			await db
+				.update(tables.participant)
+				.set({
+					lastPoints: allPoints,
+				})
+				.where(operators.eq(tables.participant.id, participant.id));
+		}
+
+		return c.json({ message: "Points successfully counted." }, 200);
 	});
 
 async function doesAthleteBelongToTeam(
@@ -697,3 +758,7 @@ async function isGameActive(eventId: string) {
 	if (!gameSpecification) return false;
 	return gameSpecification.isActive;
 }
+
+type WAPointsRecord = {
+	points: number;
+};

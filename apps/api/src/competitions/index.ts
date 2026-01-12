@@ -48,11 +48,15 @@ export default new Hono().get("/", async (c) => {
 					where: (competitor, { eq }) =>
 						eq(competitor.competitionId, competition.id),
 				})
-			).map(({ athlete, lane, results }) => ({
-				...athlete,
-				lane,
-				results,
-			})),
+			).map(
+				({ athlete, lane, /*predictionPoints,*/ winPrediction, results }) => ({
+					...athlete,
+					lane,
+					// predictionPoints,
+					winPrediction,
+					results,
+				}),
+			),
 		})),
 	);
 

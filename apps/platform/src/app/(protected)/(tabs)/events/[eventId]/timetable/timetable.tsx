@@ -295,7 +295,7 @@ const ResultsTable: React.FC<{
 						Narodowość
 					</Typography>
 					<Typography size="base" type="bright" className={columnClass.result}>
-						Wynik
+						{competition.competitors[0]?.results ? "Wynik" : "TOP3 %"}
 					</Typography>
 				</View>
 			</GradientBox>
@@ -331,7 +331,7 @@ const ResultsTable: React.FC<{
 									{competitor.imageUrl ? (
 										<Image
 											source={{ uri: competitor.imageUrl }}
-											style={{ width: 32, height: 32 }}
+											style={{ width: 32, height: 32, borderRadius: 16 }}
 										/>
 									) : (
 										<CircleUser size={32} />
@@ -351,7 +351,9 @@ const ResultsTable: React.FC<{
 								/>
 							</View>
 							<Typography className={columnClass.result}>
-								{competitor.results?.result}
+								{competitor.results !== null
+									? competitor.results?.result
+									: `${Math.round(competitor.winPrediction * 100)}%`}
 							</Typography>
 						</View>
 					))}
