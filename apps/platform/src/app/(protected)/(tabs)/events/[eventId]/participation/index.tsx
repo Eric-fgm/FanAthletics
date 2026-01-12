@@ -469,7 +469,11 @@ const Participation = () => {
 								<View className="flex-1 overflow-y-auto py-4">
 									<View className="items-center m-2 mb-3">
 										<Typography type="dark" size="large2">
-											Drużyna modelu AI
+											Drużyna modelu AI:{" "}
+											{aiTeam.reduce(
+												(sum, athlete) => sum + athlete.pointsGathered,
+												0,
+											)}
 										</Typography>
 										<View className="h-[1px] w-[90%] bg-black mt-2" />
 									</View>
