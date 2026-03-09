@@ -47,8 +47,8 @@ During the game you can check, how your team compares to other players' teams in
 The cycle of fantasy game rounds can be illustrated as:
 ```mermaid
 flowchart TD
-    A(Creating/updating team) --Start of the session--> B(Following the competition)
-    B --End of the session--> C(Gaining points)
+    A(Creating/updating team) --Start of session--> B(Following competition)
+    B --End of session--> C(Gaining points)
     C --> D(Checking rankings)
     D -->A
 
@@ -129,7 +129,7 @@ This repository has some additional tools already setup for you:
 
 
 ## Authors
-* [Eryk Hadała](https://github.com/Ericfgm)
+* [Eryk Hadała](https://github.com/Eric-fgm)
 * [Szymon Paja](https://github.com/pajka1sz)
 * [Tomasz Paja](https://github.com/pajka2T)
 
